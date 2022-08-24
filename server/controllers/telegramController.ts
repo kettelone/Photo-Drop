@@ -7,7 +7,7 @@ class TelegramController {
     const OTP = Math.floor(Math.random() * (999999 - 100000) + 100000);
     if (chatId !== null) {
       bot.sendMessage(chatId, `Your OTP is: ${OTP}`);
-      res.send('OTP sent');
+      res.send(`${OTP}`);
     }
   }
 }

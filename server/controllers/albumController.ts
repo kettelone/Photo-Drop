@@ -18,8 +18,8 @@ class AlbumController {
       const album = await Album.create({
         name, location, date, userId,
       });
-
-      return res.json(album);
+      res.json(album);
+      return;
     } catch (e) {
       console.log(e);
     }

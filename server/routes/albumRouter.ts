@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.post('/create-album', albumController.createAlbum);
 router.post('/save-to-database', albumController.uploadPhotosToDB);
-router.post('/s3-upload', albumController.signOne);
+router.post('/presigned-post', albumController.signOne);
 
 export default router;

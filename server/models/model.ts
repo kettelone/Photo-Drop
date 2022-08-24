@@ -47,9 +47,9 @@ const Person = sequelize.define('person', {
 
 const AppUser = sequelize.define('appUser', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  name: { type: DataTypes.STRING },
   phone: { type: DataTypes.STRING, unique: true },
   email: { type: DataTypes.STRING, unique: true },
+  name: { type: DataTypes.STRING },
 });
 
 const Selfie = sequelize.define('selfie', {
@@ -90,5 +90,6 @@ AppUser.hasMany(Selfie);
 Selfie.belongsTo(AppUser);
 
 export {
-  Photographer, Album, Photo, PhotoWaterMark, PhotoMini, PhotoMiniWaterMark, Person, AppUser, Selfie,
+  Photographer, Album, Photo, PhotoWaterMark, PhotoMini, PhotoMiniWaterMark, Person, AppUser,
+  Selfie,
 };
