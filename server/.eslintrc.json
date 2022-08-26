@@ -17,6 +17,10 @@
     "rules": {
         "import/extensions":0,
         "import/no-unresolved": 0,
-        "class-methods-use-this": "off"
+        "class-methods-use-this": "off",
+       "linebreak-style": [
+        "error",
+        "windows"
+    ]
     }
 }

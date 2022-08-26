@@ -23,12 +23,10 @@ let chatId: number |null = null;
 const { PORT } = process.env;
 const start = async () => {
   try {
-    // await sequelize.authenticate();
-    // await sequelize.sync(); // будет сверят состояние базы данных со схемой данных
+    await sequelize.authenticate();
+    await sequelize.sync(); // будет сверят состояние базы данных со схемой данных
     app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
 
-    // Listen for any kind of message. There are different kinds of
-    // messages.
     bot.on('message', (msg) => {
       chatId = msg.chat.id;
     });

@@ -10,8 +10,8 @@ const Photographer = sequelize.define('photographer', {
 });
 
 const Album = sequelize.define('album', {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  name: { type: DataTypes.STRING, allowNull: false },
+  id: { type: DataTypes.INTEGER, autoIncrement: true },
+  name: { type: DataTypes.STRING, primaryKey: true, allowNull: false },
   location: { type: DataTypes.STRING, allowNull: false },
   date: { type: DataTypes.DATE, allowNull: false },
 });
@@ -50,6 +50,9 @@ const AppUser = sequelize.define('appUser', {
   name: { type: DataTypes.STRING },
   phone: { type: DataTypes.STRING, unique: true },
   email: { type: DataTypes.STRING, unique: true },
+  textMessagesNotification: { type: DataTypes.BOOLEAN },
+  emailNotification: { type: DataTypes.BOOLEAN },
+  unsubscribe: { type: DataTypes.BOOLEAN },
 });
 
 const Selfie = sequelize.define('selfie', {
@@ -74,8 +77,8 @@ PhotoMini.belongsTo(Album);
 Album.hasMany(PhotoMiniWaterMark);
 PhotoMiniWaterMark.belongsTo(Album);
 
-Photo.hasMany(Person);
-Person.belongsTo(Photo);
+Photo.belongsToMany(Person, { through: 'Photo_Person' });
+Person.belongsToMany(Photo, { through: 'Photo_Person' });
 
 PhotoWaterMark.hasMany(Person);
 Person.belongsTo(PhotoWaterMark);
@@ -90,5 +93,13 @@ AppUser.hasMany(Selfie);
 Selfie.belongsTo(AppUser);
 
 export {
-  Photographer, Album, Photo, PhotoWaterMark, PhotoMini, PhotoMiniWaterMark, Person, AppUser, Selfie,
+  Photographer,
+  Album,
+  Photo,
+  PhotoWaterMark,
+  PhotoMini,
+  PhotoMiniWaterMark,
+  Person,
+  AppUser,
+  Selfie,
 };

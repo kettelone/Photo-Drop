@@ -13,13 +13,13 @@ class AlbumController {
   async createAlbum(req:Request, res:Response) {
     try {
       const {
-        name, location, date, userId,
+        name, location, date, photographerId,
       } = req.body;
       const album = await Album.create({
-        name, location, date, userId,
+        name, location, date, photographerId,
       });
-
-      return res.json(album);
+      res.json(album);
+      return;
     } catch (e) {
       console.log(e);
     }
@@ -28,17 +28,44 @@ class AlbumController {
   async uploadPhotosToDB(req:Request, res:Response) {
     try {
       const {
-        name, clientsArray, photoUrl, albumId,
+        name, clientsArray, photoUrl, albumName,
       } = req.body;
-      const photo = await Photo.create({ name, photoUrl, albumId });
+      const photo = await Photo.create({ name, photoUrl, albumName });
       // @ts-ignore
       const photoId = photo.dataValues.id;
-      for (let i = 0; i < clientsArray.length; i++) {
+      for (let i = 0; i < clientsArray.length; i += 1) {
         try {
-          await Person.create({
+          /* eslint-disable no-await-in-loop */
+          const person = await Person.create({
             name: clientsArray[i],
             photoId,
           });
+          // @ts-ignore
+          person.addPhoto(photo);
+        } catch (e) {
+          console.log(e);
+        }
+      }
+      res.send('Successfully uploaded');
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async addPersonToPhoto(req: Request, res: Response) {
+    const { photoId, clientsArray } = req.body;
+    try {
+      const photo = await Photo.findOne({ where: { id: photoId } });
+
+      for (let i = 0; i < clientsArray.length; i += 1) {
+        try {
+          /* eslint-disable no-await-in-loop */
+          const person = await Person.create({
+            name: clientsArray[i],
+            photoId,
+          });
+          // @ts-ignore
+          person.addPhoto(photo);
         } catch (e) {
           console.log(e);
         }
@@ -52,8 +79,9 @@ class AlbumController {
   async signOne(req: Request, res: Response) {
     const s3 = new aws.S3();
     const photosArray = req.body;
+    console.log(req.body);
     const presignedPostsArray = [];
-    for (let i = 0; i < photosArray.length; i++) {
+    for (let i = 0; i < photosArray.length; i += 1) {
       const { url, fields } = s3.createPresignedPost({
         Fields: {
           key: `${uuidv4()}_${photosArray[i].name}`,
