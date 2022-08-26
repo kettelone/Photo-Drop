@@ -61,6 +61,11 @@ const Selfie = sequelize.define('selfie', {
   selfieUrl: { type: DataTypes.STRING },
   active: { type: DataTypes.BOOLEAN },
 });
+// eslint-disable-next-line camelcase
+const Photo_Person = sequelize.define('Photo_Person', {
+  photoId: { type: DataTypes.INTEGER },
+  personId: { type: DataTypes.INTEGER },
+});
 
 Photographer.hasMany(Album);
 Album.belongsTo(Photographer);
@@ -105,4 +110,6 @@ export {
   Person,
   AppUser,
   Selfie,
+  // eslint-disable-next-line camelcase
+  Photo_Person,
 };

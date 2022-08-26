@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
-import { Album, Photo, Person } from '../models/model';
+import {
+  Album, Photo, Person, Photo_Person,
+} from '../models/model';
 
 aws.config.update({
   region: 'eu-west-1',
@@ -137,6 +139,31 @@ class AlbumController {
     });
 
     res.json(album);
+  }
+
+  async getPhotoWithPerson(req:Request, res:Response) {
+    const { personName } = req.query;
+    const person = await Person.findOne({ where: { name: personName } });
+    if (person) {
+      const photo_person = await Photo_Person.findAll({
+        where:
+        // @ts-ignore
+          { personId: person.id },
+      });
+      // @elsint-ignore
+      // @ts-ignore
+      const photos = [];
+      // @ts-ignore
+      if (photo_person.length > 0) {
+        for (let i = 0; i < photo_person.length; i++) {
+          // @ts-ignore
+          const photo = await Photo.findOne({ where: { id: photo_person[i].photoId } });
+          photos.push(photo);
+        }
+      }
+      // @ts-ignore
+      res.json(photos);
+    }
   }
 }
 
