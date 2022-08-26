@@ -121,6 +121,10 @@ class AppUserController {
       console.log(e);
     }
   }
+
+  async getPhotoByName(req:Request, res:Response) {
+
+  }
 }
 
 export default new AppUserController();

@@ -65,29 +65,32 @@ const Selfie = sequelize.define('selfie', {
 Photographer.hasMany(Album);
 Album.belongsTo(Photographer);
 
+Photographer.hasMany(Photo);
+Photo.belongsTo(Photographer);
+
 Album.hasMany(Photo);
 Photo.belongsTo(Album);
 
-Album.hasMany(PhotoWaterMark);
-PhotoWaterMark.belongsTo(Album);
+// Album.hasMany(PhotoWaterMark);
+// PhotoWaterMark.belongsTo(Album);
 
-Album.hasMany(PhotoMini);
-PhotoMini.belongsTo(Album);
+// Album.hasMany(PhotoMini);
+// PhotoMini.belongsTo(Album);
 
-Album.hasMany(PhotoMiniWaterMark);
-PhotoMiniWaterMark.belongsTo(Album);
+// Album.hasMany(PhotoMiniWaterMark);
+// PhotoMiniWaterMark.belongsTo(Album);
 
 Photo.belongsToMany(Person, { through: 'Photo_Person' });
 Person.belongsToMany(Photo, { through: 'Photo_Person' });
 
-PhotoWaterMark.hasMany(Person);
-Person.belongsTo(PhotoWaterMark);
+// PhotoWaterMark.hasMany(Person);
+// Person.belongsTo(PhotoWaterMark);
 
-PhotoMini.hasMany(Person);
-Person.belongsTo(PhotoMini);
+// PhotoMini.hasMany(Person);
+// Person.belongsTo(PhotoMini);
 
-PhotoMiniWaterMark.hasMany(Person);
-Person.belongsTo(PhotoMiniWaterMark);
+// PhotoMiniWaterMark.hasMany(Person);
+// Person.belongsTo(PhotoMiniWaterMark);
 
 AppUser.hasMany(Selfie);
 Selfie.belongsTo(AppUser);

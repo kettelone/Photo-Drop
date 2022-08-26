@@ -36,12 +36,19 @@ class AlbumController {
       for (let i = 0; i < clientsArray.length; i += 1) {
         try {
           /* eslint-disable no-await-in-loop */
-          const person = await Person.create({
-            name: clientsArray[i],
-            photoId,
-          });
-          // @ts-ignore
-          person.addPhoto(photo);
+          const personExist = await Person.findOne({ where: { name: clientsArray[i] } });
+          if (personExist === null) {
+            /* eslint-disable no-await-in-loop */
+            const person = await Person.create({
+              name: clientsArray[i],
+              photoId,
+            });
+            // @ts-ignore
+            person.addPhoto(photo);
+          } else {
+            // @ts-ignore
+            personExist.addPhoto(photo);
+          }
         } catch (e) {
           console.log(e);
         }
@@ -59,13 +66,19 @@ class AlbumController {
 
       for (let i = 0; i < clientsArray.length; i += 1) {
         try {
-          /* eslint-disable no-await-in-loop */
-          const person = await Person.create({
-            name: clientsArray[i],
-            photoId,
-          });
-          // @ts-ignore
-          person.addPhoto(photo);
+          const personExist = await Person.findOne({ where: { name: clientsArray[i] } });
+          if (personExist === null) {
+            /* eslint-disable no-await-in-loop */
+            const person = await Person.create({
+              name: clientsArray[i],
+              photoId,
+            });
+            // @ts-ignore
+            person.addPhoto(photo);
+          } else {
+            // @ts-ignore
+            personExist.addPhoto(photo);
+          }
         } catch (e) {
           console.log(e);
         }
@@ -95,13 +108,19 @@ class AlbumController {
     res.send(JSON.stringify(presignedPostsArray));
   }
 
-  async getAlbum(req: Request, res: Response) {
+  async getAlbums(req: Request, res: Response) {
+    const { photographerId } = req.query;
+    console.log('photographerId is: ', photographerId);
+    const albums = await Album.findAll({ where: { photographerId } });
+    res.send(JSON.stringify(albums));
+  }
+
+  async getPhotos(req: Request, res: Response) {
     /* LIMIT will retrieve only the number of records specified after the LIMIT keyword,
      unless the query itself returns fewer records than the number specified by LIMIT.
-
     OFFSET is used to skip the number of records from the results. */
     let {
-      albumId, userId, limit, page,
+      albumName, photographerId, limit, page,
     } = req.query;
     // @ts-ignore
     page = page || 1;
@@ -111,7 +130,7 @@ class AlbumController {
     const offset = page * limit - limit;
     // @ts-ignore
     const album = await Photo.findAndCountAll({
-      where: { albumId, userId },
+      where: { albumName, photographerId },
       // @ts-ignore
       limit,
       offset,
