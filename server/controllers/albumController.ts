@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  Album, Photo, Person, Photo_Person,
+  Album, Photo, PhotoMini, PhotoMiniWaterMark, Person, Photo_Person, PhotoMini_Person, PhotoMiniWaterMark_Person,
 } from '../models/model';
 
 aws.config.update({
@@ -27,7 +27,7 @@ class AlbumController {
     }
   }
 
-  async uploadPhotosToDB(req:Request, res:Response) {
+  async savePhotoToDB(req:Request, res:Response) {
     try {
       const {
         name, clientsArray, photoUrl, albumName,
@@ -46,10 +46,44 @@ class AlbumController {
               photoId,
             });
             // @ts-ignore
-            person.addPhoto(photo);
+            await person.addPhoto(photo);
           } else {
             // @ts-ignore
             personExist.addPhoto(photo);
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      }
+      res.send('Successfully uploaded');
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async savePhotoMiniToDB(req:Request, res:Response) {
+    try {
+      const {
+        name, clientsArray, photoMiniUrl, albumName,
+      } = req.body;
+      const photoMini = await PhotoMini.create({ name, photoMiniUrl, albumName });
+      // @ts-ignore
+      const photoMiniId = photoMini.dataValues.id;
+      for (let i = 0; i < clientsArray.length; i += 1) {
+        try {
+          /* eslint-disable no-await-in-loop */
+          const personExist = await Person.findOne({ where: { name: clientsArray[i] } });
+          if (personExist === null) {
+            /* eslint-disable no-await-in-loop */
+            const person = await Person.create({
+              name: clientsArray[i],
+              photoMiniId,
+            });
+            // @ts-ignore
+            await person.addPhotoMini(photoMini);
+          } else {
+            // @ts-ignore
+            personExist.addPhotoMini(photoMini);
           }
         } catch (e) {
           console.log(e);
@@ -97,15 +131,41 @@ class AlbumController {
     console.log(req.body);
     const presignedPostsArray = [];
     for (let i = 0; i < photosArray.length; i += 1) {
-      const { url, fields } = s3.createPresignedPost({
-        Fields: {
-          key: `${uuidv4()}_${photosArray[i].name}`,
-        },
-        Conditions: [['content-length-range', 0, 1000000]],
-        Expires: 60 * 60, // seconds
-        Bucket: process.env.S3_BUCKET,
-      });
-      presignedPostsArray.push({ url, fields });
+      const photoSetArray = [];
+      for (let j = 0; j < 3; j += 1) {
+        if (j === 0) {
+          const { url, fields } = s3.createPresignedPost({
+            Fields: {
+              key: `${photosArray[i].name}`,
+            },
+            Conditions: [['content-length-range', 0, 1000000]],
+            Expires: 60 * 60, // seconds
+            Bucket: process.env.S3_BUCKET,
+          });
+          photoSetArray.push({ url, fields });
+        } else if (j === 1) {
+          const { url, fields } = s3.createPresignedPost({
+            Fields: {
+              key: `photoMini_${photosArray[i].name}`,
+            },
+            Conditions: [['content-length-range', 0, 1000000]],
+            Expires: 60 * 60, // seconds
+            Bucket: process.env.S3_BUCKET,
+          });
+          photoSetArray.push({ url, fields });
+        } else if (j === 2) {
+          const { url, fields } = s3.createPresignedPost({
+            Fields: {
+              key: `photoMiniWaterMark_${photosArray[i].name}`,
+            },
+            Conditions: [['content-length-range', 0, 1000000]],
+            Expires: 60 * 60, // seconds
+            Bucket: process.env.S3_BUCKET,
+          });
+          photoSetArray.push({ url, fields });
+        }
+      }
+      presignedPostsArray.push(photoSetArray);
     }
     res.send(JSON.stringify(presignedPostsArray));
   }
