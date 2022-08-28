@@ -85,8 +85,20 @@ Album.belongsTo(Photographer);
 Photographer.hasMany(Photo);
 Photo.belongsTo(Photographer);
 
+Photographer.hasMany(PhotoMini);
+PhotoMini.belongsTo(Photographer);
+
+Photographer.hasMany(PhotoMiniWaterMark);
+PhotoMiniWaterMark.belongsTo(Photographer);
+
 Album.hasMany(Photo);
 Photo.belongsTo(Album);
+
+Album.hasMany(PhotoMini);
+PhotoMini.belongsTo(Album);
+
+Album.hasMany(PhotoMiniWaterMark);
+PhotoMiniWaterMark.belongsTo(Album);
 
 Photo.belongsToMany(Person, { through: 'Photo_Person' });
 Person.belongsToMany(Photo, { through: 'Photo_Person' });

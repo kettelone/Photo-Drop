@@ -4,10 +4,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import cors from 'cors';
 import sequelize from './db';
 import router from './routes/index';
-import telegramController from './controllers/telegramController';
-// import db from './models/model';
-// const DB: any = db;
-// const User = DB;
+
 dotenv.config();
 
 const app: Express = express();
