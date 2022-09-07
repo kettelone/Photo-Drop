@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import express, { Express } from 'express';
-import TelegramBot from 'node-telegram-bot-api';
+// import TelegramBot from 'node-telegram-bot-api';
 import cors from 'cors';
 import sequelize from './db';
 import router from './routes/index';
@@ -12,7 +12,7 @@ app.use(cors()); // чтобы можно было отправлять запр
 app.use(express.json()); // чтобы приложение могло парсить json формат
 app.use('/api', router);
 
-const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY}`, { polling: true });
+// const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY}`, { polling: true });
 // @ts-ignore
 // 508002761
 // let chatId: number |null = null;
