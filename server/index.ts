@@ -15,7 +15,7 @@ app.use('/api', router);
 const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY}`, { polling: true });
 // @ts-ignore
 // 508002761
-let chatId: number |null = null;
+// let chatId: number |null = null;
 
 const { PORT } = process.env;
 const start = async () => {
@@ -24,9 +24,9 @@ const start = async () => {
     await sequelize.sync(); // будет сверят состояние базы данных со схемой данных
     app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
 
-    bot.on('message', (msg) => {
-      chatId = msg.chat.id;
-    });
+    // bot.on('message', (msg) => {
+    //   chatId = msg.chat.id;
+    // });
   } catch (e) {
     console.log(e);
   }
