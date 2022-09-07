@@ -3,9 +3,16 @@ import sequelize from '../db';
 
 const Photographer = sequelize.define('photographer', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  login: { type: DataTypes.STRING, unique: true, allowNull: false },
+  login: {
+    type: DataTypes.STRING,
+    unique: {
+      name: 'Login error',
+      msg: 'Login is already in use!',
+    },
+    allowNull: false,
+  },
   password: { type: DataTypes.STRING, allowNull: false },
-  email: { type: DataTypes.STRING, unique: true },
+  email: { type: DataTypes.STRING },
   fullName: { type: DataTypes.STRING },
 });
 
@@ -42,7 +49,7 @@ const PhotoMiniWaterMark = sequelize.define('photoMiniWaterMark', {
 
 const Person = sequelize.define('person', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  name: { type: DataTypes.STRING },
+  name: { type: DataTypes.STRING, unique: true },
 });
 
 const AppUser = sequelize.define('appUser', {

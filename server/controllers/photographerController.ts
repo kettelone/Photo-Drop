@@ -2,9 +2,10 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import aws from 'aws-sdk';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 import ApiError from '../errors/APIErrors';
 import {
-  Photographer as db, Album, Photo, PhotoMini, PhotoMiniWaterMark, Person,
+  Photographer as db, Album, Photo, Person,
 } from '../models/model';
 
 aws.config.update({
@@ -56,151 +57,160 @@ class PhotographerController {
 
   async signOne(req: Request, res: Response) {
     const s3 = new aws.S3();
-    const photosArray = req.body;
-    console.log(req.body);
+    const { photosArray, people } = req.body;
+    const metadata = `${people}`;
+
     const presignedPostsArray = [];
     for (let i = 0; i < photosArray.length; i += 1) {
-      const photoSetArray = [];
-      for (let j = 0; j < 3; j += 1) {
-        if (j === 0) {
-          const { url, fields } = s3.createPresignedPost({
-            Fields: {
-              key: `${photosArray[i].name}`,
-            },
-            Conditions: [['content-length-range', 0, 1000000]],
-            Expires: 60 * 60, // seconds
-            Bucket: process.env.S3_BUCKET,
-          });
-          photoSetArray.push({ url, fields });
-        } else if (j === 1) {
-          const { url, fields } = s3.createPresignedPost({
-            Fields: {
-              key: `photoMini_${photosArray[i].name}`,
-            },
-            Conditions: [['content-length-range', 0, 1000000]],
-            Expires: 60 * 60, // seconds
-            Bucket: process.env.S3_BUCKET,
-          });
-          photoSetArray.push({ url, fields });
-        } else if (j === 2) {
-          const { url, fields } = s3.createPresignedPost({
-            Fields: {
-              key: `photoMiniWaterMark_${photosArray[i].name}`,
-            },
-            Conditions: [['content-length-range', 0, 1000000]],
-            Expires: 60 * 60, // seconds
-            Bucket: process.env.S3_BUCKET,
-          });
-          photoSetArray.push({ url, fields });
-        }
-      }
-      presignedPostsArray.push(photoSetArray);
+      const { photographerId } = photosArray[i][0];
+      const { albumName } = photosArray[i][1];
+      const { photoName } = photosArray[i][2];
+      const startIndex = photoName.indexOf('.') + 1;
+      const photoExtension = photoName.substr(startIndex);
+
+      const { url, fields } = s3.createPresignedPost({
+        Fields: {
+          key: `${photographerId}/${albumName}/${uuidv4()}_${photoName}`,
+          'Content-Type': `image/${photoExtension}`,
+          'x-amz-meta-people': metadata,
+        },
+        Conditions: [['content-length-range', 0, 8000000], ['starts-with', '$Content-Type', 'image/']],
+        Expires: 60 * 60, // seconds
+        Bucket: process.env.S3_BUCKET,
+      });
+      presignedPostsArray.push({ url, fields });
     }
     res.send(JSON.stringify(presignedPostsArray));
   }
 
-  async savePhotoToDB(req:Request, res:Response) {
+  // async savePhotoToDB(req:Request, res:Response) {
+  //   try {
+  //     const {
+  //       name, clientsArray, photoUrl, photographerId, albumName,
+  //     } = req.body;
+  //     const photo = await Photo.create({
+  //       name, photoUrl, photographerId, albumName,
+  //     });
+  //     // @ts-ignore
+  //     // const photoId = photo.dataValues.id;
+  //     for (let i = 0; i < clientsArray.length; i += 1) {
+  //       try {
+  //         /* eslint-disable no-await-in-loop */
+  //         const personExist = await Person.findOne({ where: { name: clientsArray[i] } });
+  //         if (personExist === null) {
+  //           /* eslint-disable no-await-in-loop */
+  //           const person = await Person.create({
+  //             name: clientsArray[i],
+  //           });
+  //           // @ts-ignore
+  //           await person.addPhoto(photo);
+  //         } else {
+  //           // @ts-ignore
+  //           personExist.addPhoto(photo);
+  //         }
+  //       } catch (e) {
+  //         console.log(e);
+  //       }
+  //     }
+  //     res.send('Successfully uploaded');
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // }
+
+  // async savePhotoMiniToDB(req:Request, res:Response) {
+  //   try {
+  //     const {
+  //       name, clientsArray, photoMiniUrl, photographerId, albumName,
+  //     } = req.body;
+  //     const photoMini = await PhotoMini.create({
+  //       name, photoMiniUrl, photographerId, albumName,
+  //     });
+  //     // @ts-ignore
+  //     // const photoMiniId = photoMini.dataValues.id;
+  //     for (let i = 0; i < clientsArray.length; i += 1) {
+  //       try {
+  //         /* eslint-disable no-await-in-loop */
+  //         const personExist = await Person.findOne({ where: { name: clientsArray[i] } });
+  //         if (personExist === null) {
+  //           /* eslint-disable no-await-in-loop */
+  //           const person = await Person.create({
+  //             name: clientsArray[i],
+  //           });
+  //           // @ts-ignore
+  //           await person.addPhotoMini(photoMini);
+  //         } else {
+  //           // @ts-ignore
+  //           personExist.addPhotoMini(photoMini);
+  //         }
+  //       } catch (e) {
+  //         console.log(e);
+  //       }
+  //     }
+  //     res.send('Successfully uploaded');
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // }
+
+  // async savePhotoMiniWaterMarkToDB(req:Request, res:Response) {
+  //   try {
+  //     const {
+  //       name, clientsArray, photoMiniWaterMarkUrl, photographerId, albumName,
+  //     } = req.body;
+  //     const photoMinWaterMark = await PhotoMiniWaterMark.create({
+  //       name, photoMiniWaterMarkUrl, photographerId, albumName,
+  //     });
+  //     // @ts-ignore
+  //     // const photoMinWaterMarkiId = photoMinWaterMark.dataValues.id;
+  //     for (let i = 0; i < clientsArray.length; i += 1) {
+  //       try {
+  //         /* eslint-disable no-await-in-loop */
+  //         const personExist = await Person.findOne({ where: { name: clientsArray[i] } });
+  //         if (personExist === null) {
+  //           /* eslint-disable no-await-in-loop */
+  //           const person = await Person.create({
+  //             name: clientsArray[i],
+  //           });
+  //           // @ts-ignore
+  //           await person.addPhotoMiniWaterMark(photoMinWaterMark);
+  //         } else {
+  //           // @ts-ignore
+  //           personExist.addPhotoMiniWaterMark(photoMinWaterMark);
+  //         }
+  //       } catch (e) {
+  //         console.log(e);
+  //       }
+  //     }
+  //     res.send('Successfully uploaded');
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // }
+
+  async createPerson(req: Request, res: Response) {
+    const { name } = req.body;
     try {
-      const {
-        name, clientsArray, photoUrl, photographerId, albumName,
-      } = req.body;
-      const photo = await Photo.create({
-        name, photoUrl, photographerId, albumName,
-      });
-      // @ts-ignore
-      // const photoId = photo.dataValues.id;
-      for (let i = 0; i < clientsArray.length; i += 1) {
-        try {
-          /* eslint-disable no-await-in-loop */
-          const personExist = await Person.findOne({ where: { name: clientsArray[i] } });
-          if (personExist === null) {
-            /* eslint-disable no-await-in-loop */
-            const person = await Person.create({
-              name: clientsArray[i],
-            });
-            // @ts-ignore
-            await person.addPhoto(photo);
-          } else {
-            // @ts-ignore
-            personExist.addPhoto(photo);
-          }
-        } catch (e) {
-          console.log(e);
-        }
-      }
-      res.send('Successfully uploaded');
+      const person = await Person.create({ name });
+      res.json(person);
     } catch (e) {
       console.log(e);
+      // @ts-ignore
+      if (e.errors[0].type === 'unique violation') {
+        res.json('name must be unique');
+      } else {
+        res.json(e);
+      }
     }
   }
 
-  async savePhotoMiniToDB(req:Request, res:Response) {
+  async getAllPeople(req: Request, res: Response) {
     try {
-      const {
-        name, clientsArray, photoMiniUrl, photographerId, albumName,
-      } = req.body;
-      const photoMini = await PhotoMini.create({
-        name, photoMiniUrl, photographerId, albumName,
-      });
-      // @ts-ignore
-      // const photoMiniId = photoMini.dataValues.id;
-      for (let i = 0; i < clientsArray.length; i += 1) {
-        try {
-          /* eslint-disable no-await-in-loop */
-          const personExist = await Person.findOne({ where: { name: clientsArray[i] } });
-          if (personExist === null) {
-            /* eslint-disable no-await-in-loop */
-            const person = await Person.create({
-              name: clientsArray[i],
-            });
-            // @ts-ignore
-            await person.addPhotoMini(photoMini);
-          } else {
-            // @ts-ignore
-            personExist.addPhotoMini(photoMini);
-          }
-        } catch (e) {
-          console.log(e);
-        }
-      }
-      res.send('Successfully uploaded');
+      const people = await Person.findAll();
+      res.json(people);
     } catch (e) {
       console.log(e);
-    }
-  }
-
-  async savePhotoMiniWaterMarkToDB(req:Request, res:Response) {
-    try {
-      const {
-        name, clientsArray, photoMiniWaterMarkUrl, photographerId, albumName,
-      } = req.body;
-      const photoMinWaterMark = await PhotoMiniWaterMark.create({
-        name, photoMiniWaterMarkUrl, photographerId, albumName,
-      });
-      // @ts-ignore
-      // const photoMinWaterMarkiId = photoMinWaterMark.dataValues.id;
-      for (let i = 0; i < clientsArray.length; i += 1) {
-        try {
-          /* eslint-disable no-await-in-loop */
-          const personExist = await Person.findOne({ where: { name: clientsArray[i] } });
-          if (personExist === null) {
-            /* eslint-disable no-await-in-loop */
-            const person = await Person.create({
-              name: clientsArray[i],
-            });
-            // @ts-ignore
-            await person.addPhotoMiniWaterMark(photoMinWaterMark);
-          } else {
-            // @ts-ignore
-            personExist.addPhotoMiniWaterMark(photoMinWaterMark);
-          }
-        } catch (e) {
-          console.log(e);
-        }
-      }
-      res.send('Successfully uploaded');
-    } catch (e) {
-      console.log(e);
+      res.json(e);
     }
   }
 
@@ -211,6 +221,7 @@ class PhotographerController {
 
       for (let i = 0; i < clientsArray.length; i += 1) {
         try {
+          // eslint-disable-next-line no-await-in-loop
           const personExist = await Person.findOne({ where: { name: clientsArray[i] } });
           if (personExist === null) {
             /* eslint-disable no-await-in-loop */
@@ -246,7 +257,7 @@ class PhotographerController {
     const { photographerId } = req.query;
     console.log('photographerId is: ', photographerId);
     const albums = await Album.findAll({ where: { photographerId } });
-    res.send(JSON.stringify(albums));
+    res.json(albums);
   }
 
   async getPhotos(req: Request, res: Response) {
@@ -271,6 +282,21 @@ class PhotographerController {
     });
 
     res.json(album);
+  }
+
+  async createPresignedGetForPhotos(req: Request, res: Response) {
+    const s3 = new aws.S3();
+    const photoKeyArr = req.body;
+    const photoUrls: any[] = [];
+    photoKeyArr.forEach((el:any) => {
+      const url = s3.getSignedUrl('getObject', {
+        Bucket: process.env.S3_BUCKET,
+        Key: el.photoKey,
+        Expires: 60 * 5,
+      });
+      photoUrls.push(url);
+    });
+    res.json(photoUrls);
   }
 }
 
