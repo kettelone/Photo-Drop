@@ -33,4 +33,4 @@ const start = async () => {
 };
 
 start();
-export { bot, chatId };
+// export { bot, chatId };

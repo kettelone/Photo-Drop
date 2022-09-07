@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
-import { bot, chatId } from '../index';
+// import { bot, chatId } from '../index';
 import {
   AppUser, Selfie, Person, Photo_Person, Photo,
 } from '../models/model';
@@ -14,12 +14,13 @@ aws.config.update({
 
 class AppUserController {
   generateOTP(req:Request, res:Response) {
-    // const OTP = req.body.OTP
-    const OTP = Math.floor(Math.random() * (999999 - 100000) + 100000);
-    if (chatId !== null) {
-      bot.sendMessage(chatId, `Your OTP is: ${OTP}`);
-      res.send('OTP sent');
-    }
+    // // const OTP = req.body.OTP
+    // const OTP = Math.floor(Math.random() * (999999 - 100000) + 100000);
+    // if (chatId !== null) {
+    //   bot.sendMessage(chatId, `Your OTP is: ${OTP}`);
+    //   res.send('OTP sent');
+    // }
+    res.send('Ok');
   }
 
   async createAppUser(req:Request, res:Response) {
