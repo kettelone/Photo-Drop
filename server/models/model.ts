@@ -29,12 +29,6 @@ const Photo = sequelize.define('photo', {
   photoUrl: { type: DataTypes.STRING },
 });
 
-// const PhotoWaterMark = sequelize.define('photoWaterMark', {
-//   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-//   name: { type: DataTypes.STRING },
-//   photoWaterMarkUrl: { type: DataTypes.STRING },
-// });
-
 const PhotoMini = sequelize.define('photoMini', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
@@ -68,6 +62,15 @@ const Selfie = sequelize.define('selfie', {
   selfieUrl: { type: DataTypes.STRING },
   active: { type: DataTypes.BOOLEAN },
 });
+
+const UserAlbums = sequelize.define('userAlbums', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  userId: { type: DataTypes.INTEGER },
+  userName: { type: DataTypes.STRING },
+  albumId: { type: DataTypes.INTEGER },
+  isPaid: { type: DataTypes.BOOLEAN },
+});
+
 // eslint-disable-next-line camelcase
 const Photo_Person = sequelize.define('Photo_Person', {
   photoId: { type: DataTypes.INTEGER },
@@ -134,4 +137,5 @@ export {
   PhotoMini_Person,
   // eslint-disable-next-line camelcase
   PhotoMiniWaterMark_Person,
+  UserAlbums,
 };

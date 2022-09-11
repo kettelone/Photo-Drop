@@ -45,10 +45,16 @@ class PhotographerController {
       const {
         name, location, date, photographerId,
       } = req.body;
-      const album = await Album.create({
-        name, location, date, photographerId,
-      });
-      res.json(album);
+
+      const albumExist = await Album.findOne({ where: { name, photographerId } });
+      if (albumExist === null) {
+        const album = await Album.create({
+          name, location, date, photographerId,
+        });
+        res.json(album);
+        return;
+      }
+      res.json('The album with this name already exist');
       return;
     } catch (e) {
       console.log(e);
@@ -255,7 +261,6 @@ class PhotographerController {
 
   async getAlbums(req: Request, res: Response) {
     const { photographerId } = req.query;
-    console.log('photographerId is: ', photographerId);
     const albums = await Album.findAll({ where: { photographerId } });
     res.json(albums);
   }
@@ -274,13 +279,25 @@ class PhotographerController {
     // @ts-ignore
     const offset = page * limit - limit;
     // @ts-ignore
+    const albumExist = await Album.findOne({
+      where: { name: albumName, photographerId },
+    });
+
+    if (albumExist === null) {
+      res.json('Album doesn`t exist');
+      return;
+    }
+
     const album = await Photo.findAndCountAll({
       where: { albumName, photographerId },
       // @ts-ignore
       limit,
       offset,
     });
-
+    if (album.count === 0) {
+      res.json('The album is empty');
+      return;
+    }
     res.json(album);
   }
 
