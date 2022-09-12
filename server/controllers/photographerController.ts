@@ -69,14 +69,14 @@ class PhotographerController {
     const presignedPostsArray = [];
     for (let i = 0; i < photosArray.length; i += 1) {
       const { photographerId } = photosArray[i][0];
-      const { albumName } = photosArray[i][1];
+      const { albumId } = photosArray[i][1];
       const { photoName } = photosArray[i][2];
       const startIndex = photoName.indexOf('.') + 1;
       const photoExtension = photoName.substr(startIndex);
 
       const { url, fields } = s3.createPresignedPost({
         Fields: {
-          key: `${photographerId}/${albumName}/${uuidv4()}_${photoName}`,
+          key: `${photographerId}/${albumId}/${uuidv4()}_${photoName}`,
           'Content-Type': `image/${photoExtension}`,
           'x-amz-meta-people': metadata,
         },
@@ -270,7 +270,7 @@ class PhotographerController {
      unless the query itself returns fewer records than the number specified by LIMIT.
     OFFSET is used to skip the number of records from the results. */
     let {
-      albumName, photographerId, limit, page,
+      albumId, photographerId, limit, page,
     } = req.query;
     // @ts-ignore
     page = page || 1;
@@ -280,8 +280,9 @@ class PhotographerController {
     const offset = page * limit - limit;
     // @ts-ignore
     const albumExist = await Album.findOne({
-      where: { name: albumName, photographerId },
+      where: { id: albumId, photographerId },
     });
+    console.log('albumExist is: ', albumExist);
 
     if (albumExist === null) {
       res.json('Album doesn`t exist');
@@ -289,7 +290,7 @@ class PhotographerController {
     }
 
     const album = await Photo.findAndCountAll({
-      where: { albumName, photographerId },
+      where: { albumId, photographerId },
       // @ts-ignore
       limit,
       offset,

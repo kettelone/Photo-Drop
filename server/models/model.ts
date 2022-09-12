@@ -5,11 +5,8 @@ const Photographer = sequelize.define('photographer', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   login: {
     type: DataTypes.STRING,
-    unique: {
-      name: 'Login error',
-      msg: 'Login is already in use!',
-    },
     allowNull: false,
+    unique: true,
   },
   password: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING },
@@ -17,8 +14,8 @@ const Photographer = sequelize.define('photographer', {
 });
 
 const Album = sequelize.define('album', {
-  id: { type: DataTypes.INTEGER, autoIncrement: true },
-  name: { type: DataTypes.STRING, primaryKey: true, allowNull: false },
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  name: { type: DataTypes.STRING, allowNull: false },
   location: { type: DataTypes.STRING, allowNull: false },
   date: { type: DataTypes.DATE, allowNull: false },
 });
@@ -42,7 +39,9 @@ const PhotoMiniWaterMark = sequelize.define('photoMiniWaterMark', {
 });
 
 const Person = sequelize.define('person', {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  id: {
+    type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true,
+  },
   name: { type: DataTypes.STRING, unique: true },
 });
 
@@ -63,7 +62,7 @@ const Selfie = sequelize.define('selfie', {
   active: { type: DataTypes.BOOLEAN },
 });
 
-const UserAlbums = sequelize.define('userAlbums', {
+const UserAlbum = sequelize.define('userAlbum', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   userId: { type: DataTypes.INTEGER },
   userName: { type: DataTypes.STRING },
@@ -137,5 +136,5 @@ export {
   PhotoMini_Person,
   // eslint-disable-next-line camelcase
   PhotoMiniWaterMark_Person,
-  UserAlbums,
+  UserAlbum,
 };
