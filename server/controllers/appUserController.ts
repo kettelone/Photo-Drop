@@ -27,7 +27,11 @@ const generateJwt = (id: number, phoneNumber: string) => jwt.sign(
 class AppUserController {
   generateOTP(req:Request, res:Response) {
     const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
-    bot.sendMessage(Number(process.env.TG_BOT_CHAT_ID), `Your OTP is: ${OTP}`);
+    try {
+      bot.sendMessage(Number(process.env.TG_BOT_CHAT_ID), `Your OTP is: ${OTP}`);
+    } catch (e) {
+      console.log(e);
+    }
     res.json({ OTP });
   }
 
