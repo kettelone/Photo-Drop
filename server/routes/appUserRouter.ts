@@ -13,7 +13,8 @@ router.put('/edit-notification-settings', checkAuth, appUserController.editNotif
 router.put('/edit-name', checkAuth, appUserController.editName);
 router.put('/edit-phone', checkAuth, appUserController.editPhone);
 router.put('/edit-email', checkAuth, appUserController.editEmail);
-router.get('/get-album-with-person', checkAuth, appUserController.getAlbumsWithPerson);
-router.get('/get-photo-with-person', checkAuth, appUserController.getPhotosWithPerson);
+router.get('/get-albums-with-person', checkAuth, appUserController.getAlbumsWithPerson);
+router.get('/get-thumbnails-with-person', checkAuth, appUserController.getThumbnails);
+router.get('/get-original-photo', checkAuth, appUserController.getOriginalPhoto);
 
 export default router;

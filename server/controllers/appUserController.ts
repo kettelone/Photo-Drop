@@ -5,7 +5,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import jwt from 'jsonwebtoken';
 
 import {
-  AppUser, Selfie, Person, Photo_Person, Photo,
+  AppUser, Selfie, Person, Photo_Person, Photo, UserAlbum, PhotoMini, PhotoMiniWaterMark,
 } from '../models/model';
 
 aws.config.update({
@@ -23,6 +23,22 @@ const generateJwt = (id: number, phoneNumber: string) => jwt.sign(
     expiresIn: '24h',
   },
 );
+
+const checkIfPaid = async (userId:number, albumId:number) => {
+  try {
+    const info = await UserAlbum.findAll({ where: { userId, albumId } });
+    if (Object.keys(info).length === 0) {
+      return false;
+    }
+    // @ts-ignore
+    if (info[0].isPaid === true) {
+      return true;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  return false;
+};
 
 class AppUserController {
   generateOTP(req:Request, res:Response) {
@@ -91,28 +107,6 @@ class AppUserController {
     });
     res.send(JSON.stringify({ url, fields }));
   }
-
-  // async uploadSelfieToDB(req:Request, res:Response) {
-  //   try {
-  //     const {
-  //       name, selfieUrl, appUserId,
-  //     } = req.body;
-  //     const oldSelfies = await Selfie.findAll({ where: { appUserId } });
-  //     for (let i = 0; i < oldSelfies.length; i += 1) {
-  //       // @ts-ignore
-  //       oldSelfies[i].active = false;
-  //       // eslint-disable-next-line no-await-in-loop
-  //       await oldSelfies[i].save();
-  //     }
-
-  //     await Selfie.create({
-  //       name, selfieUrl, appUserId, active: true,
-  //     });
-  //     res.send('Selfie saved to database');
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // }
 
   async getSelfie(req: Request, res: Response) {
     const { appUserId } = req.query;
@@ -239,13 +233,93 @@ class AppUserController {
     }
   }
 
-  async getPhotosWithPerson(req:Request, res:Response) {
-    const { albumId } = req.query;
-    // @ts-ignore
-    // @elsint-ignore
-    const photos = await Photo.findAll({ where: { albumId } });
-    // @ts-ignore
-    res.json(photos);
+  async getThumbnails(req: Request, res: Response) {
+    const userId = Number(req.query.userId);
+    const albumId = Number(req.query.albumId);
+    if (userId && albumId) {
+      const isPaid = await checkIfPaid(userId, albumId);
+      console.log('Is Paid: ', isPaid);
+      if (isPaid === true) {
+        try {
+          // return thumbnails without watermark
+          const thumbnails = await PhotoMini.findAll({ where: { albumId } });
+          const signedThumbnails:any = [];
+          if (thumbnails.length > 0) {
+            thumbnails.forEach((thumbnail) => {
+              const s3 = new aws.S3();
+
+              const url = s3.getSignedUrl('getObject', {
+                Bucket: process.env.S3_BUCKET_RESIZED,
+                // @ts-ignore
+                Key: `resized-${thumbnail.name}`,
+                Expires: 60 * 5,
+              });
+              // @ts-ignore
+              signedThumbnails.push({
+                // @ts-ignore
+                isPaid: true, url, originalKey: thumbnail.name, albumId,
+              });
+            });
+          }
+          res.json(signedThumbnails);
+        } catch (e) {
+          console.log(e);
+        }
+      } else {
+        try {
+          // return thumbnails with watermark
+          const thumbnailsWaterMark = await PhotoMiniWaterMark.findAll({
+            where: { albumId },
+          });
+          const signedThumbnails:any = [];
+          if (thumbnailsWaterMark.length > 0) {
+            thumbnailsWaterMark.forEach((thumbnail) => {
+              const s3 = new aws.S3();
+              const url = s3.getSignedUrl('getObject', {
+                Bucket: process.env.S3_BUCKET_RESIZED_WATERMARK,
+                // @ts-ignore
+                Key: `resized-watermarkresized-${thumbnail.name}`,
+                Expires: 60 * 5,
+              });
+              signedThumbnails.push({
+                // @ts-ignore
+                isPaid: false, url, originalKey: thumbnail.name, albumId,
+              });
+            });
+          }
+          res.json(signedThumbnails);
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    } else {
+      res.json('query parameters missing');
+    }
+  }
+
+  async getOriginalPhoto(req: Request, res: Response) {
+    const s3 = new aws.S3();
+    const { originalKey } = req.query;
+    const albumId = Number(req.query.albumId);
+    const userId = Number(req.query.userId);
+    // check if the album photo belongs to is paid by current user
+    try {
+      const isPaid = await checkIfPaid(userId, albumId);
+      if (isPaid === true) {
+      // send original photo
+        const url = s3.getSignedUrl('getObject', {
+          Bucket: process.env.S3_BUCKET,
+          Key: originalKey,
+          Expires: 60 * 5,
+        });
+        res.json(url);
+      } else {
+      // redirect to the payment page
+        res.json('You will be redirected to the paymnent gateway');
+      }
+    } catch (e) {
+      console.log(e);
+    }
   }
 }
 
