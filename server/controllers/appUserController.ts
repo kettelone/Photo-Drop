@@ -14,7 +14,7 @@ aws.config.update({
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 });
 
-const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY}`, { polling: true });
+// const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY}`, { polling: true });
 
 const generateJwt = (id: number, phoneNumber: string) => jwt.sign(
   { id, phoneNumber },
@@ -28,7 +28,7 @@ class AppUserController {
   generateOTP(req:Request, res:Response) {
     const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
     try {
-      bot.sendMessage(Number(process.env.TG_BOT_CHAT_ID), `Your OTP is: ${OTP}`);
+      // bot.sendMessage(Number(process.env.TG_BOT_CHAT_ID), `Your OTP is: ${OTP}`);
     } catch (e) {
       console.log(e);
     }
