@@ -3,10 +3,15 @@ import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import TelegramBot from 'node-telegram-bot-api';
 import jwt from 'jsonwebtoken';
-
+import Stripe from 'stripe';
 import {
   AppUser, Selfie, Person, Photo_Person, Photo, UserAlbum, PhotoMini, PhotoMiniWaterMark,
 } from '../models/model';
+// @ts-ignore
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2022-08-01',
+});
+// This is your test secret API key.
 
 aws.config.update({
   region: 'eu-west-1',
@@ -38,6 +43,40 @@ const checkIfPaid = async (userId:number, albumId:number) => {
     console.log(e);
   }
   return false;
+};
+
+const generatePaymnet = async (albumId:Number, userId:Number) => {
+  const albumItem = { id: 1, priceInCents: 500, name: 'Album' };
+  try {
+    const customer = await stripe.customers.create({
+      // @ts-ignore
+      metadata: { userId, albumId },
+    });
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      // @ts-ignore
+      customer: customer.id,
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: albumItem.name,
+          },
+          unit_amount: albumItem.priceInCents,
+        },
+        quantity: 1,
+      }],
+      metadata: { userId: `${userId}`, albumId: `${albumId}` },
+      success_url: `${process.env.SERVER_URL}/success`, // here should be client on success url page
+      cancel_url: `${process.env.SERVER_URL}/cancel`, // here should be client on cancel url page
+    });
+    const { url } = session;
+    return url;
+  } catch (e) {
+    return e;
+  }
 };
 
 class AppUserController {
@@ -315,11 +354,64 @@ class AppUserController {
         res.json(url);
       } else {
       // redirect to the payment page
-        res.json('You will be redirected to the paymnent gateway');
+        const paymentLink = await generatePaymnet(albumId, userId);
+        res.json(paymentLink);
       }
     } catch (e) {
       console.log(e);
     }
+  }
+
+  async webhook(request: Request, response: Response) {
+    // This is your Stripe CLI webhook secret for testing your endpoint locally.
+    let endpointSecret;
+    // endpointSecret = 'whsec_fc1fa7e0c71ba97e7bae2601821dbe0b4e425c3173c9a4f530880bd9abab910b';
+    const sig = request.headers['stripe-signature'];
+    // @ts-ignore
+    let data;
+    let eventType;
+    if (endpointSecret) {
+      let event;
+
+      try {
+        event = stripe.webhooks.constructEvent(request.body, sig!, endpointSecret);
+        console.log('Webhook verified');
+      } catch (err) {
+      // @ts-ignore
+        console.log(`Webhook Error: ${err.message}`);
+        // @ts-ignore
+        response.status(400).send(`Webhook Error: ${err.message}`);
+        return;
+      }
+      data = event.data.object;
+      eventType = event.type;
+    } else {
+      data = request.body.data.object;
+      eventType = request.body.type;
+    }
+
+    // Handle the event
+    if (eventType === 'checkout.session.completed') {
+      try {
+        const customer = await stripe.customers.retrieve(data.customer);
+        if (customer) {
+          // @ts-ignore
+          const { userId, albumId } = customer.metadata;
+          try {
+            const albumPaid = await UserAlbum.create({ userId, albumId, isPaid: true });
+            console.log('albumPaid is: ', albumPaid);
+          } catch (e) {
+            console.log(e);
+          }
+          console.log({ userId, albumId });
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    // Return a 200 response to acknowledge receipt of the event
+    response.send().end();
   }
 }
 

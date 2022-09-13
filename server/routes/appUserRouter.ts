@@ -16,5 +16,5 @@ router.put('/edit-email', checkAuth, appUserController.editEmail);
 router.get('/get-albums-with-person', checkAuth, appUserController.getAlbumsWithPerson);
 router.get('/get-thumbnails-with-person', checkAuth, appUserController.getThumbnails);
 router.get('/get-original-photo', checkAuth, appUserController.getOriginalPhoto);
-
+router.post('/webhook', express.raw({ type: 'application/json' }), appUserController.webhook);
 export default router;
