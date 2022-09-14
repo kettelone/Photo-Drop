@@ -22,16 +22,18 @@ const generateJwt = (id:number, login:string) => jwt.sign({ id, login }, process
 });
 
 class PhotographerController {
-  async login(req: Request, res:Response, next: any) {
+  async login(req: Request, res:Response) {
     try {
       const { login, password } = req.body;
       const user = await Photographer.findOne({ where: { login } });
       if (!user) {
-        return next(ApiError.internal('User not found'));
+        return res.status(403).json({ message: 'User not found' });
+        // return next(ApiError.internal('User not found'));
       }
       const comparePassword = bcrypt.compareSync(password, user.password);
       if (!comparePassword) {
-        return next(ApiError.internal('Wrong password'));
+        return res.status(403).json({ message: 'Wrong password' });
+        // return next(ApiError.internal('Wrong password'));
       }
       const token = generateJwt(user.id, user.login);
       return res.json({ token });
