@@ -42,7 +42,8 @@ const Person = sequelize.define('person', {
   id: {
     type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true,
   },
-  name: { type: DataTypes.STRING, unique: true },
+  phone: { type: DataTypes.STRING, unique: true },
+  name: { type: DataTypes.STRING },
 });
 
 const AppUser = sequelize.define('appUser', {

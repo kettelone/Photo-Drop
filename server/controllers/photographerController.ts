@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import ApiError from '../errors/APIErrors';
 import {
-  Photographer as db, Album, Photo, Person,
+  Photographer as db, Album, Photo, Person, AppUser,
 } from '../models/model';
 
 aws.config.update({
@@ -56,7 +56,7 @@ class PhotographerController {
         res.json(album);
         return;
       }
-      res.json('The album with this name already exist');
+      res.status(403).json({ message: 'The album with this name already exist' });
       return;
     } catch (e) {
       console.log(e);
@@ -205,7 +205,7 @@ class PhotographerController {
       console.log(e);
       // @ts-ignore
       if (e.errors[0].type === 'unique violation') {
-        res.json('name must be unique');
+        res.status(403).json({ message: 'Name must be unique' });
       } else {
         res.json(e);
       }
@@ -214,8 +214,8 @@ class PhotographerController {
 
   async getAllPeople(req: Request, res: Response) {
     try {
-      const people = await Person.findAll();
-      res.json(people);
+      const people = await AppUser.findAll();
+      res.json({ people });
     } catch (e) {
       console.log(e);
       res.json(e);
@@ -226,36 +226,39 @@ class PhotographerController {
     const { photoId, clientsArray } = req.body;
     try {
       const photo = await Photo.findOne({ where: { id: photoId } });
-
-      for (let i = 0; i < clientsArray.length; i += 1) {
-        try {
+      if (photo) {
+        for (let i = 0; i < clientsArray.length; i += 1) {
+          try {
           // eslint-disable-next-line no-await-in-loop
-          const personExist = await Person.findOne({ where: { name: clientsArray[i] } });
-          if (personExist === null) {
+            const personExist = await Person.findOne({ where: { phone: clientsArray[i] } });
+            if (personExist === null) {
             /* eslint-disable no-await-in-loop */
-            const person = await Person.create({
-              name: clientsArray[i],
-              photoId,
-            });
+              const person = await Person.create({
+                phone: clientsArray[i],
+                photoId,
+              });
+              // @ts-ignore
+              await person.addPhoto(photo);
+              // @ts-ignore
+              // await person.addPhotoMini(photo);
+              // // @ts-ignore
+              // await person.addPhotoMiniWaterMark(photo);
+            } else {
             // @ts-ignore
-            await person.addPhoto(photo);
-            // @ts-ignore
-            await person.addPhotoMini(photo);
-            // @ts-ignore
-            await person.addPhotoMiniWaterMark(photo);
-          } else {
-            // @ts-ignore
-            await personExist.addPhoto(photo);
-            // @ts-ignore
-            await personExist.addPhotoMini(photo);
-            // @ts-ignore
-            await personExist.addPhotoMiniWaterMark(photo);
+              await personExist.addPhoto(photo);
+              // @ts-ignore
+              // await personExist.addPhotoMini(photo);
+              // // @ts-ignore
+              // await personExist.addPhotoMiniWaterMark(photo);
+            }
+          } catch (e) {
+            console.log(e);
           }
-        } catch (e) {
-          console.log(e);
         }
+        res.send('Successfully uploaded');
+      } else {
+        res.status(403).json({ message: 'Photo was not found' });
       }
-      res.send('Successfully uploaded');
     } catch (e) {
       console.log(e);
     }
@@ -263,8 +266,16 @@ class PhotographerController {
 
   async getAlbums(req: Request, res: Response) {
     const { photographerId } = req.query;
-    const albums = await Album.findAll({ where: { photographerId } });
-    res.json(albums);
+    try {
+      const albums = await Album.findAll({ where: { photographerId } });
+      if (albums) {
+        res.json(albums);
+      } else {
+        res.status(403).json({ message: 'No albums found' });
+      }
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   async getPhotos(req: Request, res: Response) {
@@ -284,13 +295,11 @@ class PhotographerController {
     const albumExist = await Album.findOne({
       where: { id: albumId, photographerId },
     });
-    console.log('albumExist is: ', albumExist);
 
     if (albumExist === null) {
-      res.json('Album doesn`t exist');
+      res.status(403).json({ message: 'Album doesn`t exist' });
       return;
     }
-
     const album = await Photo.findAndCountAll({
       where: { albumId, photographerId },
       // @ts-ignore

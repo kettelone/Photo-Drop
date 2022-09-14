@@ -19,7 +19,7 @@ aws.config.update({
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 });
 
-const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY}`, { polling: true });
+// const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY}`, { polling: true });
 
 const generateJwt = (id: number, phoneNumber: string) => jwt.sign(
   { id, phoneNumber },
@@ -83,7 +83,7 @@ class AppUserController {
   generateOTP(req:Request, res:Response) {
     const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
     try {
-      bot.sendMessage(Number(process.env.TG_BOT_CHAT_ID), `Your OTP is: ${OTP}`);
+      // bot.sendMessage(Number(process.env.TG_BOT_CHAT_ID), `Your OTP is: ${OTP}`);
     } catch (e) {
       console.log(e);
     }
@@ -99,30 +99,48 @@ class AppUserController {
         const userId = appUserExist[0].dataValues.id;
         // @ts-ignore
         const phoneNumber = appUserExist[0].dataValues.phone;
-        console.log(userId, phoneNumber);
         const token = generateJwt(userId, phoneNumber);
         res.json({ token });
         return;
       }
-      const appUser = await AppUser.create({
-        phone,
-        textMessagesNotification: true,
-        emailNotification: true,
-        unsubscribe: false,
-      });
-
-      if (appUser) {
+      try {
+        const appUser = await AppUser.create({
+          phone,
+          textMessagesNotification: true,
+          emailNotification: true,
+          unsubscribe: false,
+        });
+        const personExist = await Person.findOne({ where: { phone } });
+        console.log('personExist is: ', personExist);
         // @ts-ignore
-        const userId = appUser.id;
-        // @ts-ignore
-        const phoneNumber = appUser.phone;
-        const token = generateJwt(userId, phoneNumber);
-        res.json({ token });
-        return;
+        if (appUser && personExist === null) {
+          const person = await Person.create({
+            phone,
+          });
+          if (person) {
+            // @ts-ignore
+            const userId = appUser.id;
+            // @ts-ignore
+            const phoneNumber = appUser.phone;
+            const token = generateJwt(userId, phoneNumber);
+            res.json({ token });
+            return;
+          }
+        } else {
+          // @ts-ignore
+          const userId = personExist.dataValues.id;
+          // @ts-ignore
+          const phoneNumber = personExist.dataValues.phone;
+          const token = generateJwt(userId, phoneNumber);
+          res.json({ token });
+          return;
+        }
+      } catch (e) {
+        res.json({ messsage: e });
       }
       return;
     } catch (e) {
-      res.send('Error occured');
+      res.status(500).json({ message: 'Error occured' });
       console.log(e);
     }
   }
@@ -149,8 +167,14 @@ class AppUserController {
 
   async getSelfie(req: Request, res: Response) {
     const { appUserId } = req.query;
-    const selfie = await Selfie.findOne({ where: { appUserId, active: true } });
-    res.json(selfie);
+    try {
+      const selfie = await Selfie.findOne({ where: { appUserId, active: true } });
+      if (selfie) {
+        res.json(selfie);
+      }
+    } catch (e) {
+      res.status(500).json({ message: 'Error occured' });
+    }
   }
 
   async createPresignedGetForSelfie(req: Request, res: Response) {
@@ -174,9 +198,12 @@ class AppUserController {
         user.name = name;
         user.save();
         res.json(user);
+      } else {
+        res.send({ message: 'User not found' });
       }
     } catch (e) {
       console.log(e);
+      res.status(500).json({ message: 'Error occured' });
     }
   }
 
@@ -189,9 +216,12 @@ class AppUserController {
         user.phone = phone;
         user.save();
         res.json(user);
+      } else {
+        res.send({ message: 'User not found' });
       }
     } catch (e) {
       console.log(e);
+      res.status(500).json({ message: 'Error occured' });
     }
   }
 
@@ -204,9 +234,12 @@ class AppUserController {
         user.email = email;
         user.save();
         res.json(user);
+      } else {
+        res.send({ message: 'User not found' });
       }
     } catch (e) {
       console.log(e);
+      res.status(500).json({ message: 'Error occured' });
     }
   }
 
@@ -228,47 +261,59 @@ class AppUserController {
       }
     } catch (e) {
       console.log(e);
+      res.status(500).json({ message: 'Error occured' });
     }
   }
 
   async getAlbumsWithPerson(req: Request, res: Response) {
-    const { personName } = req.query;
-    const person = await Person.findOne({ where: { name: personName } });
-    if (person) {
-      // @ts-ignore
-      // @elsint-ignore
-      const photo_person = await Photo_Person.findAll({
-        where:
+    const { phone } = req.query;
+    try {
+      const person = await Person.findOne({ where: { phone } });
+      if (person) {
         // @ts-ignore
+        // @elsint-ignore
+        console.log('person id is: ', person.id);
+        // @ts-ignore
+        // @elsint-ignore
+        const photo_person = await Photo_Person.findAll({
+          where:
+          // @ts-ignore
           { personId: person.id },
-      });
-      // @elsint-ignore
-      // @ts-ignore
-      const photos = [];
-      // @ts-ignore
-      // @elsint-ignore
-      if (photo_person.length > 0) {
-        for (let i = 0; i < photo_person.length; i++) {
+        });
+        // @elsint-ignore
+        // @ts-ignore
+        const photos = [];
+        // @ts-ignore
+        // @elsint-ignore
+        if (photo_person.length > 0) {
+          for (let i = 0; i < photo_person.length; i++) {
           // @ts-ignore
           // @elsint-ignore
-          const photo = await Photo.findOne({ where: { id: photo_person[i].photoId } });
-          photos.push(photo);
+            const photo = await Photo.findOne({ where: { id: photo_person[i].photoId } });
+            photos.push(photo);
+          }
         }
-      }
-      const albumIds:[] = [];
-      for (let i = 0; i < photos.length; i += 1) {
+        console.log('photos: ', photos);
+        const albumIds:[] = [];
+        for (let i = 0; i < photos.length; i += 1) {
         // @ts-ignore
-        const { albumId } = photos[i].dataValues;
-        if (albumId !== null) {
+          const { albumId } = photos[i].dataValues;
+          if (albumId !== null) {
           // @ts-ignore
-          albumIds.push(albumId);
+            albumIds.push(albumId);
+          }
         }
+        // @ts-ignore
+        const iniqueAlbumIds = [...new Set(albumIds)];
+        console.log('iniqueAlbumIds are: ', iniqueAlbumIds);
+        // @ts-ignore
+        res.json({ albumIds: iniqueAlbumIds });
+      } else {
+        res.json({ message: 'No albums found' });
       }
-      // @ts-ignore
-      const iniqueAlbumIds = [...new Set(albumIds)];
-      console.log('iniqueAlbumIds are: ', iniqueAlbumIds);
-      // @ts-ignore
-      res.json({ albumIds: iniqueAlbumIds });
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({ message: 'Error occured' });
     }
   }
 
@@ -332,7 +377,7 @@ class AppUserController {
         }
       }
     } else {
-      res.json('query parameters missing');
+      res.json({ message: 'query parameters missing' });
     }
   }
 
@@ -409,7 +454,6 @@ class AppUserController {
         console.log(e);
       }
     }
-
     // Return a 200 response to acknowledge receipt of the event
     response.send().end();
   }
