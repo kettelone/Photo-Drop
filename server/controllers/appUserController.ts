@@ -5,7 +5,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import jwt from 'jsonwebtoken';
 import Stripe from 'stripe';
 import {
-  AppUser, Selfie, Person, Photo_Person, Photo, UserAlbum, PhotoMini, PhotoMiniWaterMark,
+  AppUser, SelfieMini, Person, Photo_Person, Photo, UserAlbum, PhotoMini, PhotoMiniWaterMark,
 } from '../models/model';
 // @ts-ignore
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -19,7 +19,7 @@ aws.config.update({
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 });
 
-const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY}`, { polling: true });
+// const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY}`, { polling: true });
 
 const generateJwt = (id: number, phoneNumber: string) => jwt.sign(
   { id, phoneNumber },
@@ -83,7 +83,7 @@ class AppUserController {
   generateOTP(req:Request, res:Response) {
     const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
     try {
-      bot.sendMessage(Number(process.env.TG_BOT_CHAT_ID), `Your OTP is: ${OTP}`);
+      // bot.sendMessage(Number(process.env.TG_BOT_CHAT_ID), `Your OTP is: ${OTP}`);
     } catch (e) {
       console.log(e);
     }
@@ -168,7 +168,7 @@ class AppUserController {
   async getSelfie(req: Request, res: Response) {
     const { appUserId } = req.query;
     try {
-      const selfie = await Selfie.findOne({ where: { appUserId, active: true } });
+      const selfie = await SelfieMini.findOne({ where: { appUserId, active: true } });
       if (selfie) {
         res.json(selfie);
       }
@@ -180,13 +180,18 @@ class AppUserController {
   async createPresignedGetForSelfie(req: Request, res: Response) {
     const s3 = new aws.S3();
     const { selfieKey } = req.body;
-    const url = s3.getSignedUrl('getObject', {
-      Bucket: process.env.S3_SELFIE_BUCKET,
-      Key: selfieKey,
-      Expires: 60 * 5,
-    });
+    try {
+      const url = s3.getSignedUrl('getObject', {
+        Bucket: process.env.S3_SELFIE_BUCKET_RESIZED,
+        Key: selfieKey,
+        Expires: 60 * 5,
+      });
 
-    res.json(url);
+      res.json(url);
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({ message: 'Error occured' });
+    }
   }
 
   async editName(req: Request, res: Response) {

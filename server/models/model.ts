@@ -63,6 +63,13 @@ const Selfie = sequelize.define('selfie', {
   active: { type: DataTypes.BOOLEAN },
 });
 
+const SelfieMini = sequelize.define('selfieMini', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  name: { type: DataTypes.STRING },
+  selfieUrl: { type: DataTypes.STRING },
+  active: { type: DataTypes.BOOLEAN },
+});
+
 const UserAlbum = sequelize.define('userAlbum', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   userId: { type: DataTypes.INTEGER },
@@ -122,6 +129,9 @@ Person.belongsToMany(PhotoMiniWaterMark, { through: 'PhotoMiniWaterMark_Person' 
 AppUser.hasMany(Selfie);
 Selfie.belongsTo(AppUser);
 
+AppUser.hasMany(SelfieMini);
+SelfieMini.belongsTo(AppUser);
+
 export {
   Photographer,
   Album,
@@ -131,6 +141,7 @@ export {
   Person,
   AppUser,
   Selfie,
+  SelfieMini,
   // eslint-disable-next-line camelcase
   Photo_Person,
   // eslint-disable-next-line camelcase
