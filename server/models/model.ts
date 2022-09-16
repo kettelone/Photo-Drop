@@ -120,12 +120,6 @@ PhotoMiniWaterMark.belongsTo(Album);
 Photo.belongsToMany(Person, { through: 'Photo_Person' });
 Person.belongsToMany(Photo, { through: 'Photo_Person' });
 
-PhotoMini.belongsToMany(Person, { through: 'PhotoMini_Person' });
-Person.belongsToMany(PhotoMini, { through: 'PhotoMini_Person' });
-
-PhotoMiniWaterMark.belongsToMany(Person, { through: 'PhotoMiniWaterMark_Person' });
-Person.belongsToMany(PhotoMiniWaterMark, { through: 'PhotoMiniWaterMark_Person' });
-
 AppUser.hasMany(Selfie);
 Selfie.belongsTo(AppUser);
 
