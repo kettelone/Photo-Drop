@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
-// import TelegramBot from 'node-telegram-bot-api';
+import TelegramBot from 'node-telegram-bot-api';
 import jwt from 'jsonwebtoken';
 import Stripe from 'stripe';
 import {
