@@ -12,7 +12,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2022-08-01',
 });
 // This is your test secret API key.
-
 aws.config.update({
   region: 'eu-west-1',
   accessKeyId: process.env.S3_ACCESS_KEY_ID,
