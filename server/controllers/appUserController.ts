@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
-import TelegramBot from 'node-telegram-bot-api';
+// import TelegramBot from 'node-telegram-bot-api';
 import jwt from 'jsonwebtoken';
 import Stripe from 'stripe';
 import {
@@ -19,7 +19,7 @@ aws.config.update({
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 });
 
-const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY}`, { polling: true });
+// const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY}`, { polling: true });
 
 const generateJwt = (id: number, phoneNumber: string) => jwt.sign(
   { id, phoneNumber },
@@ -83,7 +83,7 @@ class AppUserController {
   generateOTP(req:Request, res:Response) {
     const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
     try {
-      bot.sendMessage(Number(process.env.TG_BOT_CHAT_ID), `Your OTP is: ${OTP}`);
+      // bot.sendMessage(Number(process.env.TG_BOT_CHAT_ID), `Your OTP is: ${OTP}`);
     } catch (e) {
       console.log(e);
     }
@@ -216,11 +216,27 @@ class AppUserController {
     const { id, phone } = req.body;
     try {
       const user = await AppUser.findOne({ where: { id } });
+      let oldPhone;
       if (user) {
+        // @ts-ignore
+        oldPhone = user.phone;
+        console.log({ oldPhone });
         // @ts-ignore
         user.phone = phone;
         user.save();
-        res.json(user);
+        try {
+          const person = await Person.findOne({ where: { phone: oldPhone } });
+          console.log({ person });
+          if (person) {
+            // @ts-ignore
+            person.phone = phone;
+            person.save();
+          }
+        } catch (e) {
+          console.log(e);
+        }
+        const token = generateJwt(id, phone);
+        res.json({ user, token });
       } else {
         res.send({ message: 'User not found' });
       }
@@ -420,6 +436,7 @@ class AppUserController {
     // @ts-ignore
     let data;
     let eventType;
+    console.log('PAID!!!!!!!!!!!!!!');
     if (endpointSecret) {
       let event;
 
