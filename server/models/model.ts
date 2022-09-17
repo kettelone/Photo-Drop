@@ -3,9 +3,13 @@ import sequelize from '../db';
 
 const Photographer = sequelize.define('photographer', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  login: { type: DataTypes.STRING, unique: true, allowNull: false },
+  login: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
   password: { type: DataTypes.STRING, allowNull: false },
-  email: { type: DataTypes.STRING, unique: true },
+  email: { type: DataTypes.STRING },
   fullName: { type: DataTypes.STRING },
 });
 
@@ -22,12 +26,6 @@ const Photo = sequelize.define('photo', {
   photoUrl: { type: DataTypes.STRING },
 });
 
-const PhotoWaterMark = sequelize.define('photoWaterMark', {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  name: { type: DataTypes.STRING },
-  photoWaterMarkUrl: { type: DataTypes.STRING },
-});
-
 const PhotoMini = sequelize.define('photoMini', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
@@ -41,7 +39,10 @@ const PhotoMiniWaterMark = sequelize.define('photoMiniWaterMark', {
 });
 
 const Person = sequelize.define('person', {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  id: {
+    type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true,
+  },
+  phone: { type: DataTypes.STRING, unique: true },
   name: { type: DataTypes.STRING },
 });
 
@@ -50,6 +51,9 @@ const AppUser = sequelize.define('appUser', {
   name: { type: DataTypes.STRING },
   phone: { type: DataTypes.STRING, unique: true },
   email: { type: DataTypes.STRING, unique: true },
+  textMessagesNotification: { type: DataTypes.BOOLEAN },
+  emailNotification: { type: DataTypes.BOOLEAN },
+  unsubscribe: { type: DataTypes.BOOLEAN },
 });
 
 const Selfie = sequelize.define('selfie', {
@@ -59,14 +63,53 @@ const Selfie = sequelize.define('selfie', {
   active: { type: DataTypes.BOOLEAN },
 });
 
+const SelfieMini = sequelize.define('selfieMini', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  name: { type: DataTypes.STRING },
+  selfieUrl: { type: DataTypes.STRING },
+  active: { type: DataTypes.BOOLEAN },
+});
+
+const UserAlbum = sequelize.define('userAlbum', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  userId: { type: DataTypes.INTEGER },
+  userName: { type: DataTypes.STRING },
+  albumId: { type: DataTypes.INTEGER },
+  isPaid: { type: DataTypes.BOOLEAN },
+});
+
+// eslint-disable-next-line camelcase
+const Photo_Person = sequelize.define('Photo_Person', {
+  photoId: { type: DataTypes.INTEGER },
+  personId: { type: DataTypes.INTEGER },
+});
+
+// eslint-disable-next-line camelcase
+const PhotoMini_Person = sequelize.define('PhotoMini_Person', {
+  photoMiniId: { type: DataTypes.INTEGER },
+  personId: { type: DataTypes.INTEGER },
+});
+
+// eslint-disable-next-line camelcase
+const PhotoMiniWaterMark_Person = sequelize.define('PhotoMiniWaterMark_Person', {
+  photoMiniWaterMarkId: { type: DataTypes.INTEGER },
+  personId: { type: DataTypes.INTEGER },
+});
+
 Photographer.hasMany(Album);
 Album.belongsTo(Photographer);
 
+Photographer.hasMany(Photo);
+Photo.belongsTo(Photographer);
+
+Photographer.hasMany(PhotoMini);
+PhotoMini.belongsTo(Photographer);
+
+Photographer.hasMany(PhotoMiniWaterMark);
+PhotoMiniWaterMark.belongsTo(Photographer);
+
 Album.hasMany(Photo);
 Photo.belongsTo(Album);
-
-Album.hasMany(PhotoWaterMark);
-PhotoWaterMark.belongsTo(Album);
 
 Album.hasMany(PhotoMini);
 PhotoMini.belongsTo(Album);
@@ -74,21 +117,30 @@ PhotoMini.belongsTo(Album);
 Album.hasMany(PhotoMiniWaterMark);
 PhotoMiniWaterMark.belongsTo(Album);
 
-Photo.hasMany(Person);
-Person.belongsTo(Photo);
-
-PhotoWaterMark.hasMany(Person);
-Person.belongsTo(PhotoWaterMark);
-
-PhotoMini.hasMany(Person);
-Person.belongsTo(PhotoMini);
-
-PhotoMiniWaterMark.hasMany(Person);
-Person.belongsTo(PhotoMiniWaterMark);
+Photo.belongsToMany(Person, { through: 'Photo_Person' });
+Person.belongsToMany(Photo, { through: 'Photo_Person' });
 
 AppUser.hasMany(Selfie);
 Selfie.belongsTo(AppUser);
 
+AppUser.hasMany(SelfieMini);
+SelfieMini.belongsTo(AppUser);
+
 export {
-  Photographer, Album, Photo, PhotoWaterMark, PhotoMini, PhotoMiniWaterMark, Person, AppUser, Selfie,
+  Photographer,
+  Album,
+  Photo,
+  PhotoMini,
+  PhotoMiniWaterMark,
+  Person,
+  AppUser,
+  Selfie,
+  SelfieMini,
+  // eslint-disable-next-line camelcase
+  Photo_Person,
+  // eslint-disable-next-line camelcase
+  PhotoMini_Person,
+  // eslint-disable-next-line camelcase
+  PhotoMiniWaterMark_Person,
+  UserAlbum,
 };

@@ -15,8 +15,13 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "import/extensions":0,
+        "import/extensions": 0,
         "import/no-unresolved": 0,
-        "class-methods-use-this": "off"
+        "import/no-import-module-exports": "off",
+        "class-methods-use-this": "off",
+        "linebreak-style": [
+            "error",
+            "windows"
+        ]
     }
 }

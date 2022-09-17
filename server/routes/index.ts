@@ -1,12 +1,10 @@
 import express from 'express';
-import userRouter from './photographerRouter';
-import albumRouter from './albumRouter';
-import telegramRouter from './telegramRouter';
+import photographerRouter from './photographerRouter';
+import appUserRouter from './appUserRouter';
 
 const router = express.Router();
 
-router.use('/user', userRouter);
-router.use('/album', albumRouter);
-router.use('/telegram', telegramRouter);
+router.use('/photographer', photographerRouter);
+router.use('/app-user', appUserRouter);
 
 export default router;
