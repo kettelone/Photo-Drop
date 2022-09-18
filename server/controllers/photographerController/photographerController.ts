@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Photographer as db, Album, Photo, Person, AppUser,
-} from '../models/model';
+} from '../../models/model';
 
 aws.config.update({
   region: 'eu-west-1',
@@ -35,10 +35,12 @@ class PhotographerController {
         // return next(ApiError.internal('Wrong password'));
       }
       const token = generateJwt(user.id, user.login);
-      return res.json({ token });
+      res.json({ token });
+      return true;
     } catch (e) {
       console.log(e);
     }
+    return true;
   }
 
   async createAlbum(req:Request, res:Response) {
@@ -90,22 +92,6 @@ class PhotographerController {
     res.send(JSON.stringify(presignedPostsArray));
   }
 
-  async createPerson(req: Request, res: Response) {
-    const { name } = req.body;
-    try {
-      const person = await Person.create({ name });
-      res.json(person);
-    } catch (e) {
-      console.log(e);
-      // @ts-ignore
-      if (e.errors[0].type === 'unique violation') {
-        res.status(403).json({ message: 'Name must be unique' });
-      } else {
-        res.json(e);
-      }
-    }
-  }
-
   async getAllPeople(req: Request, res: Response) {
     try {
       const people = await AppUser.findAll();
@@ -133,17 +119,9 @@ class PhotographerController {
               });
               // @ts-ignore
               await person.addPhoto(photo);
-              // @ts-ignore
-              // await person.addPhotoMini(photo);
-              // // @ts-ignore
-              // await person.addPhotoMiniWaterMark(photo);
             } else {
-            // @ts-ignore
-              await personExist.addPhoto(photo);
               // @ts-ignore
-              // await personExist.addPhotoMini(photo);
-              // // @ts-ignore
-              // await personExist.addPhotoMiniWaterMark(photo);
+              await personExist.addPhoto(photo);
             }
           } catch (e) {
             console.log(e);
@@ -159,7 +137,7 @@ class PhotographerController {
   }
 
   async getAlbums(req: Request, res: Response) {
-    const { photographerId } = req.query;
+    const photographerId = Number(req.query.photographerId);
     try {
       const albums = await Album.findAll({ where: { photographerId } });
       if (albums) {
@@ -176,18 +154,20 @@ class PhotographerController {
     /* LIMIT will retrieve only the number of records specified after the LIMIT keyword,
      unless the query itself returns fewer records than the number specified by LIMIT.
     OFFSET is used to skip the number of records from the results. */
-    let {
+    const {
       albumId, photographerId, limit, page,
     } = req.query;
+    let pageN = Number(page);
+    const photographerIdN = Number(photographerId);
+    const albumIdN = Number(albumId);
+    let limitN = Number(limit);
+
+    pageN = pageN || 1;
     // @ts-ignore
-    page = page || 1;
-    // @ts-ignore
-    limit = limit || 10;
-    // @ts-ignore
-    const offset = page * limit - limit;
-    // @ts-ignore
+    limitN = limit || 10;
+    const offset = pageN * limitN - limitN;
     const albumExist = await Album.findOne({
-      where: { id: albumId, photographerId },
+      where: { id: albumIdN, photographerId: photographerIdN },
     });
 
     if (albumExist === null) {
@@ -195,9 +175,8 @@ class PhotographerController {
       return;
     }
     const album = await Photo.findAndCountAll({
-      where: { albumId, photographerId },
-      // @ts-ignore
-      limit,
+      where: { id: albumIdN, photographerId: photographerIdN },
+      limit: limitN,
       offset,
     });
     if (album.count === 0) {

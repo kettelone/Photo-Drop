@@ -1,7 +1,21 @@
-import { DataTypes } from 'sequelize'; // с помощью DataTypes описываются типы поля(String, Int,  Array ect.)
+import {
+  DataTypes, ModelDefined,
+} from 'sequelize'; // с помощью DataTypes описываются типы поля(String, Int,  Array ect.)
 import sequelize from '../db';
+import {
+  PhotographerAttributes, PhotographerCreationAttributes,
+  AlbumAttributes, AlbumCreationAttributes,
+  PhotoAttributes, PhotoCreationAttributes,
+  PhotoMiniAttributes, PhotoMiniCreationAttributes,
+  PhotoMiniWaterMarkAttributes, PhotoMiniWaterMarkCreationAttributes,
+  PersonAttributes, PersonCreationAttributes,
+  AppUserAttributes, AppUserCreationAttributes,
+  SelfieAttributes, SelfieCreationAttributes,
+  SelfieMiniAttributes, SelfieMiniCreationAttributes,
+  UserAlbumAttributes, UserAlbumCreationAttributes,
+} from './interfaces';
 
-const Photographer = sequelize.define('photographer', {
+const Photographer: ModelDefined<PhotographerAttributes, PhotographerCreationAttributes> = sequelize.define('photographer', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   login: {
     type: DataTypes.STRING,
@@ -13,32 +27,32 @@ const Photographer = sequelize.define('photographer', {
   fullName: { type: DataTypes.STRING },
 });
 
-const Album = sequelize.define('album', {
+const Album:ModelDefined<AlbumAttributes, AlbumCreationAttributes> = sequelize.define('album', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING, allowNull: false },
   location: { type: DataTypes.STRING, allowNull: false },
   date: { type: DataTypes.DATE, allowNull: false },
 });
 
-const Photo = sequelize.define('photo', {
+const Photo:ModelDefined<PhotoAttributes, PhotoCreationAttributes> = sequelize.define('photo', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   photoUrl: { type: DataTypes.STRING },
 });
 
-const PhotoMini = sequelize.define('photoMini', {
+const PhotoMini:ModelDefined<PhotoMiniAttributes, PhotoMiniCreationAttributes> = sequelize.define('photoMini', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   photoMiniUrl: { type: DataTypes.STRING },
 });
 
-const PhotoMiniWaterMark = sequelize.define('photoMiniWaterMark', {
+const PhotoMiniWaterMark:ModelDefined<PhotoMiniWaterMarkAttributes, PhotoMiniWaterMarkCreationAttributes> = sequelize.define('photoMiniWaterMark', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   photoMiniWaterMarkUrl: { type: DataTypes.STRING },
 });
 
-const Person = sequelize.define('person', {
+const Person:ModelDefined<PersonAttributes, PersonCreationAttributes> = sequelize.define('person', {
   id: {
     type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true,
   },
@@ -46,7 +60,7 @@ const Person = sequelize.define('person', {
   name: { type: DataTypes.STRING },
 });
 
-const AppUser = sequelize.define('appUser', {
+const AppUser:ModelDefined<AppUserAttributes, AppUserCreationAttributes> = sequelize.define('appUser', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   phone: { type: DataTypes.STRING, unique: true },
@@ -56,21 +70,21 @@ const AppUser = sequelize.define('appUser', {
   unsubscribe: { type: DataTypes.BOOLEAN },
 });
 
-const Selfie = sequelize.define('selfie', {
+const Selfie:ModelDefined<SelfieAttributes, SelfieCreationAttributes> = sequelize.define('selfie', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   selfieUrl: { type: DataTypes.STRING },
   active: { type: DataTypes.BOOLEAN },
 });
 
-const SelfieMini = sequelize.define('selfieMini', {
+const SelfieMini:ModelDefined<SelfieMiniAttributes, SelfieMiniCreationAttributes> = sequelize.define('selfieMini', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   selfieUrl: { type: DataTypes.STRING },
   active: { type: DataTypes.BOOLEAN },
 });
 
-const UserAlbum = sequelize.define('userAlbum', {
+const UserAlbum:ModelDefined<UserAlbumAttributes, UserAlbumCreationAttributes> = sequelize.define('userAlbum', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   userId: { type: DataTypes.INTEGER },
   userName: { type: DataTypes.STRING },
@@ -78,19 +92,16 @@ const UserAlbum = sequelize.define('userAlbum', {
   isPaid: { type: DataTypes.BOOLEAN },
 });
 
-// eslint-disable-next-line camelcase
 const Photo_Person = sequelize.define('Photo_Person', {
   photoId: { type: DataTypes.INTEGER },
   personId: { type: DataTypes.INTEGER },
 });
 
-// eslint-disable-next-line camelcase
 const PhotoMini_Person = sequelize.define('PhotoMini_Person', {
   photoMiniId: { type: DataTypes.INTEGER },
   personId: { type: DataTypes.INTEGER },
 });
 
-// eslint-disable-next-line camelcase
 const PhotoMiniWaterMark_Person = sequelize.define('PhotoMiniWaterMark_Person', {
   photoMiniWaterMarkId: { type: DataTypes.INTEGER },
   personId: { type: DataTypes.INTEGER },
@@ -136,11 +147,8 @@ export {
   AppUser,
   Selfie,
   SelfieMini,
-  // eslint-disable-next-line camelcase
   Photo_Person,
-  // eslint-disable-next-line camelcase
   PhotoMini_Person,
-  // eslint-disable-next-line camelcase
   PhotoMiniWaterMark_Person,
   UserAlbum,
 };

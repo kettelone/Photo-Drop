@@ -23,6 +23,7 @@
             "error",
             "windows"
         ],
+        "camelcase": "off",
         "no-console": "off"
     }
 }

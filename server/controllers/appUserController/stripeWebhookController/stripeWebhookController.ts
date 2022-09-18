@@ -43,10 +43,15 @@ class StripeController {
           // @ts-ignore
           const albumId = Number(customer.metadata.albumId);
           try {
-            const album = await UserAlbum.findOne({ where: { userId, albumId } });
-            console.log('album is:', album);
-            const albumPaid = await UserAlbum.create({ userId, albumId, isPaid: true });
-            console.log('albumPaid is: ', albumPaid);
+            const albumPaidExist = await UserAlbum.findOne({ where: { userId, albumId } });
+            if (albumPaidExist) {
+              // @ts-ignore
+              albumPaidExist.isPaid = true;
+              albumPaidExist.save();
+            } else {
+              const albumPaid = await UserAlbum.create({ userId, albumId, isPaid: true });
+              console.log('albumPaid is: ', albumPaid);
+            }
           } catch (e) {
             console.log(e);
           }
