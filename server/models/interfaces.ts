@@ -57,7 +57,7 @@ interface PersonAttributes {
   photoId: number
 }
 
-type PersonCreationAttributes = Optional<PersonAttributes, 'id' | 'name'>;
+type PersonCreationAttributes = Optional<PersonAttributes, 'id' | 'name'| 'photoId'>;
 
 interface AppUserAttributes {
   id: number,
