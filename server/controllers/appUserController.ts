@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
-import TelegramBot from 'node-telegram-bot-api';
 import jwt from 'jsonwebtoken';
 import Stripe from 'stripe';
 import {
@@ -18,8 +17,6 @@ aws.config.update({
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 });
 
-const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY}`, { polling: true });
-
 const generateJwt = (id: number, phoneNumber: string) => jwt.sign(
   { id, phoneNumber },
   process.env.SECRET_KEY!,
@@ -30,12 +27,12 @@ const generateJwt = (id: number, phoneNumber: string) => jwt.sign(
 
 const checkIfPaid = async (userId:number, albumId:number) => {
   try {
-    const info = await UserAlbum.findAll({ where: { userId, albumId } });
-    if (Object.keys(info).length === 0) {
+    const info = await UserAlbum.findOne({ where: { userId, albumId } });
+    if (info === null) {
       return false;
     }
     // @ts-ignore
-    if (info[0].isPaid === true) {
+    if (info.isPaid === true) {
       return true;
     }
   } catch (e) {
@@ -79,16 +76,6 @@ const generatePaymnet = async (albumId:Number, userId:Number) => {
 };
 
 class AppUserController {
-  generateOTP(req:Request, res:Response) {
-    const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
-    try {
-      bot.sendMessage(Number(process.env.TG_BOT_CHAT_ID), `Your OTP is: ${OTP}`);
-    } catch (e) {
-      console.log(e);
-    }
-    res.json({ OTP });
-  }
-
   async createAppUser(req:Request, res:Response) {
     try {
       const { phone } = req.body;
@@ -464,8 +451,15 @@ class AppUserController {
           // @ts-ignore
           const { userId, albumId } = customer.metadata;
           try {
-            const albumPaid = await UserAlbum.create({ userId, albumId, isPaid: true });
-            console.log('albumPaid is: ', albumPaid);
+            const albumPaidExist = await UserAlbum.findOne({ where: { userId, albumId } });
+            if (albumPaidExist) {
+              // @ts-ignore
+              albumPaidExist.isPaid = true;
+              albumPaidExist.save();
+            } else {
+              const albumPaid = await UserAlbum.create({ userId, albumId, isPaid: true });
+              console.log('albumPaid is: ', albumPaid);
+            }
           } catch (e) {
             console.log(e);
           }

@@ -1,10 +1,12 @@
 import express from 'express';
+import telegramController from '../controllers/appUserController/telegramController/telegramController';
+import stripeController from '../controllers/appUserController/stripeWebhookController/stripeWebhookController';
 import appUserController from '../controllers/appUserController';
 import checkAuth from '../middleware/authMiddleware';
 
 const router = express.Router();
 
-router.post('/send-otp', appUserController.generateOTP);
+router.post('/send-otp', telegramController.generateOTP);
 router.post('/create-app-user', appUserController.createAppUser);
 router.post('/presigned-post', checkAuth, appUserController.signSelfie);
 router.get('/get-selfie', checkAuth, appUserController.getSelfie);
@@ -16,5 +18,5 @@ router.put('/edit-email', checkAuth, appUserController.editEmail);
 router.get('/get-albums-with-person', checkAuth, appUserController.getAlbumsWithPerson);
 router.get('/get-thumbnails-with-person', checkAuth, appUserController.getThumbnails);
 router.get('/get-original-photo', checkAuth, appUserController.getOriginalPhoto);
-router.post('/webhook', express.raw({ type: 'application/json' }), appUserController.webhook);
+router.post('/webhook', express.raw({ type: 'application/json' }), stripeController.webhook);
 export default router;
