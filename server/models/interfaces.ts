@@ -24,7 +24,8 @@ interface PhotoAttributes {
   id: number;
   name: string,
   photoUrl: string,
-  photographerId:number
+  photographerId: number
+  albumId:number
 }
 
 type PhotoCreationAttributes = Optional<PhotoAttributes, 'id'|'photographerId'>;
@@ -33,7 +34,8 @@ interface PhotoMiniAttributes {
   id: number;
   name: string,
   photoMiniUrl: string
-  albumId: number
+  albumId: number,
+  photographerId:number
 }
 
 type PhotoMiniCreationAttributes = Optional<PhotoMiniAttributes, 'id'>;
@@ -41,20 +43,21 @@ type PhotoMiniCreationAttributes = Optional<PhotoMiniAttributes, 'id'>;
 interface PhotoMiniWaterMarkAttributes {
   id: number;
   name: string,
-  photoMiniWaterMarkUrl: string,
-  albumId:number
+  albumId: number,
+  photographerId: number,
+  photoMiniWaterMarkUrl:string
 }
 
-type PhotoMiniWaterMarkCreationAttributes = Optional<PhotoMiniAttributes, 'id'>;
+type PhotoMiniWaterMarkCreationAttributes = Optional<PhotoMiniWaterMarkAttributes, 'id'>;
 
 interface PersonAttributes {
   id: number;
   phone: string,
   name: string,
-  photoId:number
+  photoId: number
 }
 
-type PersonCreationAttributes = Optional<PersonAttributes, 'id' | 'photoId' | 'name'>;
+type PersonCreationAttributes = Optional<PersonAttributes, 'id' | 'name'>;
 
 interface AppUserAttributes {
   id: number,
@@ -72,7 +75,8 @@ interface SelfieAttributes {
   id: number,
   name: string,
   selfieUrl: string,
-  active: boolean
+  active: boolean,
+  appUserId:number
 }
 
 type SelfieCreationAttributes = Optional<SelfieAttributes, 'id'>;

@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import AWS from 'aws-sdk';
 import sharp from 'sharp';
-// import util from 'util';
 import Jimp from 'jimp';
 // @ts-ignore
 import PhotoDropLogo from './PhotoDropLogo.png';
@@ -12,8 +11,7 @@ import {
 // get reference to S3 client
 const s3 = new AWS.S3();
 
-// @ts-ignore
-const baseHandler = async (event) => {
+const baseHandler = async (event:any) => {
   // Read options from the event parameter
   // console.log('Reading options from event:\n', util.inspect(event, { depth: 5 }));
 
@@ -43,7 +41,7 @@ const baseHandler = async (event) => {
   const photographerId = Number(srcKey.substring(0, idEnd));
   const albumIdStart = srcKey.substring(idEnd + 1);
   const albumIdEnd = albumIdStart.indexOf('/');
-  const albumId = `${albumIdStart.substring(0, albumIdEnd)}`;
+  const albumId = Number(`${albumIdStart.substring(0, albumIdEnd)}`);
   const urlPhoto = `https://${srcBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
   try {
     const photo = await Photo.create({
