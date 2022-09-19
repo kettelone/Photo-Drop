@@ -54,6 +54,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.2",
     "express": "^4.18.1",
+    "express-validator": "^6.14.2",
     "image-webpack-loader": "^8.1.0",
     "jimp": "^0.16.2",
     "jsonwebtoken": "^8.5.1",

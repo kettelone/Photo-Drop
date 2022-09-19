@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import { validationResult } from 'express-validator';
 
-// eslint-disable-next-line consistent-return
 function checkAuth(req: Request, res: Response, next: NextFunction) {
   if (req.method === 'OPTIONS') {
     next();
@@ -28,4 +28,12 @@ function checkAuth(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export default checkAuth;
+function checkValidationErrors(req:Request, res:Response, next:NextFunction) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  next();
+}
+
+export { checkAuth, checkValidationErrors };
