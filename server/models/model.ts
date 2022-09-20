@@ -15,6 +15,34 @@ import {
   UserAlbumAttributes, UserAlbumCreationAttributes,
 } from './interfaces';
 
+// interface PhotographerAttributes {
+// id: number;
+// login: string;
+// password: string;
+// email: string;
+// fullName:string
+// }
+
+// export class Photographer extends Model<PhotographerAttributes> {}
+
+// Photographer.init(
+//   {
+//     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+//     login: {
+//       type: DataTypes.STRING,
+//       allowNull: false,
+//       unique: true,
+//     },
+//     password: { type: DataTypes.STRING, allowNull: false },
+//     email: { type: DataTypes.STRING },
+//     fullName: { type: DataTypes.STRING },
+//   },
+//   {
+//     sequelize,
+//     tableName: 'photographers',
+//   },
+// );
+
 const Photographer: ModelDefined<PhotographerAttributes, PhotographerCreationAttributes> = sequelize.define('photographer', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   login: {

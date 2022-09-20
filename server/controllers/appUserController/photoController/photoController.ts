@@ -92,7 +92,7 @@ class PhotoController {
   }
 
   async getSelfie(req: Request, res: Response) {
-    const appUserId = Number(req.query.appUserId);
+    const appUserId = req.query.appUserId as number|undefined;
     try {
       const selfie = await SelfieMini.findOne({ where: { appUserId, active: true } });
       if (selfie) {
@@ -167,8 +167,8 @@ class PhotoController {
   }
 
   async getThumbnails(req: Request, res: Response) {
-    const userId = Number(req.query.userId);
-    const albumId = Number(req.query.albumId);
+    const userId = req.query.userId as number|undefined;
+    const albumId = req.query.albumId as number|undefined;
     if (userId && albumId) {
       const isPaid = await checkIfPaid(userId, albumId);
       console.log('Is Paid: ', isPaid);
@@ -232,26 +232,28 @@ class PhotoController {
   async getOriginalPhoto(req: Request, res: Response) {
     const s3 = new aws.S3();
     const { originalKey } = req.query;
-    const albumId = Number(req.query.albumId);
-    const userId = Number(req.query.userId);
+    const albumId = req.query.albumId as number|undefined;
+    const userId = req.query.userId as number|undefined;
     // check if the album photo belongs to is paid by current user
-    try {
-      const isPaid = await checkIfPaid(userId, albumId);
-      if (isPaid === true) {
-      // send original photo
-        const url = s3.getSignedUrl('getObject', {
-          Bucket: process.env.S3_BUCKET,
-          Key: originalKey,
-          Expires: 60 * 5,
-        });
-        res.json(url);
-      } else {
-      // redirect to the payment page
-        const paymentLink = await generatePaymnet(albumId, userId);
-        res.json(paymentLink);
+    if (userId && albumId) {
+      try {
+        const isPaid = await checkIfPaid(userId, albumId);
+        if (isPaid === true) {
+          // send original photo
+          const url = s3.getSignedUrl('getObject', {
+            Bucket: process.env.S3_BUCKET,
+            Key: originalKey,
+            Expires: 60 * 5,
+          });
+          res.json(url);
+        } else {
+          // redirect to the payment page
+          const paymentLink = await generatePaymnet(albumId, userId);
+          res.json(paymentLink);
+        }
+      } catch (e) {
+        console.log(e);
       }
-    } catch (e) {
-      console.log(e);
     }
   }
 }
