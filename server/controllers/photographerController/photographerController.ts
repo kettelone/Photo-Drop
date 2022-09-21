@@ -28,11 +28,11 @@ class PhotographerController {
       const password = req.body.password as string;
       const user = await Photographer.findOne({ where: { login } });
       if (!user) {
-        return res.status(403).json({ message: 'User not found' });
+        return res.status(403).json({ errors: [{ msg: 'User not found' }] });
       }
       const comparePassword = bcrypt.compareSync(password, user.password);
       if (!comparePassword) {
-        return res.status(403).json({ message: 'Wrong password' });
+        return res.status(403).json({ errors: [{ msg: 'Wrong password' }] });
       }
       const token = generateJwt(user.id, user.login);
       res.json({ token });
@@ -58,7 +58,7 @@ class PhotographerController {
           res.json(album);
           return;
         }
-        res.status(403).json({ message: 'The album with this name already exist' });
+        res.status(403).json({ errors: [{ msg: 'The album with this name already exist' }] });
         return;
       } catch (e) {
         console.log(e);
@@ -151,9 +151,10 @@ class PhotographerController {
         const albums = await Album.findAll({ where: { photographerId } });
         if (albums) {
           res.json(albums);
-        } else {
-          res.status(403).json({ message: 'No albums found' });
+          return;
         }
+        res.status(403).json({ errors: [{ msg: 'No albums found' }] });
+        return;
       }
     } catch (e) {
       console.log(e);
@@ -180,11 +181,11 @@ class PhotographerController {
         });
 
         if (albumExist === null) {
-          res.status(403).json({ message: 'Album doesn`t exist' });
+          res.status(403).json({ errors: [{ msg: 'There is no albums for this user' }] });
           return;
         }
         const album = await Photo.findAndCountAll({
-          where: { id: albumId, photographerId },
+          where: { albumId, photographerId },
           limit,
           offset,
         });
@@ -195,7 +196,7 @@ class PhotographerController {
         res.json(album);
       } catch (e) {
         console.log(e);
-        res.status(403).json({ message: 'Error occured' });
+        res.status(403).json({ errors: [{ msg: 'Error occured' }] });
       }
     }
   }

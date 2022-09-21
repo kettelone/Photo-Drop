@@ -1,11 +1,16 @@
 import { body, query } from 'express-validator';
 
 class AppUserValidator {
+  checkGetOTP() {
+    return [
+      body('phone').notEmpty().withMessage('The chatId value should not be empty'),
+    ];
+  }
+
   checkCreateAppUser() {
     return [
       body('phone').notEmpty().withMessage('The phone value should not be empty'),
       body('phone').custom((value) => {
-        console.log('value is:', value.includes('+'));
         if (value.includes('+')) {
           throw new Error('Phone number should not include +');
         }

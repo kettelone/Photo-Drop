@@ -9,8 +9,16 @@ class PhotographerValidator {
   }
 
   checkCreateAlbum() {
+    const regex = /^[\w\s]+$/;
     return [
-      body('name').notEmpty().withMessage('The name value should not be empty'),
+      body('name').custom((value) => {
+        if (value.trim().length < 3) {
+          throw new Error('Minimum album name length is 3 alphanumeric symbols');
+        } else if (!value.match(regex)) {
+          throw new Error('Album name may contain alphanumeric symbols, whitespaces and underscores');
+        }
+        return true;
+      }),
       body('location').notEmpty().withMessage('The location value should not be empty'),
       body('date').notEmpty().withMessage('The date value should not be empty'),
       body('photographerId').notEmpty().withMessage('The photographerId value should not be empty'),
