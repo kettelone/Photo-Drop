@@ -133,18 +133,20 @@ class PhotoController {
           // @ts-ignore
           { personId: person.id },
         });
+        const responseLength = photo_person.length;
         // @ts-ignore
-        const photos = [];
+        const promises = [];
+        console.log('photo_person is :', photo_person);
+        console.log('photo_person length is :', photo_person.length);
         // @ts-ignore
-        if (photo_person.length > 0) {
-          for (let i = 0; i < photo_person.length; i = +1) {
-            // eslint-disable-next-line no-await-in-loop
+        if (responseLength > 0) {
+          for (let i = 0; i < responseLength; i += 1) {
             // @ts-ignore
-            const photo = await Photo.findOne({ where: { id: photo_person[i].photoId } });
-            photos.push(photo);
+            const photo = Photo.findOne({ where: { id: photo_person[i].photoId } });
+            promises.push(photo);
           }
         }
-        console.log('photos: ', photos);
+        const photos = await Promise.all(promises);
         const albumIds:[] = [];
         for (let i = 0; i < photos.length; i += 1) {
         // @ts-ignore
@@ -154,9 +156,9 @@ class PhotoController {
             albumIds.push(albumId);
           }
         }
-        const iniqueAlbumIds = [...new Set(albumIds)];
-        console.log('iniqueAlbumIds are: ', iniqueAlbumIds);
-        res.json({ albumIds: iniqueAlbumIds });
+        const uniqueAlbumIds = [...new Set(albumIds)];
+        console.log('uniqueAlbumIds are: ', uniqueAlbumIds);
+        res.json({ albumIds: uniqueAlbumIds });
       } else {
         res.json({ message: 'No albums found' });
       }

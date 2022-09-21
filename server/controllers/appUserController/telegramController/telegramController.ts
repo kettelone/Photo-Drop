@@ -7,6 +7,7 @@ class TelegramController {
   generateOTP(req:Request, res:Response):void {
     const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
     try {
+      // console.log('bot is: ', bot);
       // bot.sendMessage(Number(process.env.TG_BOT_CHAT_ID), `Your OTP is: ${OTP}`);
     } catch (e) {
       console.log(e);

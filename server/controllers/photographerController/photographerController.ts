@@ -22,10 +22,10 @@ const generateJwt = (id:number, login:string) => jwt.sign({ id, login }, process
 });
 
 class PhotographerController {
-  async login(req: Request, res:Response) {
+  async login(req: Request, res: Response) {
     try {
       const login = req.body.login as string;
-      const password = req.body.login as string;
+      const password = req.body.password as string;
       const user = await Photographer.findOne({ where: { login } });
       if (!user) {
         return res.status(403).json({ message: 'User not found' });
