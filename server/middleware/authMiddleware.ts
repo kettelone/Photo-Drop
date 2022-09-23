@@ -12,7 +12,7 @@ function checkAuth(req: Request, res: Response, next: NextFunction) {
       const token = req.headers.authorization.split(' ')[1]; // Bearer ddhcjhdsjcsdcs
 
       if (!token) {
-        return res.status(401).json({ message: 'Not authorized' });
+        return res.status(401).json({ errors: [{ msg: 'Not authorized' }] });
       }
 
       const decoded = jwt.verify(token, process.env.SECRET_KEY!);
@@ -21,10 +21,10 @@ function checkAuth(req: Request, res: Response, next: NextFunction) {
 
       next();
     } else {
-      return res.status(401).json({ message: 'Missing authorization token' });
+      return res.status(401).json({ errors: [{ msg: 'Missing authorization token' }] });
     }
   } catch (e) {
-    res.status(401).json({ message: 'Not authorized' });
+    res.status(401).json({ errors: [{ msg: 'Not authorized' }] });
   }
 }
 
