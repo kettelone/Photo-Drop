@@ -15,9 +15,9 @@ function checkAuth(req: Request, res: Response, next: NextFunction) {
         return res.status(401).json({ errors: [{ msg: 'Not authorized' }] });
       }
 
-      const decoded = jwt.verify(token, process.env.SECRET_KEY!);
+      jwt.verify(token, process.env.SECRET_KEY!);
 
-      console.log('decoded info is: ', decoded);
+      // console.log('decoded info is: ', decoded);
 
       next();
     } else {

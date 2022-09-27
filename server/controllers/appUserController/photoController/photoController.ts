@@ -136,8 +136,8 @@ class PhotoController {
         const responseLength = photo_person.length;
         // @ts-ignore
         const promises = [];
-        console.log('photo_person is :', photo_person);
-        console.log('photo_person length is :', photo_person.length);
+        // console.log('photo_person is :', photo_person);
+        // console.log('photo_person length is :', photo_person.length);
         // @ts-ignore
         if (responseLength > 0) {
           for (let i = 0; i < responseLength; i += 1) {
@@ -156,6 +156,7 @@ class PhotoController {
             albumIds.push(albumId);
           }
         }
+        // @ts-ignore
         const uniqueAlbumIds = [...new Set(albumIds)];
         console.log('uniqueAlbumIds are: ', uniqueAlbumIds);
         res.json({ albumIds: uniqueAlbumIds });
@@ -166,6 +167,12 @@ class PhotoController {
       console.log(e);
       res.status(500).json({ message: 'Error occured' });
     }
+  }
+
+  async getAlbumsAndNotifyCustomer() {
+    // when selfie uploaded check if the user with registered phone number has any albums.
+    // If so send him the notification in telegram group chat.
+
   }
 
   async getThumbnails(req: Request, res: Response) {

@@ -1,20 +1,18 @@
 import 'dotenv/config';
-import AWS from 'aws-sdk';
-import sharp from 'sharp';
-import Jimp from 'jimp';
 // @ts-ignore
-import PhotoDropLogo from './PhotoDropLogo.png';
+import AWS from 'aws-sdk';
+// @ts-ignore
+
+import Jimp from 'jimp';
+import axios from 'axios';
 import {
-  Photo, PhotoMini, PhotoMiniWaterMark, Person,
+  Photo, PhotoMini, PhotoMiniWaterMark, Person, AppUser,
 } from '../../models/model';
 
 // get reference to S3 client
 const s3 = new AWS.S3();
 
 const baseHandler = async (event:any) => {
-  // Read options from the event parameter
-  // console.log('Reading options from event:\n', util.inspect(event, { depth: 5 }));
-
   const srcBucket = event.Records[0].s3.bucket.name;
   // Object key may have spaces or unicode non-ASCII characters.
   const srcKey = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
@@ -26,11 +24,12 @@ const baseHandler = async (event:any) => {
   };
   const data = await s3.headObject(paramsS3).promise();
   const metadata = (!data) ? null : data.Metadata;
-  let peopleArray;
-  if (metadata) {
-    const peopleString = metadata.people;
-    peopleArray = peopleString.split(',');
+  if (!metadata) {
+    return;
   }
+  const peopleString = metadata.people;
+  const peopleArray = peopleString.split(',');
+
   const dstBucket = `${srcBucket}-resized`;
   const dstBucketWM = `${srcBucket}-resized-watermark`;
   const dstKey = `resized-${srcKey}`;
@@ -39,6 +38,8 @@ const baseHandler = async (event:any) => {
   // save original photo info to db
   const idEnd = srcKey.indexOf('/');
   const photographerId = Number(srcKey.substring(0, idEnd));
+  // 1/1/491e9200-155e-4a19-8935-307b98fc3841_laptop.jpg
+
   const albumIdStart = srcKey.substring(idEnd + 1);
   const albumIdEnd = albumIdStart.indexOf('/');
   const albumId = Number(`${albumIdStart.substring(0, albumIdEnd)}`);
@@ -47,10 +48,9 @@ const baseHandler = async (event:any) => {
     const photo = await Photo.create({
       name: srcKey, photoUrl: urlPhoto, photographerId, albumId,
     });
-    if (photo && peopleArray) {
+    if (photo) {
       // @ts-ignore
       const photoId = photo.dataValues.id;
-      // @ts-ignore
       for (let i = 0; i < peopleArray.length; i += 1) {
         try {
           // eslint-disable-next-line no-await-in-loop
@@ -96,7 +96,6 @@ const baseHandler = async (event:any) => {
 
   // Download the image from the S3 source bucket.
   let origimage;
-
   try {
     const params = {
       Bucket: srcBucket,
@@ -115,7 +114,8 @@ const baseHandler = async (event:any) => {
   let buffer;
   try {
     // @ts-ignore
-    buffer = await sharp(origimage.Body).resize(width).toBuffer();
+    buffer = await Jimp.read(origimage.Body).resize(width);
+    // buffer = await sharp(origimage.Body).resize(width).toBuffer();
   } catch (error) {
     console.log(error);
     return;
@@ -159,20 +159,21 @@ const baseHandler = async (event:any) => {
 
   try {
     // add watermark add upload to photodropbucket-resized-watermark
-    const addWaterMark = async (image:any) => {
-      const logoImage = await Jimp.read(PhotoDropLogo);
+    const addWaterMark = async (image: any) => {
+      const logoImage = await Jimp.read('./PhotoDropLogo.png');
       const resizeWidth = 400;
       if (!image) {
         return;
       }
-      const imageResized = await sharp(image).resize(resizeWidth).toBuffer();
+      let imageResized = await Jimp.read(image);
+      imageResized = imageResized.resize(resizeWidth, resizeWidth);
+      // const imageResized = await sharp(image).resize(resizeWidth).toBuffer();
       const img = await Jimp.read(imageResized);
       img.composite(
         logoImage,
         img.bitmap.width / 2 - logoImage.bitmap.width / 2,
         img.bitmap.height / 2 - logoImage.bitmap.height / 2,
       );
-      // eslint-disable-next-line consistent-return
       return img.getBufferAsync(Jimp.MIME_JPEG);
     };
 
@@ -205,6 +206,24 @@ const baseHandler = async (event:any) => {
       }
       console.log(`Successfully resized with matermark${srcBucket}/${srcKey
       } and uploaded to ${dstBucketWM}/${dstKeyWM}`);
+    }
+
+    // notify(in telegram) app user that photo has been uploaded
+    const phoneNumbers = peopleArray;
+    if (phoneNumbers) {
+      const arrLength = phoneNumbers.length;
+      for (let i = 0; i < arrLength; i += 1) {
+        const user = await AppUser.findOne({ where: { phone: phoneNumbers[i] } });
+        console.log({ user });
+        if (user) {
+          const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phoneNumbers[i]} your photos have dropped🔥\n\nCheck them out here:\n https://userAppUrlWillBeSoonHere.com`);
+          const response = await axios({
+            method: 'get',
+            url: uri,
+          });
+          console.log({ response });
+        }
+      }
     }
   } catch (error) {
     console.log(error);

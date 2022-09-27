@@ -1,6 +1,8 @@
 import 'dotenv/config';
+// @ts-ignore
 import AWS from 'aws-sdk';
-import sharp from 'sharp';
+// @ts-ignore
+import Jimp from 'jimp';
 import {
   Selfie, SelfieMini,
 } from '../../models/model';
@@ -83,7 +85,9 @@ const baseHandler = async (event) => {
       let buffer;
       try {
         // @ts-ignore
-        buffer = await sharp(origimage.Body).resize(width).toBuffer();
+        buffer = await Jimp.read(origimage.Body);
+        buffer = buffer.resize(width, width);
+        // buffer = await sharp(origimage.Body).resize(width).toBuffer();
       } catch (error) {
         console.log(error);
         return;

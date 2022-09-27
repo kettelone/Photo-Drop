@@ -201,9 +201,11 @@ class PhotographerController {
             }
             const photos = await Photo.findAndCountAll({
               where: { albumId, photographerId },
+              order: [['id', 'DESC']],
               limit,
               offset,
             });
+
             if (photos.count === 0) {
               res.status(403).json({ errors: [{ msg: 'The album is empty' }] });
               return;
