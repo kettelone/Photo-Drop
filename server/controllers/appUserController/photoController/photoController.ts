@@ -134,11 +134,7 @@ class PhotoController {
           { personId: person.id },
         });
         const responseLength = photo_person.length;
-        // @ts-ignore
         const promises = [];
-        // console.log('photo_person is :', photo_person);
-        // console.log('photo_person length is :', photo_person.length);
-        // @ts-ignore
         if (responseLength > 0) {
           for (let i = 0; i < responseLength; i += 1) {
             // @ts-ignore
