@@ -1,18 +1,22 @@
 import 'dotenv/config';
-// @ts-ignore
 import AWS from 'aws-sdk';
-// @ts-ignore
-
 import Jimp from 'jimp';
 import axios from 'axios';
 import {
   Photo, PhotoMini, PhotoMiniWaterMark, Person, AppUser,
 } from '../../models/model';
+import * as photoDropLogo from './PhotoDropLogo.png';
 
+/*
+1.To import photoDropLogo index.d.ts has to be created and "*.png" has to be initiated and exported
+*/
 // get reference to S3 client
 const s3 = new AWS.S3();
 
-const baseHandler = async (event:any) => {
+const baseHandler = async (event: any) => {
+  if (!photoDropLogo) {
+    return;
+  }
   const srcBucket = event.Records[0].s3.bucket.name;
   // Object key may have spaces or unicode non-ASCII characters.
   const srcKey = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
@@ -114,7 +118,14 @@ const baseHandler = async (event:any) => {
   let buffer;
   try {
     // @ts-ignore
-    buffer = await Jimp.read(origimage.Body).resize(width);
+    buffer = await Jimp.read(origimage.Body).then((image) => {
+      const resizedImage = image
+        .resize(width, Jimp.AUTO)
+        .quality(100) // set JPEG quality
+        .getBufferAsync(Jimp.MIME_JPEG);
+
+      return resizedImage;
+    });
     // buffer = await sharp(origimage.Body).resize(width).toBuffer();
   } catch (error) {
     console.log(error);
@@ -160,13 +171,22 @@ const baseHandler = async (event:any) => {
   try {
     // add watermark add upload to photodropbucket-resized-watermark
     const addWaterMark = async (image: any) => {
-      const logoImage = await Jimp.read('./PhotoDropLogo.png');
+      /*
+      2.After importing the  photoDropLogo and deploying with "serverless deploy" command
+        photoDropLogo image will be present in zip package file
+        under the name "d8885004a7cbbc5c2de6177b99b30489.png"
+        (have no idea why this name. I was trying tix it with no success.)
+
+        So later on we will read image using name mentioned above. The path will be
+        "./d8885004a7cbbc5c2de6177b99b30489.png" - chekc zip file manually to double check
+      */
+      const logoImage = await Jimp.read('./d8885004a7cbbc5c2de6177b99b30489.png');
       const resizeWidth = 400;
       if (!image) {
         return;
       }
       let imageResized = await Jimp.read(image);
-      imageResized = imageResized.resize(resizeWidth, resizeWidth);
+      imageResized = imageResized.resize(resizeWidth, Jimp.AUTO);
       // const imageResized = await sharp(image).resize(resizeWidth).toBuffer();
       const img = await Jimp.read(imageResized);
       img.composite(

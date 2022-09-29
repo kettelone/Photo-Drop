@@ -125,16 +125,6 @@ const Photo_Person = sequelize.define('Photo_Person', {
   personId: { type: DataTypes.INTEGER },
 });
 
-const PhotoMini_Person = sequelize.define('PhotoMini_Person', {
-  photoMiniId: { type: DataTypes.INTEGER },
-  personId: { type: DataTypes.INTEGER },
-});
-
-const PhotoMiniWaterMark_Person = sequelize.define('PhotoMiniWaterMark_Person', {
-  photoMiniWaterMarkId: { type: DataTypes.INTEGER },
-  personId: { type: DataTypes.INTEGER },
-});
-
 Photographer.hasMany(Album);
 Album.belongsTo(Photographer);
 
@@ -176,7 +166,5 @@ export {
   Selfie,
   SelfieMini,
   Photo_Person,
-  PhotoMini_Person,
-  PhotoMiniWaterMark_Person,
   UserAlbum,
 };

@@ -31,6 +31,13 @@ class PhotographerValidator {
     ];
   }
 
+  checkGetAlbumsThumbnailIcon() {
+    return [
+      body('albumIds').notEmpty().withMessage('The albumIds value should not be empty'),
+      body('albumIds').isArray().withMessage('The albumIds should be an array'),
+    ];
+  }
+
   checkS3Upload() {
     return [
       body('photosArray').notEmpty().withMessage('The photosArray value should not be empty'),

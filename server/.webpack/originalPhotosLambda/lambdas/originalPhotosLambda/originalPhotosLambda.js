@@ -1,369 +1,362 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
-/******/ 	var __webpack_modules__ = ([
-/* 0 */
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./lambdas/originalPhotosLambda/PhotoDropLogo.png":
+/*!********************************************************!*\
+  !*** ./lambdas/originalPhotosLambda/PhotoDropLogo.png ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__webpack_require__.p + "d8885004a7cbbc5c2de6177b99b30489.png");
+
+/***/ }),
+
+/***/ "./db.ts":
+/*!***************!*\
+  !*** ./db.ts ***!
+  \***************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const dotenv_1 = __importDefault(__webpack_require__(/*! dotenv */ "dotenv"));
+const pg = __importStar(__webpack_require__(/*! pg */ "pg"));
+const sequelize_1 = __webpack_require__(/*! sequelize */ "sequelize");
+dotenv_1.default.config();
+const sequelize = new sequelize_1.Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    dialect: 'postgres',
+    dialectModule: pg,
+    define: {
+        timestamps: false,
+    },
+});
+exports["default"] = sequelize;
+
+
+/***/ }),
+
+/***/ "./lambdas/originalPhotosLambda/originalPhotosLambda.ts":
+/*!**************************************************************!*\
+  !*** ./lambdas/originalPhotosLambda/originalPhotosLambda.ts ***!
+  \**************************************************************/
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
     }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__webpack_require__(1);
-// @ts-ignore
-var aws_sdk_1 = __webpack_require__(2);
-// @ts-ignore
-var jimp_1 = __webpack_require__(3);
-var axios_1 = __webpack_require__(4);
-var model_1 = __webpack_require__(5);
+__webpack_require__(/*! dotenv/config */ "dotenv/config");
+const aws_sdk_1 = __importDefault(__webpack_require__(/*! aws-sdk */ "aws-sdk"));
+const jimp_1 = __importDefault(__webpack_require__(/*! jimp */ "jimp"));
+const axios_1 = __importDefault(__webpack_require__(/*! axios */ "axios"));
+const model_1 = __webpack_require__(/*! ../../models/model */ "./models/model.ts");
+const photoDropLogo = __importStar(__webpack_require__(/*! ./PhotoDropLogo.png */ "./lambdas/originalPhotosLambda/PhotoDropLogo.png"));
+/*
+1.To import photoDropLogo index.d.ts has to be created and "*.png" has to be initiated and exported
+*/
 // get reference to S3 client
-var s3 = new aws_sdk_1.default.S3();
-var baseHandler = function (event) { return __awaiter(void 0, void 0, void 0, function () {
-    var srcBucket, srcKey, paramsS3, data, metadata, peopleString, peopleArray, dstBucket, dstBucketWM, dstKey, dstKeyWM, idEnd, photographerId, albumIdStart, albumIdEnd, albumId, urlPhoto, photo, photoId, i, personExist, person, e_1, e_2, typeMatch, imageType, origimage, params, error_1, width, buffer, error_2, destparams, putResult, urlPhotoMini, e_3, e_4, error_3, addWaterMark, imageWM, destparamsWM, putResultWM, urlPhotoMiniWaterMark, e_5, e_6, phoneNumbers, arrLength, i, user, uri, response, error_4;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                srcBucket = event.Records[0].s3.bucket.name;
-                srcKey = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
-                paramsS3 = {
-                    Bucket: srcBucket,
-                    Key: srcKey,
-                };
-                return [4 /*yield*/, s3.headObject(paramsS3).promise()];
-            case 1:
-                data = _a.sent();
-                metadata = (!data) ? null : data.Metadata;
-                if (!metadata) {
-                    return [2 /*return*/];
-                }
-                peopleString = metadata.people;
-                peopleArray = peopleString.split(',');
-                dstBucket = "".concat(srcBucket, "-resized");
-                dstBucketWM = "".concat(srcBucket, "-resized-watermark");
-                dstKey = "resized-".concat(srcKey);
-                dstKeyWM = "resized-watermark".concat(dstKey);
-                idEnd = srcKey.indexOf('/');
-                photographerId = Number(srcKey.substring(0, idEnd));
-                albumIdStart = srcKey.substring(idEnd + 1);
-                albumIdEnd = albumIdStart.indexOf('/');
-                albumId = Number("".concat(albumIdStart.substring(0, albumIdEnd)));
-                urlPhoto = "https://".concat(srcBucket, ".s3.eu-west-1.amazonaws.com/").concat(srcKey);
-                _a.label = 2;
-            case 2:
-                _a.trys.push([2, 17, , 18]);
-                return [4 /*yield*/, model_1.Photo.create({
-                        name: srcKey, photoUrl: urlPhoto,
-                        photographerId: photographerId,
-                        albumId: albumId,
-                    })];
-            case 3:
-                photo = _a.sent();
-                if (!photo) return [3 /*break*/, 15];
-                photoId = photo.dataValues.id;
-                i = 0;
-                _a.label = 4;
-            case 4:
-                if (!(i < peopleArray.length)) return [3 /*break*/, 14];
-                _a.label = 5;
-            case 5:
-                _a.trys.push([5, 12, , 13]);
-                return [4 /*yield*/, model_1.Person.findOne({ where: { phone: peopleArray[i] } })];
-            case 6:
-                personExist = _a.sent();
-                if (!(personExist === null)) return [3 /*break*/, 9];
-                return [4 /*yield*/, model_1.Person.create({
-                        phone: peopleArray[i],
-                        photoId: photoId,
-                    })];
-            case 7:
-                person = _a.sent();
-                // @ts-ignore
-                return [4 /*yield*/, person.addPhoto(photo)];
-            case 8:
-                // @ts-ignore
-                _a.sent();
-                return [3 /*break*/, 11];
-            case 9: 
+const s3 = new aws_sdk_1.default.S3();
+const baseHandler = async (event) => {
+    if (!photoDropLogo) {
+        return;
+    }
+    const srcBucket = event.Records[0].s3.bucket.name;
+    // Object key may have spaces or unicode non-ASCII characters.
+    const srcKey = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
+    // for obtainig the meta data for the bucket and key
+    const paramsS3 = {
+        Bucket: srcBucket,
+        Key: srcKey,
+    };
+    const data = await s3.headObject(paramsS3).promise();
+    const metadata = (!data) ? null : data.Metadata;
+    if (!metadata) {
+        return;
+    }
+    const peopleString = metadata.people;
+    const peopleArray = peopleString.split(',');
+    const dstBucket = `${srcBucket}-resized`;
+    const dstBucketWM = `${srcBucket}-resized-watermark`;
+    const dstKey = `resized-${srcKey}`;
+    const dstKeyWM = `resized-watermark${dstKey}`;
+    // save original photo info to db
+    const idEnd = srcKey.indexOf('/');
+    const photographerId = Number(srcKey.substring(0, idEnd));
+    // 1/1/491e9200-155e-4a19-8935-307b98fc3841_laptop.jpg
+    const albumIdStart = srcKey.substring(idEnd + 1);
+    const albumIdEnd = albumIdStart.indexOf('/');
+    const albumId = Number(`${albumIdStart.substring(0, albumIdEnd)}`);
+    const urlPhoto = `https://${srcBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
+    try {
+        const photo = await model_1.Photo.create({
+            name: srcKey, photoUrl: urlPhoto, photographerId, albumId,
+        });
+        if (photo) {
             // @ts-ignore
-            return [4 /*yield*/, personExist.addPhoto(photo)];
-            case 10:
-                // @ts-ignore
-                _a.sent();
-                _a.label = 11;
-            case 11: return [3 /*break*/, 13];
-            case 12:
-                e_1 = _a.sent();
-                console.log(e_1);
-                return [3 /*break*/, 13];
-            case 13:
-                i += 1;
-                return [3 /*break*/, 4];
-            case 14:
-                console.log('Successfully uploaded');
-                return [3 /*break*/, 16];
-            case 15:
-                console.log({ message: 'Photo was not found' });
-                _a.label = 16;
-            case 16: return [3 /*break*/, 18];
-            case 17:
-                e_2 = _a.sent();
-                console.log(e_2);
-                return [2 /*return*/];
-            case 18:
-                typeMatch = srcKey.match(/\.([^.]*)$/);
-                if (!typeMatch) {
-                    console.log('Could not determine the image type.');
-                    return [2 /*return*/];
+            const photoId = photo.dataValues.id;
+            for (let i = 0; i < peopleArray.length; i += 1) {
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    const personExist = await model_1.Person.findOne({ where: { phone: peopleArray[i] } });
+                    if (personExist === null) {
+                        /* eslint-disable no-await-in-loop */
+                        const person = await model_1.Person.create({
+                            phone: peopleArray[i],
+                            photoId,
+                        });
+                        // @ts-ignore
+                        await person.addPhoto(photo);
+                    }
+                    else {
+                        // @ts-ignore
+                        await personExist.addPhoto(photo);
+                    }
                 }
-                imageType = typeMatch[1].toLowerCase();
-                if (imageType !== 'jpg' && imageType !== 'png' && imageType !== 'jpeg') {
-                    console.log("Unsupported image type: ".concat(imageType));
-                    return [2 /*return*/];
+                catch (e) {
+                    console.log(e);
                 }
-                _a.label = 19;
-            case 19:
-                _a.trys.push([19, 21, , 22]);
-                params = {
-                    Bucket: srcBucket,
-                    Key: srcKey,
-                };
-                return [4 /*yield*/, s3.getObject(params).promise()];
-            case 20:
-                origimage = _a.sent();
-                return [3 /*break*/, 22];
-            case 21:
-                error_1 = _a.sent();
-                console.log(error_1);
-                return [2 /*return*/];
-            case 22:
-                width = 400;
-                _a.label = 23;
-            case 23:
-                _a.trys.push([23, 25, , 26]);
-                return [4 /*yield*/, jimp_1.default.read(origimage.Body).resize(width)];
-            case 24:
-                // @ts-ignore
-                buffer = _a.sent();
-                return [3 /*break*/, 26];
-            case 25:
-                error_2 = _a.sent();
-                console.log(error_2);
-                return [2 /*return*/];
-            case 26:
-                _a.trys.push([26, 36, , 37]);
-                destparams = {
-                    Bucket: dstBucket,
-                    Key: dstKey,
-                    Body: buffer,
-                    ContentType: 'image',
-                };
-                return [4 /*yield*/, s3.putObject(destparams).promise()];
-            case 27:
-                putResult = _a.sent();
-                if (!putResult) return [3 /*break*/, 35];
-                _a.label = 28;
-            case 28:
-                _a.trys.push([28, 33, , 34]);
-                urlPhotoMini = "https://".concat(dstBucket, ".s3.eu-west-1.amazonaws.com/").concat(srcKey);
-                _a.label = 29;
-            case 29:
-                _a.trys.push([29, 31, , 32]);
-                return [4 /*yield*/, model_1.PhotoMini.create({
-                        name: srcKey, photoMiniUrl: urlPhotoMini,
-                        photographerId: photographerId,
-                        albumId: albumId,
-                    })];
-            case 30:
-                _a.sent();
-                return [3 /*break*/, 32];
-            case 31:
-                e_3 = _a.sent();
-                console.log(e_3);
-                return [2 /*return*/];
-            case 32: return [3 /*break*/, 34];
-            case 33:
-                e_4 = _a.sent();
-                console.log(e_4);
-                return [2 /*return*/];
-            case 34:
-                console.log("Successfully resized ".concat(srcBucket, "/").concat(srcKey, " and uploaded to ").concat(dstBucket, "/").concat(dstKey));
-                console.log('METADATA IS:   ', metadata);
-                _a.label = 35;
-            case 35: return [3 /*break*/, 37];
-            case 36:
-                error_3 = _a.sent();
-                console.log(error_3);
-                return [2 /*return*/];
-            case 37:
-                _a.trys.push([37, 53, , 54]);
-                addWaterMark = function (image) { return __awaiter(void 0, void 0, void 0, function () {
-                    var logoImage, resizeWidth, imageResized, img;
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0: return [4 /*yield*/, jimp_1.default.read('./PhotoDropLogo.png')];
-                            case 1:
-                                logoImage = _a.sent();
-                                resizeWidth = 400;
-                                if (!image) {
-                                    return [2 /*return*/];
-                                }
-                                return [4 /*yield*/, jimp_1.default.read(image)];
-                            case 2:
-                                imageResized = _a.sent();
-                                imageResized = imageResized.resize(resizeWidth, resizeWidth);
-                                return [4 /*yield*/, jimp_1.default.read(imageResized)];
-                            case 3:
-                                img = _a.sent();
-                                img.composite(logoImage, img.bitmap.width / 2 - logoImage.bitmap.width / 2, img.bitmap.height / 2 - logoImage.bitmap.height / 2);
-                                return [2 /*return*/, img.getBufferAsync(jimp_1.default.MIME_JPEG)];
-                        }
+            }
+            console.log('Successfully uploaded');
+        }
+        else {
+            console.log({ message: 'Photo was not found' });
+        }
+    }
+    catch (e) {
+        console.log(e);
+        return;
+    }
+    // Infer the image type from the file suffix.
+    const typeMatch = srcKey.match(/\.([^.]*)$/);
+    if (!typeMatch) {
+        console.log('Could not determine the image type.');
+        return;
+    }
+    // Check that the image type is supported
+    const imageType = typeMatch[1].toLowerCase();
+    if (imageType !== 'jpg' && imageType !== 'png' && imageType !== 'jpeg') {
+        console.log(`Unsupported image type: ${imageType}`);
+        return;
+    }
+    // Download the image from the S3 source bucket.
+    let origimage;
+    try {
+        const params = {
+            Bucket: srcBucket,
+            Key: srcKey,
+        };
+        origimage = await s3.getObject(params).promise();
+    }
+    catch (error) {
+        console.log(error);
+        return;
+    }
+    // set thumbnail width. Resize will set the height automatically to maintain aspect ratio.
+    const width = 400;
+    // Use the sharp module to resize the image and save in a buffer.
+    let buffer;
+    try {
+        // @ts-ignore
+        buffer = await jimp_1.default.read(origimage.Body).then((image) => {
+            const resizedImage = image
+                .resize(width, jimp_1.default.AUTO)
+                .quality(100) // set JPEG quality
+                .getBufferAsync(jimp_1.default.MIME_JPEG);
+            return resizedImage;
+        });
+        // buffer = await sharp(origimage.Body).resize(width).toBuffer();
+    }
+    catch (error) {
+        console.log(error);
+        return;
+    }
+    // Upload the thumbnail image to the destination bucket
+    try {
+        const destparams = {
+            Bucket: dstBucket,
+            Key: dstKey,
+            Body: buffer,
+            ContentType: 'image',
+        };
+        const putResult = await s3.putObject(destparams).promise();
+        if (putResult) {
+            try {
+                // save resized photo info to db
+                const urlPhotoMini = `https://${dstBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
+                try {
+                    await model_1.PhotoMini.create({
+                        name: srcKey, photoMiniUrl: urlPhotoMini, photographerId, albumId,
                     });
-                }); };
-                return [4 /*yield*/, addWaterMark(origimage.Body)];
-            case 38:
-                imageWM = _a.sent();
-                destparamsWM = {
-                    Bucket: dstBucketWM,
-                    Key: dstKeyWM,
-                    Body: imageWM,
-                    ContentType: 'image',
-                };
-                return [4 /*yield*/, s3.putObject(destparamsWM).promise()];
-            case 39:
-                putResultWM = _a.sent();
-                if (!putResultWM) return [3 /*break*/, 47];
-                _a.label = 40;
-            case 40:
-                _a.trys.push([40, 45, , 46]);
-                urlPhotoMiniWaterMark = "https://".concat(dstBucketWM, ".s3.eu-west-1.amazonaws.com/").concat(srcKey);
-                _a.label = 41;
-            case 41:
-                _a.trys.push([41, 43, , 44]);
-                return [4 /*yield*/, model_1.PhotoMiniWaterMark.create({
-                        name: srcKey, photoMiniWaterMarkUrl: urlPhotoMiniWaterMark,
-                        photographerId: photographerId,
-                        albumId: albumId,
-                    })];
-            case 42:
-                _a.sent();
-                return [3 /*break*/, 44];
-            case 43:
-                e_5 = _a.sent();
-                console.log(e_5);
-                return [2 /*return*/];
-            case 44: return [3 /*break*/, 46];
-            case 45:
-                e_6 = _a.sent();
-                console.log(e_6);
-                return [2 /*return*/];
-            case 46:
-                console.log("Successfully resized with matermark".concat(srcBucket, "/").concat(srcKey, " and uploaded to ").concat(dstBucketWM, "/").concat(dstKeyWM));
-                _a.label = 47;
-            case 47:
-                phoneNumbers = peopleArray;
-                if (!phoneNumbers) return [3 /*break*/, 52];
-                arrLength = phoneNumbers.length;
-                i = 0;
-                _a.label = 48;
-            case 48:
-                if (!(i < arrLength)) return [3 /*break*/, 52];
-                return [4 /*yield*/, model_1.AppUser.findOne({ where: { phone: phoneNumbers[i] } })];
-            case 49:
-                user = _a.sent();
-                console.log({ user: user });
-                if (!user) return [3 /*break*/, 51];
-                uri = encodeURI("https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:".concat(phoneNumbers[i], " your photos have dropped\uD83D\uDD25\n\nCheck them out here:\n https://userAppUrlWillBeSoonHere.com"));
-                return [4 /*yield*/, (0, axios_1.default)({
+                }
+                catch (e) {
+                    console.log(e);
+                    return;
+                }
+            }
+            catch (e) {
+                console.log(e);
+                return;
+            }
+            console.log(`Successfully resized ${srcBucket}/${srcKey} and uploaded to ${dstBucket}/${dstKey}`);
+            console.log('METADATA IS:   ', metadata);
+        }
+    }
+    catch (error) {
+        console.log(error);
+        return;
+    }
+    try {
+        // add watermark add upload to photodropbucket-resized-watermark
+        const addWaterMark = async (image) => {
+            /*
+            2.After importing the  photoDropLogo and deploying with "serverless deploy" command
+              photoDropLogo image will be present in zip package file
+              under the name "d8885004a7cbbc5c2de6177b99b30489.png"
+              (have no idea why this name. I was trying tix it with no success.)
+      
+              So later on we will read image using name mentioned above. The path will be
+              "./d8885004a7cbbc5c2de6177b99b30489.png" - chekc zip file manually to double check
+            */
+            const logoImage = await jimp_1.default.read('./d8885004a7cbbc5c2de6177b99b30489.png');
+            const resizeWidth = 400;
+            if (!image) {
+                return;
+            }
+            let imageResized = await jimp_1.default.read(image);
+            imageResized = imageResized.resize(resizeWidth, jimp_1.default.AUTO);
+            // const imageResized = await sharp(image).resize(resizeWidth).toBuffer();
+            const img = await jimp_1.default.read(imageResized);
+            img.composite(logoImage, img.bitmap.width / 2 - logoImage.bitmap.width / 2, img.bitmap.height / 2 - logoImage.bitmap.height / 2);
+            return img.getBufferAsync(jimp_1.default.MIME_JPEG);
+        };
+        const imageWM = await addWaterMark(origimage.Body);
+        const destparamsWM = {
+            Bucket: dstBucketWM,
+            Key: dstKeyWM,
+            Body: imageWM,
+            ContentType: 'image',
+        };
+        const putResultWM = await s3.putObject(destparamsWM).promise();
+        if (putResultWM) {
+            try {
+                // save resized photo info to db
+                const urlPhotoMiniWaterMark = `https://${dstBucketWM}.s3.eu-west-1.amazonaws.com/${srcKey}`;
+                try {
+                    await model_1.PhotoMiniWaterMark.create({
+                        name: srcKey, photoMiniWaterMarkUrl: urlPhotoMiniWaterMark, photographerId, albumId,
+                    });
+                }
+                catch (e) {
+                    console.log(e);
+                    return;
+                }
+            }
+            catch (e) {
+                console.log(e);
+                return;
+            }
+            console.log(`Successfully resized with matermark${srcBucket}/${srcKey} and uploaded to ${dstBucketWM}/${dstKeyWM}`);
+        }
+        // notify(in telegram) app user that photo has been uploaded
+        const phoneNumbers = peopleArray;
+        if (phoneNumbers) {
+            const arrLength = phoneNumbers.length;
+            for (let i = 0; i < arrLength; i += 1) {
+                const user = await model_1.AppUser.findOne({ where: { phone: phoneNumbers[i] } });
+                console.log({ user });
+                if (user) {
+                    const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phoneNumbers[i]} your photos have dropped🔥\n\nCheck them out here:\n https://userAppUrlWillBeSoonHere.com`);
+                    const response = await (0, axios_1.default)({
                         method: 'get',
                         url: uri,
-                    })];
-            case 50:
-                response = _a.sent();
-                console.log({ response: response });
-                _a.label = 51;
-            case 51:
-                i += 1;
-                return [3 /*break*/, 48];
-            case 52: return [3 /*break*/, 54];
-            case 53:
-                error_4 = _a.sent();
-                console.log(error_4);
-                return [3 /*break*/, 54];
-            case 54: return [2 /*return*/];
+                    });
+                    console.log({ response });
+                }
+            }
         }
-    });
-}); };
+    }
+    catch (error) {
+        console.log(error);
+    }
+};
 // @ts-ignore
-var handler = baseHandler;
+const handler = baseHandler;
 module.exports.handler = handler;
 
 
 /***/ }),
-/* 1 */
-/***/ ((module) => {
 
-module.exports = require("dotenv/config");
-
-/***/ }),
-/* 2 */
-/***/ ((module) => {
-
-module.exports = require("aws-sdk");
-
-/***/ }),
-/* 3 */
-/***/ ((module) => {
-
-module.exports = require("jimp");
-
-/***/ }),
-/* 4 */
-/***/ ((module) => {
-
-module.exports = require("axios");
-
-/***/ }),
-/* 5 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ "./models/model.ts":
+/*!*************************!*\
+  !*** ./models/model.ts ***!
+  \*************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UserAlbum = exports.PhotoMiniWaterMark_Person = exports.PhotoMini_Person = exports.Photo_Person = exports.SelfieMini = exports.Selfie = exports.AppUser = exports.Person = exports.PhotoMiniWaterMark = exports.PhotoMini = exports.Photo = exports.Album = exports.Photographer = void 0;
-var sequelize_1 = __webpack_require__(6); // с помощью DataTypes описываются типы поля(String, Int,  Array ect.)
-var db_1 = __webpack_require__(7);
+const sequelize_1 = __webpack_require__(/*! sequelize */ "sequelize"); // с помощью DataTypes описываются типы поля(String, Int,  Array ect.)
+const db_1 = __importDefault(__webpack_require__(/*! ../db */ "./db.ts"));
 // interface PhotographerAttributes {
 // id: number;
 // login: string;
@@ -389,7 +382,7 @@ var db_1 = __webpack_require__(7);
 //     tableName: 'photographers',
 //   },
 // );
-var Photographer = db_1.default.define('photographer', {
+const Photographer = db_1.default.define('photographer', {
     id: { type: sequelize_1.DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     login: {
         type: sequelize_1.DataTypes.STRING,
@@ -401,32 +394,32 @@ var Photographer = db_1.default.define('photographer', {
     fullName: { type: sequelize_1.DataTypes.STRING },
 });
 exports.Photographer = Photographer;
-var Album = db_1.default.define('album', {
+const Album = db_1.default.define('album', {
     id: { type: sequelize_1.DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: sequelize_1.DataTypes.STRING, allowNull: false },
     location: { type: sequelize_1.DataTypes.STRING, allowNull: false },
     date: { type: sequelize_1.DataTypes.DATE, allowNull: false },
 });
 exports.Album = Album;
-var Photo = db_1.default.define('photo', {
+const Photo = db_1.default.define('photo', {
     id: { type: sequelize_1.DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: sequelize_1.DataTypes.STRING },
     photoUrl: { type: sequelize_1.DataTypes.STRING },
 });
 exports.Photo = Photo;
-var PhotoMini = db_1.default.define('photoMini', {
+const PhotoMini = db_1.default.define('photoMini', {
     id: { type: sequelize_1.DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: sequelize_1.DataTypes.STRING },
     photoMiniUrl: { type: sequelize_1.DataTypes.STRING },
 });
 exports.PhotoMini = PhotoMini;
-var PhotoMiniWaterMark = db_1.default.define('photoMiniWaterMark', {
+const PhotoMiniWaterMark = db_1.default.define('photoMiniWaterMark', {
     id: { type: sequelize_1.DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: sequelize_1.DataTypes.STRING },
     photoMiniWaterMarkUrl: { type: sequelize_1.DataTypes.STRING },
 });
 exports.PhotoMiniWaterMark = PhotoMiniWaterMark;
-var Person = db_1.default.define('person', {
+const Person = db_1.default.define('person', {
     id: {
         type: sequelize_1.DataTypes.INTEGER, primaryKey: true, autoIncrement: true,
     },
@@ -434,7 +427,7 @@ var Person = db_1.default.define('person', {
     name: { type: sequelize_1.DataTypes.STRING },
 });
 exports.Person = Person;
-var AppUser = db_1.default.define('appUser', {
+const AppUser = db_1.default.define('appUser', {
     id: { type: sequelize_1.DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: sequelize_1.DataTypes.STRING },
     phone: { type: sequelize_1.DataTypes.STRING, unique: true },
@@ -444,21 +437,21 @@ var AppUser = db_1.default.define('appUser', {
     unsubscribe: { type: sequelize_1.DataTypes.BOOLEAN },
 });
 exports.AppUser = AppUser;
-var Selfie = db_1.default.define('selfie', {
+const Selfie = db_1.default.define('selfie', {
     id: { type: sequelize_1.DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: sequelize_1.DataTypes.STRING },
     selfieUrl: { type: sequelize_1.DataTypes.STRING },
     active: { type: sequelize_1.DataTypes.BOOLEAN },
 });
 exports.Selfie = Selfie;
-var SelfieMini = db_1.default.define('selfieMini', {
+const SelfieMini = db_1.default.define('selfieMini', {
     id: { type: sequelize_1.DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: sequelize_1.DataTypes.STRING },
     selfieUrl: { type: sequelize_1.DataTypes.STRING },
     active: { type: sequelize_1.DataTypes.BOOLEAN },
 });
 exports.SelfieMini = SelfieMini;
-var UserAlbum = db_1.default.define('userAlbum', {
+const UserAlbum = db_1.default.define('userAlbum', {
     id: { type: sequelize_1.DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     userId: { type: sequelize_1.DataTypes.INTEGER },
     userName: { type: sequelize_1.DataTypes.STRING },
@@ -466,17 +459,17 @@ var UserAlbum = db_1.default.define('userAlbum', {
     isPaid: { type: sequelize_1.DataTypes.BOOLEAN },
 });
 exports.UserAlbum = UserAlbum;
-var Photo_Person = db_1.default.define('Photo_Person', {
+const Photo_Person = db_1.default.define('Photo_Person', {
     photoId: { type: sequelize_1.DataTypes.INTEGER },
     personId: { type: sequelize_1.DataTypes.INTEGER },
 });
 exports.Photo_Person = Photo_Person;
-var PhotoMini_Person = db_1.default.define('PhotoMini_Person', {
+const PhotoMini_Person = db_1.default.define('PhotoMini_Person', {
     photoMiniId: { type: sequelize_1.DataTypes.INTEGER },
     personId: { type: sequelize_1.DataTypes.INTEGER },
 });
 exports.PhotoMini_Person = PhotoMini_Person;
-var PhotoMiniWaterMark_Person = db_1.default.define('PhotoMiniWaterMark_Person', {
+const PhotoMiniWaterMark_Person = db_1.default.define('PhotoMiniWaterMark_Person', {
     photoMiniWaterMarkId: { type: sequelize_1.DataTypes.INTEGER },
     personId: { type: sequelize_1.DataTypes.INTEGER },
 });
@@ -504,39 +497,78 @@ SelfieMini.belongsTo(AppUser);
 
 
 /***/ }),
-/* 6 */
+
+/***/ "aws-sdk":
+/*!**************************!*\
+  !*** external "aws-sdk" ***!
+  \**************************/
 /***/ ((module) => {
 
-module.exports = require("sequelize");
+module.exports = require("aws-sdk");
 
 /***/ }),
-/* 7 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
+/***/ "axios":
+/*!************************!*\
+  !*** external "axios" ***!
+  \************************/
+/***/ ((module) => {
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-var dotenv_1 = __webpack_require__(8);
-var sequelize_1 = __webpack_require__(6);
-dotenv_1.default.config();
-var sequelize = new sequelize_1.Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    dialect: 'postgres',
-    define: {
-        timestamps: false,
-    },
-});
-exports["default"] = sequelize;
-
+module.exports = require("axios");
 
 /***/ }),
-/* 8 */
+
+/***/ "dotenv":
+/*!*************************!*\
+  !*** external "dotenv" ***!
+  \*************************/
 /***/ ((module) => {
 
 module.exports = require("dotenv");
 
+/***/ }),
+
+/***/ "dotenv/config":
+/*!********************************!*\
+  !*** external "dotenv/config" ***!
+  \********************************/
+/***/ ((module) => {
+
+module.exports = require("dotenv/config");
+
+/***/ }),
+
+/***/ "jimp":
+/*!***********************!*\
+  !*** external "jimp" ***!
+  \***********************/
+/***/ ((module) => {
+
+module.exports = require("jimp");
+
+/***/ }),
+
+/***/ "pg":
+/*!*********************!*\
+  !*** external "pg" ***!
+  \*********************/
+/***/ ((module) => {
+
+module.exports = require("pg");
+
+/***/ }),
+
+/***/ "sequelize":
+/*!****************************!*\
+  !*** external "sequelize" ***!
+  \****************************/
+/***/ ((module) => {
+
+module.exports = require("sequelize");
+
 /***/ })
-/******/ 	]);
+
+/******/ 	});
 /************************************************************************/
 /******/ 	// The module cache
 /******/ 	var __webpack_module_cache__ = {};
@@ -563,14 +595,49 @@ module.exports = require("dotenv");
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/publicPath */
+/******/ 	(() => {
+/******/ 		__webpack_require__.p = "";
+/******/ 	})();
+/******/ 	
+/************************************************************************/
 /******/ 	
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __webpack_require__(0);
+/******/ 	var __webpack_exports__ = __webpack_require__("./lambdas/originalPhotosLambda/originalPhotosLambda.ts");
 /******/ 	var __webpack_export_target__ = exports;
 /******/ 	for(var i in __webpack_exports__) __webpack_export_target__[i] = __webpack_exports__[i];
 /******/ 	if(__webpack_exports__.__esModule) Object.defineProperty(__webpack_export_target__, "__esModule", { value: true });
 /******/ 	
 /******/ })()
 ;
+//# sourceMappingURL=originalPhotosLambda.js.map

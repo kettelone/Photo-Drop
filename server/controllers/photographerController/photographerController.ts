@@ -4,7 +4,7 @@ import aws from 'aws-sdk';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  Photographer, Album, Photo, Person, AppUser,
+  Photographer, Album, Photo, Person, AppUser, PhotoMini,
 } from '../../models/model';
 import { PhotoObject, PhotosArray } from './index';
 
@@ -165,6 +165,35 @@ class PhotographerController {
     }
   }
 
+  async getAlbumsThumbnailIcon(req: Request, res: Response) {
+    const s3 = new aws.S3();
+    interface ThumbnailsObject{
+      [key: string] : string | null
+    }
+    const { albumIds } = req.body;
+    const albumThumbnails:ThumbnailsObject = {};
+    const albumIdsLength = albumIds.length;
+
+    if (albumIds) {
+      for (let i = 0; i < albumIdsLength; i += 1) {
+        const keyExist = await PhotoMini.findOne({ where: { albumId: albumIds[i] } });
+        if (keyExist) {
+          const url = s3.getSignedUrl('getObject', {
+            Bucket: process.env.S3_BUCKET_RESIZED,
+            // @ts-ignore
+            Key: `resized-${keyExist.name}`,
+            Expires: 60 * 60,
+          });
+          albumThumbnails[albumIds[i]] = url;
+        } else {
+          albumThumbnails[albumIds[i]] = null;
+        }
+      }
+
+      res.json(albumThumbnails);
+    }
+  }
+
   async getPhotos(req: Request, res: Response) {
     /* LIMIT will retrieve only the number of records specified after the LIMIT keyword,
      unless the query itself returns fewer records than the number specified by LIMIT.
@@ -235,7 +264,7 @@ class PhotographerController {
         const url = s3.getSignedUrl('getObject', {
           Bucket: process.env.S3_BUCKET,
           Key: photoKeyArr[i].photoKey,
-          Expires: 60 * 5,
+          Expires: 60 * 60,
         });
         photoUrls.push(url);
       }

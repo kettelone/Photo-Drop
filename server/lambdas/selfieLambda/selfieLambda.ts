@@ -1,15 +1,13 @@
 import 'dotenv/config';
-// @ts-ignore
 import AWS from 'aws-sdk';
-// @ts-ignore
-import Jimp from 'jimp';
+// import sharp from 'sharp';
+import Jimp from 'jimp/es';
 import {
   Selfie, SelfieMini,
 } from '../../models/model';
 
 // get reference to S3 client
 const s3 = new AWS.S3();
-
 // @ts-ignore
 const baseHandler = async (event) => {
   // Get the object from the event and show its content type
@@ -79,15 +77,22 @@ const baseHandler = async (event) => {
       }
 
       // set thumbnail width. Resize will set the height automatically to maintain aspect ratio.
-      const width = 50;
+      const height = 50;
 
       // Use the sharp module to resize the image and save in a buffer.
       let buffer;
       try {
+        console.log('is buffer: ', Buffer.isBuffer(origimage.Body));
         // @ts-ignore
-        buffer = await Jimp.read(origimage.Body);
-        buffer = buffer.resize(width, width);
         // buffer = await sharp(origimage.Body).resize(width).toBuffer();
+        buffer = await Jimp.read(origimage.Body).then((image) => {
+          const resizedImage = image
+            .resize(Jimp.AUTO, height)
+            .quality(100) // set JPEG quality
+            .getBufferAsync(Jimp.MIME_JPEG);
+
+          return resizedImage;
+        });
       } catch (error) {
         console.log(error);
         return;
