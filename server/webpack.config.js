@@ -21,7 +21,7 @@ module.exports = {
   resolve: {
     // What file extensions we want Webpack to care about, and in what order
     // https://webpack.js.org/configuration/resolve/#resolveextensions
-    extensions: ['.js', '.ts'],
+    extensions: ['.ts', '.js'],
     // `yarn add -D tsconfig-paths-webpack-plugin` if you need path aliases
     // plugins: [new TsconfigPathsPlugin()],
   },
