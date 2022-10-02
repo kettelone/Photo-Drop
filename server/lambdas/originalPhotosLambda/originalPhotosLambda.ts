@@ -53,8 +53,7 @@ const baseHandler = async (event: any) => {
       name: srcKey, photoUrl: urlPhoto, photographerId, albumId,
     });
     if (photo) {
-      // @ts-ignore
-      const photoId = photo.dataValues.id;
+      // const photoId = photo.id;
       for (let i = 0; i < peopleArray.length; i += 1) {
         try {
           // eslint-disable-next-line no-await-in-loop
@@ -63,7 +62,7 @@ const baseHandler = async (event: any) => {
             /* eslint-disable no-await-in-loop */
             const person = await Person.create({
               phone: peopleArray[i],
-              photoId,
+              // photoId,
             });
             // @ts-ignore
             await person.addPhoto(photo);

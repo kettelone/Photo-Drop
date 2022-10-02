@@ -27,12 +27,10 @@ class PhotographerController {
       if (!user) {
         return res.status(403).json({ errors: [{ msg: 'User not found' }] });
       }
-      // @ts-ignore
       const comparePassword = bcrypt.compareSync(password, user.password);
       if (!comparePassword) {
         return res.status(403).json({ errors: [{ msg: 'Wrong password' }] });
       }
-      // @ts-ignore
       const token = generateJwt(user.id, user.login);
       res.json({ token });
       return true;
@@ -147,7 +145,6 @@ class PhotographerController {
             if (keyExist) {
               const url = s3.getSignedUrl('getObject', {
                 Bucket: process.env.S3_BUCKET_RESIZED,
-                // @ts-ignore
                 Key: `resized-${keyExist.name}`,
                 Expires: 60 * 60,
               });

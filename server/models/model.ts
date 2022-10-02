@@ -1,49 +1,15 @@
 import {
-  DataTypes, ModelDefined,
+  DataTypes,
 } from 'sequelize'; // с помощью DataTypes описываются типы поля(String, Int,  Array ect.)
 import sequelize from '../db';
 import {
-  PhotographerAttributes, PhotographerCreationAttributes,
-  AlbumAttributes, AlbumCreationAttributes,
-  PhotoAttributes, PhotoCreationAttributes,
-  PhotoMiniAttributes, PhotoMiniCreationAttributes,
-  PhotoMiniWaterMarkAttributes, PhotoMiniWaterMarkCreationAttributes,
-  PersonAttributes, PersonCreationAttributes,
-  AppUserAttributes, AppUserCreationAttributes,
-  SelfieAttributes, SelfieCreationAttributes,
-  SelfieMiniAttributes, SelfieMiniCreationAttributes,
-  UserAlbumAttributes, UserAlbumCreationAttributes,
+  PhotographerInstance, AlbumInstance, PhotoInstance, PhotoMiniInstance, PhotoMiniWaterMarkInstance,
+  PersonInstance, AppUserInstance, SelfieInstance, SelfieMiniInstance, UserAlbumInstance,
+  Photo_PesronInstance,
 } from './interfaces';
 
-// interface PhotographerAttributes {
-// id: number;
-// login: string;
-// password: string;
-// email: string;
-// fullName:string
-// }
-
-// export class Photographer extends Model<PhotographerAttributes> {}
-
-// Photographer.init(
-//   {
-//     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-//     login: {
-//       type: DataTypes.STRING,
-//       allowNull: false,
-//       unique: true,
-//     },
-//     password: { type: DataTypes.STRING, allowNull: false },
-//     email: { type: DataTypes.STRING },
-//     fullName: { type: DataTypes.STRING },
-//   },
-//   {
-//     sequelize,
-//     tableName: 'photographers',
-//   },
-// );
-
-const Photographer: ModelDefined<PhotographerAttributes, PhotographerCreationAttributes> = sequelize.define('photographer', {
+// Photographer
+const Photographer = sequelize.define<PhotographerInstance>('photographer', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   login: {
     type: DataTypes.STRING,
@@ -55,32 +21,46 @@ const Photographer: ModelDefined<PhotographerAttributes, PhotographerCreationAtt
   fullName: { type: DataTypes.STRING },
 });
 
-const Album:ModelDefined<AlbumAttributes, AlbumCreationAttributes> = sequelize.define('album', {
+// Album
+const Album = sequelize.define<AlbumInstance>('album', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING, allowNull: false },
   location: { type: DataTypes.STRING, allowNull: false },
   date: { type: DataTypes.DATE, allowNull: false },
+  photographerId: { type: DataTypes.INTEGER, allowNull: false },
 });
 
-const Photo:ModelDefined<PhotoAttributes, PhotoCreationAttributes> = sequelize.define('photo', {
+// Photo
+const Photo = sequelize.define<PhotoInstance>('photo', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   photoUrl: { type: DataTypes.STRING },
+  photographerId: { type: DataTypes.INTEGER, allowNull: false },
+  albumId: { type: DataTypes.INTEGER, allowNull: false },
+
 });
 
-const PhotoMini:ModelDefined<PhotoMiniAttributes, PhotoMiniCreationAttributes> = sequelize.define('photoMini', {
+// PhotoMini
+const PhotoMini = sequelize.define<PhotoMiniInstance>('photoMini', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   photoMiniUrl: { type: DataTypes.STRING },
+  photographerId: { type: DataTypes.INTEGER, allowNull: false },
+  albumId: { type: DataTypes.INTEGER, allowNull: false },
 });
 
-const PhotoMiniWaterMark:ModelDefined<PhotoMiniWaterMarkAttributes, PhotoMiniWaterMarkCreationAttributes> = sequelize.define('photoMiniWaterMark', {
+// PhotoMiniWaterMark
+
+const PhotoMiniWaterMark = sequelize.define<PhotoMiniWaterMarkInstance>('photoMiniWaterMark', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   photoMiniWaterMarkUrl: { type: DataTypes.STRING },
+  photographerId: { type: DataTypes.INTEGER, allowNull: false },
+  albumId: { type: DataTypes.INTEGER, allowNull: false },
 });
 
-const Person:ModelDefined<PersonAttributes, PersonCreationAttributes> = sequelize.define('person', {
+// Person
+const Person = sequelize.define<PersonInstance>('person', {
   id: {
     type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true,
   },
@@ -88,7 +68,8 @@ const Person:ModelDefined<PersonAttributes, PersonCreationAttributes> = sequeliz
   name: { type: DataTypes.STRING },
 });
 
-const AppUser:ModelDefined<AppUserAttributes, AppUserCreationAttributes> = sequelize.define('appUser', {
+// Appuser
+const AppUser = sequelize.define<AppUserInstance>('appUser', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   phone: { type: DataTypes.STRING, unique: true },
@@ -98,21 +79,26 @@ const AppUser:ModelDefined<AppUserAttributes, AppUserCreationAttributes> = seque
   unsubscribe: { type: DataTypes.BOOLEAN },
 });
 
-const Selfie:ModelDefined<SelfieAttributes, SelfieCreationAttributes> = sequelize.define('selfie', {
+// Selfie
+const Selfie = sequelize.define<SelfieInstance>('selfie', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   selfieUrl: { type: DataTypes.STRING },
   active: { type: DataTypes.BOOLEAN },
+  appUserId: { type: DataTypes.INTEGER, allowNull: false },
 });
 
-const SelfieMini:ModelDefined<SelfieMiniAttributes, SelfieMiniCreationAttributes> = sequelize.define('selfieMini', {
+// SelfieMini
+const SelfieMini = sequelize.define<SelfieMiniInstance>('selfieMini', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   selfieUrl: { type: DataTypes.STRING },
   active: { type: DataTypes.BOOLEAN },
+  appUserId: { type: DataTypes.INTEGER, allowNull: false },
 });
 
-const UserAlbum:ModelDefined<UserAlbumAttributes, UserAlbumCreationAttributes> = sequelize.define('userAlbum', {
+// UserAlbum
+const UserAlbum = sequelize.define<UserAlbumInstance>('userAlbum', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   userId: { type: DataTypes.INTEGER },
   userName: { type: DataTypes.STRING },
@@ -120,16 +106,39 @@ const UserAlbum:ModelDefined<UserAlbumAttributes, UserAlbumCreationAttributes> =
   isPaid: { type: DataTypes.BOOLEAN },
 });
 
-const Photo_Person = sequelize.define('Photo_Person', {
+// Photo_Person
+const Photo_Person = sequelize.define<Photo_PesronInstance>('Photo_Person', {
   photoId: { type: DataTypes.INTEGER },
   personId: { type: DataTypes.INTEGER },
 });
 
-Photographer.hasMany(Album);
-Album.belongsTo(Photographer);
+// Photographer & Album
+Photographer.hasMany(
+  Album,
+  {
+    sourceKey: 'id',
+    foreignKey: 'photographerId',
+    as: 'albums',
+  },
+);
+Album.belongsTo(
+  Photographer,
+  {
+    foreignKey: 'photographerId',
+    as: 'photographer',
+  },
+);
 
-Photographer.hasMany(Photo);
-Photo.belongsTo(Photographer);
+// Photographer & Photo
+Photographer.hasMany(Photo, {
+  sourceKey: 'id',
+  foreignKey: 'photographerId',
+  as: 'photos',
+});
+Photo.belongsTo(Photographer, {
+  foreignKey: 'photographerId',
+  as: 'photographer',
+});
 
 Photographer.hasMany(PhotoMini);
 PhotoMini.belongsTo(Photographer);

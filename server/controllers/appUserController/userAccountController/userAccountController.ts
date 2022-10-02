@@ -17,10 +17,8 @@ class UserAccountController {
       try {
         const appUserExist = await AppUser.findAll({ where: { phone } });
         if (appUserExist.length > 0) {
-        // @ts-ignore
-          const userId = appUserExist[0].dataValues.id;
-          // @ts-ignore
-          const phoneNumber = appUserExist[0].dataValues.phone;
+          const userId = appUserExist[0].id;
+          const phoneNumber = appUserExist[0].phone;
           const token = generateJwt(userId, phoneNumber);
           res.json({ token });
           return;
@@ -39,19 +37,15 @@ class UserAccountController {
               phone,
             });
             if (person) {
-            // @ts-ignore
               const userId = appUser.id;
-              // @ts-ignore
               const phoneNumber = appUser.phone;
               const token = generateJwt(userId, phoneNumber);
               res.json({ token });
               return;
             }
-          } else {
-          // @ts-ignore
-            const userId = personExist.dataValues.id;
-            // @ts-ignore
-            const phoneNumber = personExist.dataValues.phone;
+          } else if (personExist) {
+            const userId = personExist.id;
+            const phoneNumber = personExist.phone;
             const token = generateJwt(userId, phoneNumber);
             res.json({ token });
             return;
@@ -74,7 +68,6 @@ class UserAccountController {
       try {
         const user = await AppUser.findOne({ where: { id } });
         if (user) {
-        // @ts-ignore
           user.name = name;
           user.save();
           res.json(user);
@@ -96,17 +89,14 @@ class UserAccountController {
         const user = await AppUser.findOne({ where: { id } });
         let oldPhone;
         if (user) {
-        // @ts-ignore
           oldPhone = user.phone;
           console.log({ oldPhone });
-          // @ts-ignore
           user.phone = phone;
           user.save();
           try {
             const person = await Person.findOne({ where: { phone: oldPhone } });
             console.log({ person });
             if (person) {
-            // @ts-ignore
               person.phone = phone;
               person.save();
             }
@@ -132,7 +122,6 @@ class UserAccountController {
       try {
         const user = await AppUser.findOne({ where: { id } });
         if (user) {
-        // @ts-ignore
           user.email = email;
           user.save();
           res.json(user);
@@ -153,11 +142,8 @@ class UserAccountController {
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (user) {
-        // @ts-ignore
         user.textMessagesNotification = textMessagesNotification;
-        // @ts-ignore
         user.emailNotification = emailNotification;
-        // @ts-ignore
         user.unsubscribe = unsubscribe;
         user.save();
         res.json(user);

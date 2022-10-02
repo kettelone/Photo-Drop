@@ -22,11 +22,9 @@ const checkIfPaid = async (userId:number, albumId:number) => {
     if (info === null) {
       return false;
     }
-    // @ts-ignore
     if (info.isPaid === false) {
       return false;
     }
-    // @ts-ignore
     if (info.isPaid === true) {
       return true;
     }
@@ -47,7 +45,6 @@ const generatePaymnet = async (albumId:Number, userId:Number) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
-      // @ts-ignore
       customer: customer.id,
       line_items: [{
         price_data: {
@@ -125,34 +122,26 @@ class PhotoController {
     try {
       const person = await Person.findOne({ where: { phone } });
       if (person) {
-        // @ts-ignore
-        console.log('person id is: ', person.id);
-        // @ts-ignore
         const photo_person = await Photo_Person.findAll({
           where:
-          // @ts-ignore
           { personId: person.id },
         });
         const responseLength = photo_person.length;
         const promises = [];
         if (responseLength > 0) {
           for (let i = 0; i < responseLength; i += 1) {
-            // @ts-ignore
             const photo = Photo.findOne({ where: { id: photo_person[i].photoId } });
             promises.push(photo);
           }
         }
         const photos = await Promise.all(promises);
-        const albumIds:[] = [];
+        const albumIds:number[] = [];
         for (let i = 0; i < photos.length; i += 1) {
-        // @ts-ignore
-          const { albumId } = photos[i].dataValues;
-          if (albumId !== null) {
-          // @ts-ignore
+          const albumId = photos[i]?.albumId;
+          if (albumId) {
             albumIds.push(albumId);
           }
         }
-        // @ts-ignore
         const uniqueAlbumIds = [...new Set(albumIds)];
         console.log('uniqueAlbumIds are: ', uniqueAlbumIds);
         res.json({ albumIds: uniqueAlbumIds });
@@ -163,12 +152,6 @@ class PhotoController {
       console.log(e);
       res.status(500).json({ message: 'Error occured' });
     }
-  }
-
-  async getAlbumsAndNotifyCustomer() {
-    // when selfie uploaded check if the user with registered phone number has any albums.
-    // If so send him the notification in telegram group chat.
-
   }
 
   async getThumbnails(req: Request, res: Response) {
@@ -188,12 +171,10 @@ class PhotoController {
 
               const url = s3.getSignedUrl('getObject', {
                 Bucket: process.env.S3_BUCKET_RESIZED,
-                // @ts-ignore
                 Key: `resized-${thumbnail.name}`,
                 Expires: 60 * 5,
               });
               signedThumbnails.push({
-                // @ts-ignore
                 isPaid: true, url, originalKey: thumbnail.name, albumId,
               });
             });
@@ -214,12 +195,10 @@ class PhotoController {
               const s3 = new aws.S3();
               const url = s3.getSignedUrl('getObject', {
                 Bucket: process.env.S3_BUCKET_RESIZED_WATERMARK,
-                // @ts-ignore
                 Key: `resized-watermarkresized-${thumbnail.name}`,
                 Expires: 60 * 5,
               });
               signedThumbnails.push({
-                // @ts-ignore
                 isPaid: false, url, originalKey: thumbnail.name, albumId,
               });
             });
