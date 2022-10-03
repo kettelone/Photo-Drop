@@ -4,7 +4,7 @@ import aws from 'aws-sdk';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  Photographer, Album, Photo, Person, AppUser, PhotoMini,
+  Photographer, Album, Photo, AppUser, PhotoMini,
 } from '../../models/model';
 import { PhotoObject, PhotosArray } from './index';
 
@@ -27,12 +27,10 @@ class PhotographerController {
       if (!user) {
         return res.status(403).json({ errors: [{ msg: 'User not found' }] });
       }
-      // @ts-ignore
       const comparePassword = bcrypt.compareSync(password, user.password);
       if (!comparePassword) {
         return res.status(403).json({ errors: [{ msg: 'Wrong password' }] });
       }
-      // @ts-ignore
       const token = generateJwt(user.id, user.login);
       res.json({ token });
       return true;
@@ -82,7 +80,8 @@ class PhotographerController {
 
       const { url, fields } = s3.createPresignedPost({
         Fields: {
-          key: `${photographerId}/${albumId}/${uuidv4()}_${photoName}`,
+          key: `${photographerId}/${albumId}/${uuidv4()}}`,
+          // key: `${photographerId}/${albumId}/${uuidv4()}_${photoName}`,
           'Content-Type': `image/${photoExtension}`,
           'x-amz-meta-people': metadata,
         },
@@ -105,44 +104,6 @@ class PhotographerController {
     }
   }
 
-  async addPersonToPhoto(req: Request, res: Response) {
-    const photoId = req.body.photoId as number | undefined;
-    const clientsArray = req.body.clientsArray as [];
-    if (photoId && clientsArray) {
-      try {
-        const photo = await Photo.findOne({ where: { id: photoId } });
-        if (photo) {
-          for (let i = 0; i < clientsArray.length; i += 1) {
-            try {
-              // eslint-disable-next-line no-await-in-loop
-              const personExist = await Person.findOne({ where: { phone: clientsArray[i] } });
-              if (personExist === null) {
-                /* eslint-disable no-await-in-loop */
-                const person = await Person.create({
-                  phone: clientsArray[i],
-                  photoId,
-                });
-                // @ts-ignore
-                await person.addPhoto(photo);
-              } else {
-              // @ts-ignore
-                await personExist.addPhoto(photo);
-              }
-            } catch (e) {
-              console.log(e);
-            }
-          }
-          res.send('Successfully uploaded');
-        } else {
-          res.status(403).json({ message: 'Photo was not found' });
-        }
-      } catch (e) {
-        console.log(e);
-        res.status(403).json({ message: 'Error occured' });
-      }
-    }
-  }
-
   async getAlbums(req: Request, res: Response) {
     const photographerId = req.query.photographerId as number |undefined;
     try {
@@ -162,6 +123,7 @@ class PhotographerController {
       }
     } catch (e) {
       console.log(e);
+      res.status(403).json({ message: 'Error occured' });
     }
   }
 
@@ -173,24 +135,34 @@ class PhotographerController {
     const { albumIds } = req.body;
     const albumThumbnails:ThumbnailsObject = {};
     const albumIdsLength = albumIds.length;
-
-    if (albumIds) {
-      for (let i = 0; i < albumIdsLength; i += 1) {
-        const keyExist = await PhotoMini.findOne({ where: { albumId: albumIds[i] } });
-        if (keyExist) {
-          const url = s3.getSignedUrl('getObject', {
-            Bucket: process.env.S3_BUCKET_RESIZED,
-            // @ts-ignore
-            Key: `resized-${keyExist.name}`,
-            Expires: 60 * 60,
-          });
-          albumThumbnails[albumIds[i]] = url;
-        } else {
-          albumThumbnails[albumIds[i]] = null;
+    try {
+      if (albumIds) {
+        for (let i = 0; i < albumIdsLength; i += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          const albumExist = await Album.findOne({ where: { id: albumIds[i] } });
+          if (albumExist) {
+            // eslint-disable-next-line no-await-in-loop
+            const keyExist = await PhotoMini.findOne({ where: { albumId: albumIds[i] } });
+            if (keyExist) {
+              const url = s3.getSignedUrl('getObject', {
+                Bucket: process.env.S3_BUCKET_RESIZED,
+                Key: `resized-${keyExist.name}`,
+                Expires: 60 * 60,
+              });
+              albumThumbnails[albumIds[i]] = url;
+            } else {
+              albumThumbnails[albumIds[i]] = null;
+            }
+          } else {
+            albumThumbnails[albumIds[i]] = 'Album does not exist';
+          }
         }
-      }
 
-      res.json(albumThumbnails);
+        res.json(albumThumbnails);
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(403).json({ message: 'Error occured' });
     }
   }
 
@@ -257,10 +229,17 @@ class PhotographerController {
     const s3 = new aws.S3();
     const photoKeyArr:PhotoObject[] = req.body;
     const arrLenght = photoKeyArr.length;
-    const photoUrls: any[] = [];
+    const promises = [];
     for (let i = 0; i < arrLenght; i += 1) {
-      const keyExist = await Photo.findOne({ where: { name: photoKeyArr[i].photoKey } });
-      if (keyExist) {
+      const key = Photo.findOne({ where: { name: photoKeyArr[i].photoKey } });
+      promises.push(key);
+    }
+
+    const photos = await Promise.all(promises);
+    const photoUrls: any[] = [];
+
+    for (let i = 0; i < photos.length; i += 1) {
+      if (photos[i]) {
         const url = s3.getSignedUrl('getObject', {
           Bucket: process.env.S3_BUCKET,
           Key: photoKeyArr[i].photoKey,
@@ -269,15 +248,6 @@ class PhotographerController {
         photoUrls.push(url);
       }
     }
-    // photoKeyArr.forEach((el: PhotoObject) => {
-    //   const keyExist = await Photo.findOne({ where: { name: el.photoKey } });
-    //   const url = s3.getSignedUrl('getObject', {
-    //     Bucket: process.env.S3_BUCKET,
-    //     Key: el.photoKey,
-    //     Expires: 60 * 5,
-    //   });
-    //   photoUrls.push(url);
-    // });
     res.json(photoUrls);
   }
 }

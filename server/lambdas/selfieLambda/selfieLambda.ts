@@ -31,7 +31,6 @@ const baseHandler = async (event) => {
       try {
         const oldSelfies = await Selfie.findAll({ where: { appUserId: userid } });
         for (let i = 0; i < oldSelfies.length; i += 1) {
-        // @ts-ignore
           oldSelfies[i].active = false;
           // eslint-disable-next-line no-await-in-loop
           await oldSelfies[i].save();
@@ -114,7 +113,6 @@ const baseHandler = async (event) => {
             const urlSelfieMini = `https://${dstBucket}.s3.eu-west-1.amazonaws.com/${dstKey}`;
             const oldSelfies = await SelfieMini.findAll({ where: { appUserId: userid } });
             for (let i = 0; i < oldSelfies.length; i += 1) {
-            // @ts-ignore
               oldSelfies[i].active = false;
               // eslint-disable-next-line no-await-in-loop
               await oldSelfies[i].save();

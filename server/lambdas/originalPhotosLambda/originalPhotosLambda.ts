@@ -53,8 +53,7 @@ const baseHandler = async (event: any) => {
       name: srcKey, photoUrl: urlPhoto, photographerId, albumId,
     });
     if (photo) {
-      // @ts-ignore
-      const photoId = photo.dataValues.id;
+      // const photoId = photo.id;
       for (let i = 0; i < peopleArray.length; i += 1) {
         try {
           // eslint-disable-next-line no-await-in-loop
@@ -63,7 +62,7 @@ const baseHandler = async (event: any) => {
             /* eslint-disable no-await-in-loop */
             const person = await Person.create({
               phone: peopleArray[i],
-              photoId,
+              // photoId,
             });
             // @ts-ignore
             await person.addPhoto(photo);
@@ -176,7 +175,6 @@ const baseHandler = async (event: any) => {
         photoDropLogo image will be present in zip package file
         under the name "d8885004a7cbbc5c2de6177b99b30489.png"
         (have no idea why this name. I was trying tix it with no success.)
-
         So later on we will read image using name mentioned above. The path will be
         "./d8885004a7cbbc5c2de6177b99b30489.png" - chekc zip file manually to double check
       */

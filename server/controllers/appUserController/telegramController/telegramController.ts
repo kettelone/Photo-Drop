@@ -8,7 +8,8 @@ class TelegramController {
     const { phone } = req.body;
     const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
     try {
-      bot.sendMessage(Number(process.env.TB_BOT_GROUP_CHAT_ID), `Your phone is: ${phone}\nYour OTP is: ${OTP}`);
+      bot.sendMessage(Number(process.env.TB_BOT_GROUP_CHAT_ID), `Your phone is:
+      ${phone} \nYour OTP is: ${OTP}`);
     } catch (e) {
       console.log(e);
     }
