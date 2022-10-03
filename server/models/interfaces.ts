@@ -133,7 +133,7 @@ interface UserAlbumAttributes {
   isPaid: boolean,
 }
 
-interface UserAlbumCreationAttributes extends Optional<UserAlbumAttributes, 'id'> { }
+interface UserAlbumCreationAttributes extends Optional<UserAlbumAttributes, 'id' | 'userName'> { }
 interface UserAlbumInstance extends
   Model<UserAlbumAttributes, UserAlbumCreationAttributes>,
   UserAlbumAttributes { }
