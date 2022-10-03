@@ -1,24 +1,31 @@
-import { Optional } from 'sequelize';
-
+import { Optional, Model } from 'sequelize';
+// Photographer
 interface PhotographerAttributes {
   id: number;
-  login: string,
-  password: string,
-  email: string,
-  fullName:string
+  login: string;
+  password: string;
+  email: string;
+  fullName: string
 }
 
-type PhotographerCreationAttributes = Optional<PhotographerAttributes, 'id'>;
+interface PhotographerCreationAttributes extends Optional<PhotographerAttributes, 'id' | 'fullName' | 'email'> { }
+interface PhotographerInstance extends Model<PhotographerAttributes,
+  PhotographerCreationAttributes>, PhotographerAttributes { }
 
+// Album
 interface AlbumAttributes {
   id: number;
   name: string,
   location: string,
   date: string,
-  photographerId: number
+  photographerId:number
 }
 
-type AlbumCreationAttributes = Optional<AlbumAttributes, 'id'>;
+interface AlbumCreationAttributes extends Optional<AlbumAttributes, 'id' > { }
+interface AlbumInstance extends Model<AlbumAttributes, AlbumCreationAttributes>,
+  AlbumAttributes {}
+
+// Photo
 
 interface PhotoAttributes {
   id: number;
@@ -28,7 +35,11 @@ interface PhotoAttributes {
   albumId:number
 }
 
-type PhotoCreationAttributes = Optional<PhotoAttributes, 'id'|'photographerId'>;
+interface PhotoCreationAttributes extends Optional<PhotoAttributes, 'id'> { }
+interface PhotoInstance extends Model<PhotoAttributes, PhotoCreationAttributes>,
+  PhotoAttributes {}
+
+// PhotoMini
 
 interface PhotoMiniAttributes {
   id: number;
@@ -37,8 +48,11 @@ interface PhotoMiniAttributes {
   albumId: number,
   photographerId:number
 }
+interface PhotoMiniCreationAttributes extends Optional<PhotoMiniAttributes, 'id'> { }
+interface PhotoMiniInstance extends Model<PhotoMiniAttributes, PhotoMiniCreationAttributes>,
+  PhotoAttributes {}
 
-type PhotoMiniCreationAttributes = Optional<PhotoMiniAttributes, 'id'>;
+// PhotoMiniWaterMark
 
 interface PhotoMiniWaterMarkAttributes {
   id: number;
@@ -48,16 +62,24 @@ interface PhotoMiniWaterMarkAttributes {
   photoMiniWaterMarkUrl:string
 }
 
-type PhotoMiniWaterMarkCreationAttributes = Optional<PhotoMiniWaterMarkAttributes, 'id'>;
+interface PhotoMiniWaterMarkCreationAttributes extends Optional<PhotoMiniWaterMarkAttributes, 'id'> { }
+interface PhotoMiniWaterMarkInstance extends
+  Model<PhotoMiniWaterMarkAttributes, PhotoMiniWaterMarkCreationAttributes>,
+  PhotoMiniWaterMarkAttributes {}
 
+// Person
 interface PersonAttributes {
   id: number;
   phone: string,
   name: string,
-  photoId: number
 }
 
-type PersonCreationAttributes = Optional<PersonAttributes, 'id' | 'name'| 'photoId'>;
+interface PersonCreationAttributes extends Optional<PersonAttributes, 'id' | 'name'> { }
+interface PersonInstance extends
+  Model<PersonAttributes, PersonCreationAttributes>,
+  PersonAttributes { }
+
+// AppUser
 
 interface AppUserAttributes {
   id: number,
@@ -69,7 +91,12 @@ interface AppUserAttributes {
   unsubscribe: boolean
 }
 
-type AppUserCreationAttributes = Optional<AppUserAttributes, 'name' | 'id' | 'email'>;
+interface AppUserCreationAttributes extends Optional<AppUserAttributes, 'id' | 'name' | 'email'> { }
+interface AppUserInstance extends
+  Model<AppUserAttributes, AppUserCreationAttributes>,
+  AppUserAttributes { }
+
+// Selfie
 
 interface SelfieAttributes {
   id: number,
@@ -79,8 +106,12 @@ interface SelfieAttributes {
   appUserId:number
 }
 
-type SelfieCreationAttributes = Optional<SelfieAttributes, 'id'>;
+interface SelfieCreationAttributes extends Optional<SelfieAttributes, 'id'> { }
+interface SelfieInstance extends
+  Model<SelfieAttributes, SelfieCreationAttributes>,
+  SelfieAttributes { }
 
+// SelfirMini
 interface SelfieMiniAttributes {
   id: number,
   name: string,
@@ -88,9 +119,12 @@ interface SelfieMiniAttributes {
   active: boolean
   appUserId:number
 }
+interface SelfieMiniCreationAttributes extends Optional<SelfieMiniAttributes, 'id'> { }
+interface SelfieMiniInstance extends
+  Model<SelfieMiniAttributes, SelfieMiniCreationAttributes>,
+  SelfieMiniAttributes { }
 
-type SelfieMiniCreationAttributes = Optional<SelfieMiniAttributes, 'id'>;
-
+// UserAlbum
 interface UserAlbumAttributes {
  id: number,
   userId: number,
@@ -99,17 +133,31 @@ interface UserAlbumAttributes {
   isPaid: boolean,
 }
 
-type UserAlbumCreationAttributes = Optional<UserAlbumAttributes, 'id'|'userName'>;
+interface UserAlbumCreationAttributes extends Optional<UserAlbumAttributes, 'id' | 'userName'> { }
+interface UserAlbumInstance extends
+  Model<UserAlbumAttributes, UserAlbumCreationAttributes>,
+  UserAlbumAttributes { }
+
+// Photo_Pesron
+interface Photo_PesronAttributes {
+ photoId: number,
+  personId: number,
+}
+
+interface Photo_PesronInstance extends
+  Model<Photo_PesronAttributes>,
+  Photo_PesronAttributes { }
 
 export {
-  PhotographerAttributes, PhotographerCreationAttributes,
-  AlbumAttributes, AlbumCreationAttributes,
-  PhotoAttributes, PhotoCreationAttributes,
-  PhotoMiniAttributes, PhotoMiniCreationAttributes,
-  PhotoMiniWaterMarkAttributes, PhotoMiniWaterMarkCreationAttributes,
-  PersonAttributes, PersonCreationAttributes,
-  AppUserAttributes, AppUserCreationAttributes,
-  SelfieAttributes, SelfieCreationAttributes,
-  SelfieMiniAttributes, SelfieMiniCreationAttributes,
-  UserAlbumAttributes, UserAlbumCreationAttributes,
+  PhotographerInstance,
+  AlbumInstance,
+  PhotoInstance,
+  PhotoMiniInstance,
+  PhotoMiniWaterMarkInstance,
+  PersonInstance,
+  AppUserInstance,
+  SelfieInstance,
+  SelfieMiniInstance,
+  UserAlbumInstance,
+  Photo_PesronInstance,
 };

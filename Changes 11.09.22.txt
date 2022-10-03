@@ -1,0 +1,1 @@
+У запиті "Get photos by album & photographer from DB" замість параметру albumName тепер albumId.
