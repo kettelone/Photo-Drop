@@ -11,6 +11,7 @@ import * as photoDropLogo from './PhotoDropLogo.png';
 1.To import photoDropLogo index.d.ts has to be created and "*.png" has to be initiated and exported
 */
 // get reference to S3 client
+// delete this line after
 const s3 = new AWS.S3();
 
 const baseHandler = async (event: any) => {
