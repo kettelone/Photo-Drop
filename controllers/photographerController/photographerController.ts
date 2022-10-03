@@ -80,7 +80,7 @@ class PhotographerController {
 
       const { url, fields } = s3.createPresignedPost({
         Fields: {
-          key: `${photographerId}/${albumId}/${uuidv4()}}`,
+          key: `${photographerId}/${albumId}/${uuidv4()}.${photoExtension}`,
           // key: `${photographerId}/${albumId}/${uuidv4()}_${photoName}`,
           'Content-Type': `image/${photoExtension}`,
           'x-amz-meta-people': metadata,
