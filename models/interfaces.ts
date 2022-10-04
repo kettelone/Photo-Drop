@@ -1,3 +1,5 @@
+// https://dev.to/jctaveras/sequelize-typescript-what-you-need-to-know-41mj
+
 import { Optional, Model } from 'sequelize';
 // Photographer
 interface PhotographerAttributes {

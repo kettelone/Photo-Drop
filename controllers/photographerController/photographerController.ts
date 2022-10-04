@@ -75,7 +75,8 @@ class PhotographerController {
       const { photographerId } = photosArray[i][0];
       const { albumId } = photosArray[i][1];
       const { photoName } = photosArray[i][2];
-      const startIndex = photoName.indexOf('.') + 1;
+      const startIndex = photoName.lastIndexOf('.') + 1;
+      // const startIndex = photoName.indexOf('.') + 1;
       const photoExtension = photoName.substr(startIndex).toLowerCase();
 
       const { url, fields } = s3.createPresignedPost({
@@ -84,6 +85,7 @@ class PhotographerController {
           // key: `${photographerId}/${albumId}/${uuidv4()}_${photoName}`,
           'Content-Type': `image/${photoExtension}`,
           'x-amz-meta-people': metadata,
+          originalPhotoKey: photoName,
         },
         Conditions: [['content-length-range', 0, 8000000], ['starts-with', '$Content-Type', 'image/']],
         Expires: 60 * 60, // seconds

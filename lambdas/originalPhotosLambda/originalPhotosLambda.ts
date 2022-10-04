@@ -61,8 +61,9 @@ const baseHandler = async (event: any) => {
           const personExist = await Person.findOne({ where: { phone: peopleArray[i] } });
           if (personExist === null) {
             /* eslint-disable no-await-in-loop */
+            const numericPhone = peopleArray[i].replace(/[^0-9]/g, '');
             const person = await Person.create({
-              phone: peopleArray[i],
+              phone: numericPhone,
               // photoId,
             });
             // @ts-ignore
@@ -223,8 +224,8 @@ const baseHandler = async (event: any) => {
         console.log(e);
         return;
       }
-      console.log(`Successfully resized with matermark${srcBucket}/${srcKey
-      } and uploaded to ${dstBucketWM}/${dstKeyWM}`);
+      console.log(`Successfully resized with matermark${srcBucket}/${srcKey} 
+      and uploaded to ${dstBucketWM}/${dstKeyWM}`);
     }
 
     // notify(in telegram) app user that photo has been uploaded
@@ -232,7 +233,8 @@ const baseHandler = async (event: any) => {
     if (phoneNumbers) {
       const arrLength = phoneNumbers.length;
       for (let i = 0; i < arrLength; i += 1) {
-        const user = await AppUser.findOne({ where: { phone: phoneNumbers[i] } });
+        const numericPhone = phoneNumbers[i].replace(/[^0-9]/g, '');
+        const user = await AppUser.findOne({ where: { phone: numericPhone } });
         console.log({ user });
         if (user) {
           const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phoneNumbers[i]} your photos have dropped🔥\n\nCheck them out here:\n https://userAppUrlWillBeSoonHere.com`);
