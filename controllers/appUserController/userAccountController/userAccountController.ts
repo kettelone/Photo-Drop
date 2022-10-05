@@ -147,7 +147,7 @@ class UserAccountController {
     }
   }
 
-  async editNotificationSettings(req: Request, res: Response) {
+  async editNotificationSettings(req: Request, res: Response): Promise<void> {
     interface Body {
       id: number,
       textMessagesNotification: boolean,
