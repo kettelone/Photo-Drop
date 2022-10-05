@@ -6,7 +6,9 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   Photographer, Album, Photo, AppUser, PhotoMini,
 } from '../../models/model';
-import { PhotoObject, PhotosArray } from './index';
+import {
+  PhotoObject, PhotosArray, LoginBody, CreateAlbumBody,
+} from './index';
 
 aws.config.update({
   region: 'eu-west-1',
@@ -19,32 +21,32 @@ const generateJwt = (id:number, login:string) => jwt.sign({ id, login }, process
 });
 
 class PhotographerController {
-  async login(req: Request, res: Response) {
+  async login(req: Request, res: Response):Promise<void> {
     try {
-      const login = req.body.login as string;
-      const password = req.body.password as string;
+      const { login, password } :LoginBody = req.body;
       const user = await Photographer.findOne({ where: { login } });
       if (!user) {
-        return res.status(403).json({ errors: [{ msg: 'User not found' }] });
+        res.status(403).json({ errors: [{ msg: 'User not found' }] });
+        return;
       }
       const comparePassword = bcrypt.compareSync(password, user.password);
       if (!comparePassword) {
-        return res.status(403).json({ errors: [{ msg: 'Wrong password' }] });
+        res.status(403).json({ errors: [{ msg: 'Wrong password' }] });
+        return;
       }
       const token = generateJwt(user.id, user.login);
       res.json({ token });
-      return true;
+      return;
     } catch (e) {
       console.log(e);
     }
-    return true;
   }
 
-  async createAlbum(req: Request, res: Response) {
-    const name = req.body.name as string | undefined;
-    const location = req.body.location as string | undefined;
-    const date = req.body.date as string | undefined;
-    const photographerId = req.body.photographerId as number | undefined;
+  async createAlbum(req: Request, res: Response): Promise<void> {
+    const {
+      name, location, date, photographerId,
+    }:CreateAlbumBody = req.body;
+
     if (name && location && date && photographerId) {
       try {
         const albumExist = await Album.findOne({ where: { name, photographerId } });
@@ -59,13 +61,13 @@ class PhotographerController {
         return;
       } catch (e) {
         console.log(e);
-        return res.json(e);
+        res.json(e);
       }
     }
   }
 
   // create presigned post for one photo
-  async signOne(req: Request, res: Response) {
+  async signOne(req: Request, res: Response): Promise<void> {
     const s3 = new aws.S3();
     const photosArray = req.body.photosArray as PhotosArray[][];
     const people = req.body.people as [];
@@ -76,13 +78,11 @@ class PhotographerController {
       const { albumId } = photosArray[i][1];
       const { photoName } = photosArray[i][2];
       const startIndex = photoName.lastIndexOf('.') + 1;
-      // const startIndex = photoName.indexOf('.') + 1;
       const photoExtension = photoName.substr(startIndex).toLowerCase();
 
       const { url, fields } = s3.createPresignedPost({
         Fields: {
           key: `${photographerId}/${albumId}/${uuidv4()}.${photoExtension}`,
-          // key: `${photographerId}/${albumId}/${uuidv4()}_${photoName}`,
           'Content-Type': `image/${photoExtension}`,
           'x-amz-meta-people': metadata,
           originalPhotoKey: photoName,
@@ -96,7 +96,7 @@ class PhotographerController {
     res.send(JSON.stringify(presignedPostsArray));
   }
 
-  async getAllPeople(req: Request, res: Response) {
+  async getAllPeople(req: Request, res: Response): Promise<void> {
     try {
       const people = await AppUser.findAll();
       res.json({ people });
@@ -106,7 +106,7 @@ class PhotographerController {
     }
   }
 
-  async getAlbums(req: Request, res: Response) {
+  async getAlbums(req: Request, res: Response): Promise<void> {
     const photographerId = req.query.photographerId as number |undefined;
     try {
       if (photographerId) {
@@ -129,12 +129,12 @@ class PhotographerController {
     }
   }
 
-  async getAlbumsThumbnailIcon(req: Request, res: Response) {
+  async getAlbumsThumbnailIcon(req: Request, res: Response): Promise<void> {
     const s3 = new aws.S3();
     interface ThumbnailsObject{
       [key: string] : string | null
     }
-    const { albumIds } = req.body;
+    const albumIds = req.body.albumIds as number[];
     const albumThumbnails:ThumbnailsObject = {};
     const albumIdsLength = albumIds.length;
     try {
@@ -168,7 +168,7 @@ class PhotographerController {
     }
   }
 
-  async getPhotos(req: Request, res: Response) {
+  async getPhotos(req: Request, res: Response): Promise<void> {
     /* LIMIT will retrieve only the number of records specified after the LIMIT keyword,
      unless the query itself returns fewer records than the number specified by LIMIT.
     OFFSET is used to skip the number of records from the results. */
@@ -227,7 +227,7 @@ class PhotographerController {
     }
   }
 
-  async createPresignedGetForPhotos(req: Request, res: Response) {
+  async createPresignedGetForPhotos(req: Request, res: Response): Promise<void> {
     const s3 = new aws.S3();
     const photoKeyArr:PhotoObject[] = req.body;
     const arrLenght = photoKeyArr.length;
@@ -238,7 +238,7 @@ class PhotographerController {
     }
 
     const photos = await Promise.all(promises);
-    const photoUrls: any[] = [];
+    const photoUrls: string[] = [];
 
     for (let i = 0; i < photos.length; i += 1) {
       if (photos[i]) {

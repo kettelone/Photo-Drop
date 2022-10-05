@@ -1,3 +1,8 @@
+/*
+1.Stripe Checkout
+https://stripe.com/docs/payments/checkout
+*/
+
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
 import { UserAlbum } from '../../../models/model';
@@ -36,16 +41,15 @@ class StripeController {
       try {
         // data.customer - string
         // @ts-ignore
-        const customer :string = await stripe.customers.retrieve(data.customer);
+        const customer = await stripe.customers.retrieve(data.customer);
         if (customer) {
           // @ts-ignore
           const userId = customer.metadata.userId as number;
           // @ts-ignore
-          const { albumId } = customer.metadata as number;
+          const albumId = customer.metadata.albumId as number;
           try {
             const albumPaidExist = await UserAlbum.findOne({ where: { userId, albumId } });
             if (albumPaidExist) {
-              // @ts-ignore
               albumPaidExist.isPaid = true;
               albumPaidExist.save();
             } else {

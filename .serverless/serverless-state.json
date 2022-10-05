@@ -199,7 +199,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/myserverlessproject/dev/1664923250381-2022-10-04T22:40:50.381Z/originalPhotosLambda.zip"
+                "S3Key": "serverless/myserverlessproject/dev/1664927116063-2022-10-04T23:45:16.063Z/originalPhotosLambda.zip"
               },
               "Handler": "lambdas/originalPhotosLambda/originalPhotosLambda.handler",
               "Runtime": "nodejs14.x",
@@ -233,7 +233,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/myserverlessproject/dev/1664923250381-2022-10-04T22:40:50.381Z/selfieLambda.zip"
+                "S3Key": "serverless/myserverlessproject/dev/1664927116063-2022-10-04T23:45:16.063Z/selfieLambda.zip"
               },
               "Handler": "lambdas/selfieLambda/selfieLambda.handler",
               "Runtime": "nodejs14.x",
@@ -260,24 +260,24 @@
               "SelfieLambdaLogGroup"
             ]
           },
-          "SelfieLambdaLambdaVersionJFSIkjN1PCe9mhqZzMztA0OguOK20WwumuYHFJQ": {
+          "SelfieLambdaLambdaVersionpTtdrHwrnBGYJ38uAVIV8oMA6vgizxn7VcMZ9EmM": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "SelfieLambdaLambdaFunction"
               },
-              "CodeSha256": "mneDnE/Pr6ZTs558cGIR1BMO8okUXLjrYkx1nJbNm1Q="
+              "CodeSha256": "muLqGcLQdtdzDG8nl7VGx3mxSgYLxhYhXs79dGsIekU="
             }
           },
-          "OriginalPhotosLambdaLambdaVersionKm3r6LlOd6KXDj1REroTXZMhf3YUVPT3gTb2YAAI": {
+          "OriginalPhotosLambdaLambdaVersion4UyKEuKphD5cJvagK5KVc5rhFob0SXEenJvavof8E": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "OriginalPhotosLambdaLambdaFunction"
               },
-              "CodeSha256": "mneDnE/Pr6ZTs558cGIR1BMO8okUXLjrYkx1nJbNm1Q="
+              "CodeSha256": "IFCrDUhtqX4zRMPJ73E6UoClVPgaBfMQhR8c94lyctI="
             }
           }
         },
@@ -293,7 +293,7 @@
           "SelfieLambdaLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "SelfieLambdaLambdaVersionJFSIkjN1PCe9mhqZzMztA0OguOK20WwumuYHFJQ"
+              "Ref": "SelfieLambdaLambdaVersionpTtdrHwrnBGYJ38uAVIV8oMA6vgizxn7VcMZ9EmM"
             },
             "Export": {
               "Name": "sls-myserverlessproject-dev-SelfieLambdaLambdaFunctionQualifiedArn"
@@ -302,7 +302,7 @@
           "OriginalPhotosLambdaLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "OriginalPhotosLambdaLambdaVersionKm3r6LlOd6KXDj1REroTXZMhf3YUVPT3gTb2YAAI"
+              "Ref": "OriginalPhotosLambdaLambdaVersion4UyKEuKphD5cJvagK5KVc5rhFob0SXEenJvavof8E"
             },
             "Export": {
               "Name": "sls-myserverlessproject-dev-OriginalPhotosLambdaLambdaFunctionQualifiedArn"
@@ -395,6 +395,19 @@
       "vpc": {}
     },
     "custom": {
+      "webpack": {
+        "includeModules": {
+          "forceExclude": [
+            "aws-sdk"
+          ],
+          "forceInclude": [
+            "pg"
+          ]
+        },
+        "includeFiles": "server/lambdas/originalPhotosLambda/PhotoDropLogo.png",
+        "webpackConfig": "./webpack.config.js",
+        "packager": "npm"
+      },
       "bundle": {
         "ignorePackages": [
           "pg-native"
@@ -406,7 +419,9 @@
       "DB_PASSWORD": "guestdxb2022",
       "DB_HOST": "photodropdb.cozbnpykax7t.eu-west-1.rds.amazonaws.com"
     },
-    "plugins": null,
+    "plugins": [
+      "serverless-webpack"
+    ],
     "pluginsData": {},
     "functions": {
       "originalPhotosLambda": {
@@ -414,26 +429,26 @@
         "events": [],
         "name": "myserverlessproject-dev-originalPhotosLambda",
         "package": {
-          "artifact": "C:\\Users\\guest_3rh8a7w\\VS_Code\\Lambda-internship\\PhotoDrop\\server\\.serverless\\originalPhotosLambda.zip"
+          "artifact": ".serverless\\originalPhotosLambda.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "OriginalPhotosLambdaLambdaVersionKm3r6LlOd6KXDj1REroTXZMhf3YUVPT3gTb2YAAI"
+        "versionLogicalId": "OriginalPhotosLambdaLambdaVersion4UyKEuKphD5cJvagK5KVc5rhFob0SXEenJvavof8E"
       },
       "selfieLambda": {
         "handler": "lambdas/selfieLambda/selfieLambda.handler",
         "events": [],
         "name": "myserverlessproject-dev-selfieLambda",
         "package": {
-          "artifact": "C:\\Users\\guest_3rh8a7w\\VS_Code\\Lambda-internship\\PhotoDrop\\server\\.serverless\\selfieLambda.zip"
+          "artifact": ".serverless\\selfieLambda.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "SelfieLambdaLambdaVersionJFSIkjN1PCe9mhqZzMztA0OguOK20WwumuYHFJQ"
+        "versionLogicalId": "SelfieLambdaLambdaVersionpTtdrHwrnBGYJ38uAVIV8oMA6vgizxn7VcMZ9EmM"
       }
     },
     "configValidationMode": "warn",
@@ -445,25 +460,27 @@
       "provider": {
         "$ref": "$[\"service\"][\"provider\"]"
       },
+      "plugins": {
+        "$ref": "$[\"service\"][\"plugins\"]"
+      },
       "package": {
         "individually": true,
         "artifactsS3KeyDirname": "serverless/myserverlessproject/dev/code-artifacts",
-        "artifactDirectoryName": "serverless/myserverlessproject/dev/1664923250381-2022-10-04T22:40:50.381Z"
+        "artifactDirectoryName": "serverless/myserverlessproject/dev/1664927116063-2022-10-04T23:45:16.063Z"
       },
       "custom": {
         "$ref": "$[\"service\"][\"custom\"]"
       },
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
-      },
-      "plugins": null
+      }
     },
     "layers": {},
     "isDashboardMonitoringPreconfigured": false
   },
   "package": {
     "individually": true,
-    "artifactDirectoryName": "serverless/myserverlessproject/dev/1664923250381-2022-10-04T22:40:50.381Z",
+    "artifactDirectoryName": "serverless/myserverlessproject/dev/1664927116063-2022-10-04T23:45:16.063Z",
     "artifact": ""
   }
 }

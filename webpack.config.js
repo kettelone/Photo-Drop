@@ -1,3 +1,8 @@
+/*
+1.Serverless with Webpack and TypeScript
+https://aaronosteraas.com/serverless-webpack-typescript/
+*/
+
 const path = require('path');
 const slsw = require('serverless-webpack');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');

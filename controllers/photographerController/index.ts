@@ -8,4 +8,22 @@ interface PhotosArray {
     'Content-Type':string
 }
 
-export { PhotoObject, PhotosArray };
+interface LoginBody {
+    login: string,
+    password: string
+}
+
+interface CreateAlbumBody {
+    name: string,
+    location: string,
+    date: string,
+    photographerId: number
+}
+
+interface GetThumbnailIconBody {
+    albumId: number
+}
+
+export {
+  PhotoObject, PhotosArray, LoginBody, CreateAlbumBody, GetThumbnailIconBody,
+};

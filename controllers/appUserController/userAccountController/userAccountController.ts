@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { AppUser, Person } from '../../../models/model';
 
-const generateJwt = (id: number, phoneNumber: string) => jwt.sign(
+const generateJwt = (id: number, phoneNumber: string):string => jwt.sign(
   { id, phoneNumber },
   process.env.SECRET_KEY!,
   {
@@ -11,8 +11,11 @@ const generateJwt = (id: number, phoneNumber: string) => jwt.sign(
 );
 
 class UserAccountController {
-  async createAppUser(req: Request, res: Response) {
-    const phone = req.body.phone as string | undefined;
+  async createAppUser(req: Request, res: Response): Promise<void> {
+    interface Phone {
+      phone: string
+    }
+    const { phone }:Phone = req.body;
     if (phone) {
       try {
         const appUserExist = await AppUser.findAll({ where: { phone } });
@@ -61,9 +64,12 @@ class UserAccountController {
     }
   }
 
-  async editName(req: Request, res: Response) {
-    const id = req.body.id as number | undefined;
-    const name = req.body.name as string | undefined;
+  async editName(req: Request, res: Response): Promise<void> {
+    interface Body {
+      id: number,
+      name: string
+    }
+    const { id, name }:Body = req.body;
     if (id && name) {
       try {
         const user = await AppUser.findOne({ where: { id } });
@@ -81,43 +87,49 @@ class UserAccountController {
     }
   }
 
-  async editPhone(req: Request, res: Response) {
-    const id = req.body.id as number | undefined;
-    const phone = req.body.phone as string | undefined;
-    if (id && phone) {
-      try {
-        const user = await AppUser.findOne({ where: { id } });
-        let oldPhone;
-        if (user) {
-          oldPhone = user.phone;
-          console.log({ oldPhone });
-          user.phone = phone;
-          user.save();
-          try {
-            const person = await Person.findOne({ where: { phone: oldPhone } });
-            console.log({ person });
-            if (person) {
-              person.phone = phone;
-              person.save();
-            }
-          } catch (e) {
-            console.log(e);
-          }
-          const token = generateJwt(id, phone);
-          res.json({ user, token });
-        } else {
-          res.send({ message: 'User not found' });
-        }
-      } catch (e) {
-        console.log(e);
-        res.status(500).json({ message: 'Error occured' });
-      }
+  async editPhone(req: Request, res: Response): Promise<void> {
+      interface Body {
+      id: number,
+      phone: string
     }
+      const { id, phone }:Body = req.body;
+      if (id && phone) {
+        try {
+          const user = await AppUser.findOne({ where: { id } });
+          let oldPhone;
+          if (user) {
+            oldPhone = user.phone;
+            console.log({ oldPhone });
+            user.phone = phone;
+            user.save();
+            try {
+              const person = await Person.findOne({ where: { phone: oldPhone } });
+              console.log({ person });
+              if (person) {
+                person.phone = phone;
+                person.save();
+              }
+            } catch (e) {
+              console.log(e);
+            }
+            const token = generateJwt(id, phone);
+            res.json({ user, token });
+          } else {
+            res.send({ message: 'User not found' });
+          }
+        } catch (e) {
+          console.log(e);
+          res.status(500).json({ message: 'Error occured' });
+        }
+      }
   }
 
-  async editEmail(req: Request, res: Response) {
-    const id = req.body.id as number | undefined;
-    const email = req.body.phone as string | undefined;
+  async editEmail(req: Request, res: Response): Promise<void> {
+    interface Body {
+      id: number,
+      email: string
+    }
+    const { id, email }:Body = req.body;
     if (id && email) {
       try {
         const user = await AppUser.findOne({ where: { id } });
@@ -135,10 +147,16 @@ class UserAccountController {
     }
   }
 
-  async editNotificationSettings(req:Request, res:Response) {
+  async editNotificationSettings(req: Request, res: Response) {
+    interface Body {
+      id: number,
+      textMessagesNotification: boolean,
+      emailNotification: boolean,
+      unsubscribe: boolean
+    }
     const {
       id, textMessagesNotification, emailNotification, unsubscribe,
-    } = req.body;
+    }:Body = req.body;
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (user) {

@@ -6,7 +6,10 @@ import { Request, Response } from 'express';
 
 class TelegramController {
   generateOTP(req: Request, res: Response): void {
-    // const { phone } = req.body;
+    // interface Phone {
+    //   phone: string
+    // }
+    // const { phone }: Phone = req.body;
 
     const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
 

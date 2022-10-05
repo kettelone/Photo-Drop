@@ -174,7 +174,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/myserverlessproject/dev/1664923250381-2022-10-04T22:40:50.381Z/originalPhotosLambda.zip"
+          "S3Key": "serverless/myserverlessproject/dev/1664927116063-2022-10-04T23:45:16.063Z/originalPhotosLambda.zip"
         },
         "Handler": "lambdas/originalPhotosLambda/originalPhotosLambda.handler",
         "Runtime": "nodejs14.x",
@@ -208,7 +208,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/myserverlessproject/dev/1664923250381-2022-10-04T22:40:50.381Z/selfieLambda.zip"
+          "S3Key": "serverless/myserverlessproject/dev/1664927116063-2022-10-04T23:45:16.063Z/selfieLambda.zip"
         },
         "Handler": "lambdas/selfieLambda/selfieLambda.handler",
         "Runtime": "nodejs14.x",
@@ -235,24 +235,24 @@
         "SelfieLambdaLogGroup"
       ]
     },
-    "SelfieLambdaLambdaVersionJFSIkjN1PCe9mhqZzMztA0OguOK20WwumuYHFJQ": {
+    "SelfieLambdaLambdaVersionpTtdrHwrnBGYJ38uAVIV8oMA6vgizxn7VcMZ9EmM": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "SelfieLambdaLambdaFunction"
         },
-        "CodeSha256": "mneDnE/Pr6ZTs558cGIR1BMO8okUXLjrYkx1nJbNm1Q="
+        "CodeSha256": "muLqGcLQdtdzDG8nl7VGx3mxSgYLxhYhXs79dGsIekU="
       }
     },
-    "OriginalPhotosLambdaLambdaVersionKm3r6LlOd6KXDj1REroTXZMhf3YUVPT3gTb2YAAI": {
+    "OriginalPhotosLambdaLambdaVersion4UyKEuKphD5cJvagK5KVc5rhFob0SXEenJvavof8E": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "OriginalPhotosLambdaLambdaFunction"
         },
-        "CodeSha256": "mneDnE/Pr6ZTs558cGIR1BMO8okUXLjrYkx1nJbNm1Q="
+        "CodeSha256": "IFCrDUhtqX4zRMPJ73E6UoClVPgaBfMQhR8c94lyctI="
       }
     }
   },
@@ -268,7 +268,7 @@
     "SelfieLambdaLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "SelfieLambdaLambdaVersionJFSIkjN1PCe9mhqZzMztA0OguOK20WwumuYHFJQ"
+        "Ref": "SelfieLambdaLambdaVersionpTtdrHwrnBGYJ38uAVIV8oMA6vgizxn7VcMZ9EmM"
       },
       "Export": {
         "Name": "sls-myserverlessproject-dev-SelfieLambdaLambdaFunctionQualifiedArn"
@@ -277,7 +277,7 @@
     "OriginalPhotosLambdaLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "OriginalPhotosLambdaLambdaVersionKm3r6LlOd6KXDj1REroTXZMhf3YUVPT3gTb2YAAI"
+        "Ref": "OriginalPhotosLambdaLambdaVersion4UyKEuKphD5cJvagK5KVc5rhFob0SXEenJvavof8E"
       },
       "Export": {
         "Name": "sls-myserverlessproject-dev-OriginalPhotosLambdaLambdaFunctionQualifiedArn"

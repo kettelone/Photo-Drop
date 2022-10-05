@@ -1,3 +1,20 @@
+/*
+1.Configuration basics
+https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html
+
+2.Tutorial: Using an Amazon S3 trigger to invoke a Lambda function
+https://docs.aws.amazon.com/lambda/latest/dg/with-s3-example.html
+
+3.Tutorial: Using an Amazon S3 trigger to create thumbnail images
+https://docs.aws.amazon.com/lambda/latest/dg/with-s3-tutorial.html#with-s3-tutorial-create-function-createfunction
+
+4.Working with object metadata
+https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html#object-metadata
+
+5.How can I get my CloudFormation stack to update if it's stuck in the UPDATE_ROLLBACK_FAILED state
+https://aws.amazon.com/premiumsupport/knowledge-center/cloudformation-update-rollback-failed/
+*/
+
 import 'dotenv/config';
 import AWS from 'aws-sdk';
 import Jimp from 'jimp';
@@ -35,9 +52,11 @@ const baseHandler = async (event: any) => {
   const peopleString = metadata.people;
   const peopleArray = peopleString.split(',');
 
+  // resized photos bucket
   const dstBucket = `${srcBucket}-resized`;
-  const dstBucketWM = `${srcBucket}-resized-watermark`;
   const dstKey = `resized-${srcKey}`;
+  // resized with watermark photos bucket
+  const dstBucketWM = `${srcBucket}-resized-watermark`;
   const dstKeyWM = `resized-watermark${dstKey}`;
 
   // save original photo info to db
