@@ -42,6 +42,27 @@ class PhotographerController {
     }
   }
 
+  async getMe(req: Request, res: Response):Promise<void> {
+    try {
+      if (req.headers.authorization !== undefined) {
+        const token = req.headers.authorization.split(' ')[1]; // Bearer ddhcjhdsjcsdcs
+
+        if (!token) {
+          res.status(401).json({ errors: [{ msg: 'Not authorized' }] });
+        }
+
+        const payload = jwt.verify(token, process.env.SECRET_KEY!);
+        if (payload) {
+          res.send();
+        }
+      } else {
+        res.status(401).json({ errors: [{ msg: 'Missing authorization token' }] });
+      }
+    } catch (e) {
+      res.status(401).json({ errors: [{ msg: 'Not authorized' }] });
+    }
+  }
+
   async createAlbum(req: Request, res: Response): Promise<void> {
     const {
       name, location, date, photographerId,
@@ -117,10 +138,10 @@ class PhotographerController {
             res.json(albums);
             return;
           }
-          res.status(403).json({ errors: [{ msg: 'No albums found' }] });
+          res.json({ errors: [{ msg: 'No albums found' }] });
           return;
         }
-        res.status(403).json({ errors: [{ msg: 'Photographer with this id does not exist' }] });
+        res.json({ errors: [{ msg: 'Photographer with this id does not exist' }] });
         return;
       }
     } catch (e) {
@@ -191,7 +212,7 @@ class PhotographerController {
             });
 
             if (albumExist === null) {
-              res.status(403).json({ errors: [{ msg: 'This album does not exist' }] });
+              res.json({ errors: [{ msg: 'This album does not exist' }] });
               return;
             }
 
@@ -199,7 +220,7 @@ class PhotographerController {
               where: { id: albumId, photographerId },
             });
             if (!albumBelongsToUser) {
-              res.status(403).json({ errors: [{ msg: 'This album does not belong to this user' }] });
+              res.json({ errors: [{ msg: 'This album does not belong to this user' }] });
               return;
             }
             const photos = await Photo.findAndCountAll({
@@ -210,7 +231,7 @@ class PhotographerController {
             });
 
             if (photos.count === 0) {
-              res.status(403).json({ errors: [{ msg: 'The album is empty' }] });
+              res.json({ errors: [{ msg: 'The album is empty' }] });
               return;
             }
             res.json(photos);
@@ -219,7 +240,7 @@ class PhotographerController {
             res.status(403).json({ errors: [{ msg: 'Error occured' }] });
           }
         } else {
-          res.status(403).json({ errors: [{ msg: 'Photographer with this id does not exist' }] });
+          res.json({ errors: [{ msg: 'Photographer with this id does not exist' }] });
         }
       } catch (e) {
         res.status(403).json({ errors: [{ msg: 'Error occured' }] });

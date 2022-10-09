@@ -6,10 +6,9 @@ import photographerValidator from '../validator/photographerValidator/photograph
 const router = express.Router();
 
 router.post('/login', photographerValidator.checkLogin(), checkValidationErrors, photographerController.login);
-
+router.get('/get-me', photographerController.getMe);
 router.post('/create-album', checkAuth, photographerValidator.checkCreateAlbum(), checkValidationErrors, photographerController.createAlbum);
 router.post('/s3-upload', checkAuth, photographerValidator.checkS3Upload(), checkValidationErrors, photographerController.signOne);
-// router.post('/add-person-to-photo', checkAuth, photographerController.addPersonToPhoto);
 router.post('/get-signed-photos', checkAuth, photographerValidator.checkGetSignedPhotos(), checkValidationErrors, photographerController.createPresignedGetForPhotos);
 router.get('/get-all-people', checkAuth, photographerController.getAllPeople);
 router.get('/get-albums-from-db', checkAuth, photographerValidator.checkGetAlbum(), checkValidationErrors, photographerController.getAlbums);

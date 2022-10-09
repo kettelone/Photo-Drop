@@ -96,7 +96,7 @@ class PhotoController {
   }
 
   async getSelfie(req: Request, res: Response) :Promise<void> {
-    const appUserId = req.query.appUserId as number|undefined;
+    const appUserId = req.query.appUserId as string|undefined;
     try {
       if (appUserId !== undefined) {
         const selfie = await SelfieMini.findOne({ where: { appUserId, active: true } });
