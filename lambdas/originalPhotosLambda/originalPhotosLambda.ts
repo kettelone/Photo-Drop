@@ -35,6 +35,7 @@ const baseHandler = async (event: any) => {
   if (!photoDropLogo) {
     return;
   }
+  console.log('test');
   const srcBucket = event.Records[0].s3.bucket.name;
   // Object key may have spaces or unicode non-ASCII characters.
   const srcKey = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
@@ -110,7 +111,6 @@ const baseHandler = async (event: any) => {
     console.log('Could not determine the image type.');
     return;
   }
-
   // Check that the image type is supported
   const imageType = typeMatch[1].toLowerCase();
   if (imageType !== 'jpg' && imageType !== 'png' && imageType !== 'jpeg') {
