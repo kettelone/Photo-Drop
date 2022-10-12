@@ -1,14 +1,43 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { AppUser, Person } from '../../../models/model';
+import { AppUser, Person, SelfieMini } from '../../../models/model';
 
-const generateJwt = (id: number, phoneNumber: string):string => jwt.sign(
-  { id, phoneNumber },
+const generateJwt = (
+  id: number,
+  phone: string,
+  email: string,
+  name:string,
+  emailNotification: boolean,
+  textMessagesNotification: boolean,
+  unsubscribe: boolean,
+  activeSelfieKey: string | null,
+):string => jwt.sign(
+  {
+    id,
+    phone,
+    email,
+    name,
+    emailNotification,
+    textMessagesNotification,
+    unsubscribe,
+    activeSelfieKey,
+  },
   process.env.SECRET_KEY!,
   {
     expiresIn: '24h',
   },
 );
+
+const getMiniSelfieKey = async (appUserId:number):Promise<string | null> => {
+  const selfieInstance = await SelfieMini.findOne({ where: { appUserId, active: true } });
+  let activeSelfieKey;
+  if (selfieInstance) {
+    activeSelfieKey = selfieInstance.name;
+  } else {
+    activeSelfieKey = null;
+  }
+  return activeSelfieKey;
+};
 
 class UserAccountController {
   async createAppUser(req: Request, res: Response): Promise<void> {
@@ -18,11 +47,23 @@ class UserAccountController {
     const { phone }:Phone = req.body;
     if (phone) {
       try {
-        const appUserExist = await AppUser.findAll({ where: { phone } });
-        if (appUserExist.length > 0) {
-          const userId = appUserExist[0].id;
-          const phoneNumber = appUserExist[0].phone;
-          const token = generateJwt(userId, phoneNumber);
+        const appUserExist = await AppUser.findOne({ where: { phone } });
+        if (appUserExist) {
+          const {
+            id, email, name, emailNotification, textMessagesNotification, unsubscribe,
+          } = appUserExist;
+
+          const activeSelfieKey = await getMiniSelfieKey(id);
+          const token = generateJwt(
+            id,
+            phone,
+            email,
+            name,
+            emailNotification,
+            textMessagesNotification,
+            unsubscribe,
+            activeSelfieKey,
+          );
           res.json({ token });
           return;
         }
@@ -34,22 +75,44 @@ class UserAccountController {
             unsubscribe: false,
           });
           const personExist = await Person.findOne({ where: { phone } });
-          console.log('personExist is: ', personExist);
           if (appUser && personExist === null) {
             const person = await Person.create({
               phone,
             });
             if (person) {
-              const userId = appUser.id;
-              const phoneNumber = appUser.phone;
-              const token = generateJwt(userId, phoneNumber);
+              const {
+                id, email, name, emailNotification, textMessagesNotification, unsubscribe,
+              } = appUser;
+              const activeSelfieKey = null;
+              const token = generateJwt(
+                id,
+                phone,
+                email,
+                name,
+                emailNotification,
+                textMessagesNotification,
+                unsubscribe,
+                activeSelfieKey,
+              );
               res.json({ token });
               return;
             }
           } else if (personExist) {
-            const userId = personExist.id;
-            const phoneNumber = personExist.phone;
-            const token = generateJwt(userId, phoneNumber);
+            const {
+              id, email, name, emailNotification, textMessagesNotification, unsubscribe,
+            } = appUser;
+
+            const activeSelfieKey = await getMiniSelfieKey(id);
+            const token = generateJwt(
+              id,
+              phone,
+              email,
+              name,
+              emailNotification,
+              textMessagesNotification,
+              unsubscribe,
+              activeSelfieKey,
+            );
             res.json({ token });
             return;
           }
@@ -95,12 +158,31 @@ class UserAccountController {
       try {
         const user = await AppUser.findOne({ where: { id } });
         if (user) {
+          const {
+            phone,
+            email,
+            emailNotification,
+            textMessagesNotification,
+            unsubscribe,
+          } = user;
           user.name = name;
           user.save();
-          res.json(user);
-        } else {
-          res.send({ message: 'User not found' });
+
+          const activeSelfieKey = await getMiniSelfieKey(id);
+          const token = generateJwt(
+            id,
+            phone,
+            email,
+            name,
+            emailNotification,
+            textMessagesNotification,
+            unsubscribe,
+            activeSelfieKey,
+          );
+          res.json({ token });
+          return;
         }
+        res.send({ message: 'User not found' });
       } catch (e) {
         console.log(e);
         res.status(500).json({ message: 'Error occured' });
@@ -119,8 +201,14 @@ class UserAccountController {
           const user = await AppUser.findOne({ where: { id } });
           let oldPhone;
           if (user) {
+            const {
+              name,
+              email,
+              emailNotification,
+              textMessagesNotification,
+              unsubscribe,
+            } = user;
             oldPhone = user.phone;
-            console.log({ oldPhone });
             user.phone = phone;
             user.save();
             try {
@@ -133,11 +221,21 @@ class UserAccountController {
             } catch (e) {
               console.log(e);
             }
-            const token = generateJwt(id, phone);
-            res.json({ user, token });
-          } else {
-            res.send({ message: 'User not found' });
+            const activeSelfieKey = await getMiniSelfieKey(id);
+            const token = generateJwt(
+              id,
+              phone,
+              email,
+              name,
+              emailNotification,
+              textMessagesNotification,
+              unsubscribe,
+              activeSelfieKey,
+            );
+            res.json({ token });
+            return;
           }
+          res.send({ message: 'User not found' });
         } catch (e) {
           console.log(e);
           res.status(500).json({ message: 'Error occured' });
@@ -155,12 +253,31 @@ class UserAccountController {
       try {
         const user = await AppUser.findOne({ where: { id } });
         if (user) {
+          const {
+            name,
+            phone,
+            emailNotification,
+            textMessagesNotification,
+            unsubscribe,
+          } = user;
           user.email = email;
           user.save();
-          res.json(user);
-        } else {
-          res.send({ message: 'User not found' });
+
+          const activeSelfieKey = await getMiniSelfieKey(id);
+          const token = generateJwt(
+            id,
+            phone,
+            email,
+            name,
+            emailNotification,
+            textMessagesNotification,
+            unsubscribe,
+            activeSelfieKey,
+          );
+          res.json({ token });
+          return;
         }
+        res.send({ message: 'User not found' });
       } catch (e) {
         console.log(e);
         res.status(500).json({ message: 'Error occured' });
@@ -181,11 +298,25 @@ class UserAccountController {
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (user) {
+        const { name, email, phone } = user;
         user.textMessagesNotification = textMessagesNotification;
         user.emailNotification = emailNotification;
         user.unsubscribe = unsubscribe;
         user.save();
-        res.json(user);
+
+        const activeSelfieKey = await getMiniSelfieKey(id);
+        const token = generateJwt(
+          id,
+          phone,
+          email,
+          name,
+          emailNotification,
+          textMessagesNotification,
+          unsubscribe,
+          activeSelfieKey,
+        );
+        res.json({ token });
+        return;
       }
     } catch (e) {
       console.log(e);

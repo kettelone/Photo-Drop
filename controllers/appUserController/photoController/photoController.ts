@@ -84,9 +84,10 @@ class PhotoController {
 
     const { url, fields } = s3.createPresignedPost({
       Fields: {
-        key: `${userId}/${uuidv4()}_${name}`,
+        key: `${userId}/${uuidv4()}`,
         'Content-Type': `image/${photoExtension}`,
         'x-amz-meta-userId': metadata,
+        originalSelfieKey: name,
       },
       Conditions: [['content-length-range', 0, 5000000]],
       Expires: 60 * 60, // seconds
@@ -102,7 +103,10 @@ class PhotoController {
         const selfie = await SelfieMini.findOne({ where: { appUserId, active: true } });
         if (selfie) {
           res.json(selfie);
+          return;
         }
+        res.json({ errors: [{ msg: 'User doesn`t have active selfie' }] });
+        return;
       }
     } catch (e) {
       res.status(500).json({ message: 'Error occured' });
