@@ -64,6 +64,27 @@ class UserAccountController {
     }
   }
 
+  async getMe(req: Request, res: Response):Promise<void> {
+    try {
+      if (req.headers.authorization !== undefined) {
+        const token = req.headers.authorization.split(' ')[1]; // Bearer ddhcjhdsjcsdcs
+
+        if (!token) {
+          res.status(401).json({ errors: [{ msg: 'Not authorized' }] });
+        }
+
+        const payload = jwt.verify(token, process.env.SECRET_KEY!);
+        if (payload) {
+          res.send();
+        }
+      } else {
+        res.status(401).json({ errors: [{ msg: 'Missing authorization token' }] });
+      }
+    } catch (e) {
+      res.status(401).json({ errors: [{ msg: 'Not authorized' }] });
+    }
+  }
+
   async editName(req: Request, res: Response): Promise<void> {
     interface Body {
       id: number,

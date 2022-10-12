@@ -10,6 +10,7 @@ const router = express.Router();
 
 router.post('/send-otp', appUserValidator.checkGetOTP(), checkValidationErrors, telegramController.generateOTP);
 router.post('/create-app-user', appUserValidator.checkCreateAppUser(), checkValidationErrors, userAccountController.createAppUser);
+router.get('/get-me', userAccountController.getMe);
 router.post('/presigned-post', checkAuth, appUserValidator.checkGetPresignedUrl(), checkValidationErrors, photoController.signSelfie);
 router.get('/get-selfie', checkAuth, appUserValidator.checkGetSelfie(), checkValidationErrors, photoController.getSelfie);
 router.post('/get-signed-selfie', checkAuth, appUserValidator.checkPresignedGetSelfie(), checkValidationErrors, photoController.createPresignedGetForSelfie);
