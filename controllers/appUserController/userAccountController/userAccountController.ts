@@ -129,6 +129,7 @@ class UserAccountController {
 
   async getMe(req: Request, res: Response):Promise<void> {
     try {
+      const userId = req.query.userId as number | undefined;
       if (req.headers.authorization !== undefined) {
         const token = req.headers.authorization.split(' ')[1]; // Bearer ddhcjhdsjcsdcs
 
@@ -137,11 +138,40 @@ class UserAccountController {
         }
 
         const payload = jwt.verify(token, process.env.SECRET_KEY!);
-        if (payload) {
-          res.send();
+        if (userId && payload) {
+          const user = await AppUser.findOne({ where: { id: userId } });
+          const selfie = await SelfieMini.findOne({ where: { appUserId: userId, active: true } });
+          if (user) {
+            const {
+              id, name, phone, email, textMessagesNotification, emailNotification, unsubscribe,
+            } = user;
+            interface UserObject{
+              id:number,
+              name:string,
+              phone:string,
+              email:string,
+              textMessagesNotification:boolean,
+              emailNotification:boolean,
+              unsubscribe:boolean,
+              selfieKey?:string
+            }
+            const userObject: UserObject = {
+              id, name, phone, email, textMessagesNotification, emailNotification, unsubscribe,
+            };
+
+            if (selfie) {
+              userObject.selfieKey = selfie.name;
+            }
+            res.json({ userObject });
+            return;
+          }
+          res.status(401).json({ errors: [{ msg: 'User was not found' }] });
+          return;
         }
+        res.status(401).json({ errors: [{ msg: 'User id is not provided' }] });
       } else {
         res.status(401).json({ errors: [{ msg: 'Missing authorization token' }] });
+        return;
       }
     } catch (e) {
       res.status(401).json({ errors: [{ msg: 'Not authorized' }] });
