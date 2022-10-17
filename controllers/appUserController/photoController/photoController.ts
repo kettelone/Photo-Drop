@@ -84,7 +84,7 @@ class PhotoController {
 
     const { url, fields } = s3.createPresignedPost({
       Fields: {
-        key: `${userId}/${uuidv4()}`,
+        key: `${userId}/${uuidv4()}.${photoExtension}`,
         'Content-Type': `image/${photoExtension}`,
         'x-amz-meta-userId': metadata,
         originalSelfieKey: name,
