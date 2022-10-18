@@ -5,39 +5,16 @@ import { AppUser, Person, SelfieMini } from '../../../models/model';
 const generateJwt = (
   id: number,
   phone: string,
-  email: string,
-  name:string,
-  emailNotification: boolean,
-  textMessagesNotification: boolean,
-  unsubscribe: boolean,
-  activeSelfieKey: string | null,
 ):string => jwt.sign(
   {
     id,
     phone,
-    email,
-    name,
-    emailNotification,
-    textMessagesNotification,
-    unsubscribe,
-    activeSelfieKey,
   },
   process.env.SECRET_KEY!,
   {
     expiresIn: '24h',
   },
 );
-
-const getMiniSelfieKey = async (appUserId:number):Promise<string | null> => {
-  const selfieInstance = await SelfieMini.findOne({ where: { appUserId, active: true } });
-  let activeSelfieKey;
-  if (selfieInstance) {
-    activeSelfieKey = selfieInstance.name;
-  } else {
-    activeSelfieKey = null;
-  }
-  return activeSelfieKey;
-};
 
 class UserAccountController {
   async createAppUser(req: Request, res: Response): Promise<void> {
@@ -50,19 +27,12 @@ class UserAccountController {
         const appUserExist = await AppUser.findOne({ where: { phone } });
         if (appUserExist) {
           const {
-            id, email, name, emailNotification, textMessagesNotification, unsubscribe,
+            id,
           } = appUserExist;
 
-          const activeSelfieKey = await getMiniSelfieKey(id);
           const token = generateJwt(
             id,
             phone,
-            email,
-            name,
-            emailNotification,
-            textMessagesNotification,
-            unsubscribe,
-            activeSelfieKey,
           );
           res.json({ token });
           return;
@@ -81,37 +51,23 @@ class UserAccountController {
             });
             if (person) {
               const {
-                id, email, name, emailNotification, textMessagesNotification, unsubscribe,
+                id,
               } = appUser;
-              const activeSelfieKey = null;
               const token = generateJwt(
                 id,
                 phone,
-                email,
-                name,
-                emailNotification,
-                textMessagesNotification,
-                unsubscribe,
-                activeSelfieKey,
               );
               res.json({ token });
               return;
             }
           } else if (personExist) {
             const {
-              id, email, name, emailNotification, textMessagesNotification, unsubscribe,
+              id,
             } = appUser;
 
-            const activeSelfieKey = await getMiniSelfieKey(id);
             const token = generateJwt(
               id,
               phone,
-              email,
-              name,
-              emailNotification,
-              textMessagesNotification,
-              unsubscribe,
-              activeSelfieKey,
             );
             res.json({ token });
             return;
@@ -188,26 +144,13 @@ class UserAccountController {
       try {
         const user = await AppUser.findOne({ where: { id } });
         if (user) {
-          const {
-            phone,
-            email,
-            emailNotification,
-            textMessagesNotification,
-            unsubscribe,
-          } = user;
+          const { phone } = user;
           user.name = name;
           user.save();
 
-          const activeSelfieKey = await getMiniSelfieKey(id);
           const token = generateJwt(
             id,
             phone,
-            email,
-            name,
-            emailNotification,
-            textMessagesNotification,
-            unsubscribe,
-            activeSelfieKey,
           );
           res.json({ token });
           return;
@@ -231,13 +174,6 @@ class UserAccountController {
           const user = await AppUser.findOne({ where: { id } });
           let oldPhone;
           if (user) {
-            const {
-              name,
-              email,
-              emailNotification,
-              textMessagesNotification,
-              unsubscribe,
-            } = user;
             oldPhone = user.phone;
             user.phone = phone;
             user.save();
@@ -251,16 +187,9 @@ class UserAccountController {
             } catch (e) {
               console.log(e);
             }
-            const activeSelfieKey = await getMiniSelfieKey(id);
             const token = generateJwt(
               id,
               phone,
-              email,
-              name,
-              emailNotification,
-              textMessagesNotification,
-              unsubscribe,
-              activeSelfieKey,
             );
             res.json({ token });
             return;
@@ -284,25 +213,14 @@ class UserAccountController {
         const user = await AppUser.findOne({ where: { id } });
         if (user) {
           const {
-            name,
             phone,
-            emailNotification,
-            textMessagesNotification,
-            unsubscribe,
           } = user;
           user.email = email;
           user.save();
 
-          const activeSelfieKey = await getMiniSelfieKey(id);
           const token = generateJwt(
             id,
             phone,
-            email,
-            name,
-            emailNotification,
-            textMessagesNotification,
-            unsubscribe,
-            activeSelfieKey,
           );
           res.json({ token });
           return;
@@ -328,22 +246,15 @@ class UserAccountController {
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (user) {
-        const { name, email, phone } = user;
+        const { phone } = user;
         user.textMessagesNotification = textMessagesNotification;
         user.emailNotification = emailNotification;
         user.unsubscribe = unsubscribe;
         user.save();
 
-        const activeSelfieKey = await getMiniSelfieKey(id);
         const token = generateJwt(
           id,
           phone,
-          email,
-          name,
-          emailNotification,
-          textMessagesNotification,
-          unsubscribe,
-          activeSelfieKey,
         );
         res.json({ token });
         return;

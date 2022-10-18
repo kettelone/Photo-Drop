@@ -76,7 +76,7 @@ const baseHandler = async (event) => {
       }
 
       // set thumbnail width. Resize will set the height automatically to maintain aspect ratio.
-      const height = 50;
+      const height = 250;
 
       // Use the sharp module to resize the image and save in a buffer.
       let buffer;
