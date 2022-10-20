@@ -144,15 +144,16 @@ class UserAccountController {
       try {
         const user = await AppUser.findOne({ where: { id } });
         if (user) {
-          const { phone } = user;
+          // const { phone } = user;
           user.name = name;
           user.save();
 
-          const token = generateJwt(
-            id,
-            phone,
-          );
-          res.json({ token });
+          // const token = generateJwt(
+          //   id,
+          //   phone,
+          // );
+          // res.json({ token });
+          res.json({ user });
           return;
         }
         res.send({ message: 'User not found' });
@@ -187,11 +188,11 @@ class UserAccountController {
             } catch (e) {
               console.log(e);
             }
-            const token = generateJwt(
-              id,
-              phone,
-            );
-            res.json({ token });
+            // const token = generateJwt(
+            //   id,
+            //   phone,
+            // );
+            res.json({ user });
             return;
           }
           res.send({ message: 'User not found' });
@@ -212,17 +213,17 @@ class UserAccountController {
       try {
         const user = await AppUser.findOne({ where: { id } });
         if (user) {
-          const {
-            phone,
-          } = user;
+          // const {
+          //   phone,
+          // } = user;
           user.email = email;
           user.save();
 
-          const token = generateJwt(
-            id,
-            phone,
-          );
-          res.json({ token });
+          // const token = generateJwt(
+          //   id,
+          //   phone,
+          // );
+          res.json({ user });
           return;
         }
         res.send({ message: 'User not found' });
@@ -246,17 +247,17 @@ class UserAccountController {
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (user) {
-        const { phone } = user;
+        // const { phone } = user;
         user.textMessagesNotification = textMessagesNotification;
         user.emailNotification = emailNotification;
         user.unsubscribe = unsubscribe;
         user.save();
 
-        const token = generateJwt(
-          id,
-          phone,
-        );
-        res.json({ token });
+        // const token = generateJwt(
+        //   id,
+        //   phone,
+        // );
+        res.json({ user });
         return;
       }
     } catch (e) {

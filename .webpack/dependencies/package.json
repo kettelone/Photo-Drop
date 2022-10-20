@@ -1,0 +1,13 @@
+{
+  "name": "myserverlessproject",
+  "version": "1.0.0",
+  "description": "Packaged externals for myserverlessproject",
+  "private": true,
+  "scripts": {},
+  "dependencies": {
+    "dotenv": "^16.0.2",
+    "jimp": "^0.16.2",
+    "pg": "^8.8.0",
+    "sequelize": "^6.23.0"
+  }
+}
