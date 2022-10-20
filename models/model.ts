@@ -50,7 +50,6 @@ const PhotoMini = sequelize.define<PhotoMiniInstance>('photoMini', {
 });
 
 // PhotoMiniWaterMark
-
 const PhotoMiniWaterMark = sequelize.define<PhotoMiniWaterMarkInstance>('photoMiniWaterMark', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
@@ -73,6 +72,7 @@ const AppUser = sequelize.define<AppUserInstance>('appUser', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING },
   phone: { type: DataTypes.STRING, unique: true },
+  countryCode: { type: DataTypes.STRING },
   email: { type: DataTypes.STRING, unique: true },
   textMessagesNotification: { type: DataTypes.BOOLEAN },
   emailNotification: { type: DataTypes.BOOLEAN },

@@ -87,6 +87,7 @@ interface AppUserAttributes {
   id: number,
   name: string,
   phone: string,
+  countryCode:string,
   email: string,
   textMessagesNotification: boolean,
   emailNotification: boolean,

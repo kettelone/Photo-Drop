@@ -5,10 +5,12 @@ import { AppUser, Person, SelfieMini } from '../../../models/model';
 const generateJwt = (
   id: number,
   phone: string,
+  countryCode:string,
 ):string => jwt.sign(
   {
     id,
     phone,
+    countryCode,
   },
   process.env.SECRET_KEY!,
   {
@@ -19,9 +21,10 @@ const generateJwt = (
 class UserAccountController {
   async createAppUser(req: Request, res: Response): Promise<void> {
     interface Phone {
-      phone: string
+      phone: string,
+      countryCode: string
     }
-    const { phone }:Phone = req.body;
+    const { phone, countryCode }:Phone = req.body;
     if (phone) {
       try {
         const appUserExist = await AppUser.findOne({ where: { phone } });
@@ -33,6 +36,7 @@ class UserAccountController {
           const token = generateJwt(
             id,
             phone,
+            countryCode,
           );
           res.json({ token });
           return;
@@ -40,6 +44,7 @@ class UserAccountController {
         try {
           const appUser = await AppUser.create({
             phone,
+            countryCode,
             textMessagesNotification: true,
             emailNotification: true,
             unsubscribe: false,
@@ -56,6 +61,7 @@ class UserAccountController {
               const token = generateJwt(
                 id,
                 phone,
+                countryCode,
               );
               res.json({ token });
               return;
@@ -68,6 +74,7 @@ class UserAccountController {
             const token = generateJwt(
               id,
               phone,
+              countryCode,
             );
             res.json({ token });
             return;
@@ -99,12 +106,14 @@ class UserAccountController {
           const selfie = await SelfieMini.findOne({ where: { appUserId: userId, active: true } });
           if (user) {
             const {
-              id, name, phone, email, textMessagesNotification, emailNotification, unsubscribe,
+              id, name, phone, countryCode, email,
+              textMessagesNotification, emailNotification, unsubscribe,
             } = user;
             interface UserObject{
               id:number,
               name:string,
-              phone:string,
+              phone: string,
+              countryCode:string,
               email:string,
               textMessagesNotification:boolean,
               emailNotification:boolean,
@@ -112,7 +121,14 @@ class UserAccountController {
               selfieKey?:string
             }
             const userObject: UserObject = {
-              id, name, phone, email, textMessagesNotification, emailNotification, unsubscribe,
+              id,
+              name,
+              phone,
+              countryCode,
+              email,
+              textMessagesNotification,
+              emailNotification,
+              unsubscribe,
             };
 
             if (selfie) {
@@ -167,9 +183,10 @@ class UserAccountController {
   async editPhone(req: Request, res: Response): Promise<void> {
       interface Body {
       id: number,
-      phone: string
+      phone: string,
+      countryCode: string
     }
-      const { id, phone }:Body = req.body;
+      const { id, phone, countryCode }:Body = req.body;
       if (id && phone) {
         try {
           const user = await AppUser.findOne({ where: { id } });
@@ -177,10 +194,10 @@ class UserAccountController {
           if (user) {
             oldPhone = user.phone;
             user.phone = phone;
-            user.save();
+            user.countryCode = countryCode;
+            await user.save();
             try {
               const person = await Person.findOne({ where: { phone: oldPhone } });
-              console.log({ person });
               if (person) {
                 person.phone = phone;
                 person.save();
@@ -188,11 +205,12 @@ class UserAccountController {
             } catch (e) {
               console.log(e);
             }
-            // const token = generateJwt(
-            //   id,
-            //   phone,
-            // );
-            res.json({ user });
+            const token = generateJwt(
+              id,
+              phone,
+              countryCode,
+            );
+            res.json({ user, token });
             return;
           }
           res.send({ message: 'User not found' });
