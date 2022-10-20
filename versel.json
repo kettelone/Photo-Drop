@@ -1,6 +1,6 @@
 {
     "version": 2,
-    "name": "music-album",
+    "name": "photo-drop",
     "builds": [
         {
             "src": "build/index.js",
@@ -10,7 +10,7 @@
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "/build/index.js"
+            "dest": "build/index.js"
         }
     ]
 }
