@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "PhotoDrop is a service that enables :1) photographers to upload the photos; 2) users to buy those photos.",
   "main": "index.js",
+  "engines": {
+    "node": "14.x"
+  },
   "scripts": {
     "lint": "eslint .  --ext .ts --fix",
     "dev": "nodemon --exec ts-node index.ts",
