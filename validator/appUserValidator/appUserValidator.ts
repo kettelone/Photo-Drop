@@ -10,6 +10,7 @@ class AppUserValidator {
   checkCreateAppUser() {
     return [
       body('phone').notEmpty().withMessage('The phone value should not be empty'),
+      body('countryCode').notEmpty().withMessage('The countryCode value should not be empty'),
       body('phone').custom((value) => {
         if (value.includes('+')) {
           throw new Error('Phone number should not include +');
@@ -49,6 +50,8 @@ class AppUserValidator {
     return [
       body('id').notEmpty().withMessage('The id value should not be empty'),
       body('phone').notEmpty().withMessage('The phone value should not be empty'),
+      body('countryCode').notEmpty().withMessage('The countryCode value should not be empty'),
+
     ];
   }
 
