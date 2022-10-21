@@ -118,7 +118,7 @@ class UserAccountController {
               textMessagesNotification:boolean,
               emailNotification:boolean,
               unsubscribe:boolean,
-              selfieKey?:string
+              selfieKey?:string | null
             }
             const userObject: UserObject = {
               id,
@@ -133,6 +133,8 @@ class UserAccountController {
 
             if (selfie) {
               userObject.selfieKey = selfie.name;
+            } else {
+              userObject.selfieKey = null;
             }
             res.json({ userObject });
             return;
