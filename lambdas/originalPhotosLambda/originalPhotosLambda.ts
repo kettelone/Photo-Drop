@@ -62,12 +62,12 @@ const baseHandler = async (event: any) => {
 
   // save original photo info to db
   const idEnd = srcKey.indexOf('/');
-  const photographerId = Number(srcKey.substring(0, idEnd));
+  const photographerId = srcKey.substring(0, idEnd);
   // 1/1/491e9200-155e-4a19-8935-307b98fc3841_laptop.jpg
 
   const albumIdStart = srcKey.substring(idEnd + 1);
   const albumIdEnd = albumIdStart.indexOf('/');
-  const albumId = Number(`${albumIdStart.substring(0, albumIdEnd)}`);
+  const albumId = albumIdStart.substring(0, albumIdEnd);
   const urlPhoto = `https://${srcBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
   try {
     const photo = await Photo.create({
@@ -195,7 +195,7 @@ const baseHandler = async (event: any) => {
       2.After importing the  photoDropLogo and deploying with "serverless deploy" command
         photoDropLogo image will be present in zip package file
         under the name "d8885004a7cbbc5c2de6177b99b30489.png"
-        (have no idea why this name. I was trying tix it with no success.)
+        (have no idea why this name. I was trying to fix it with no success.)
         So later on we will read image using name mentioned above. The path will be
         "./d8885004a7cbbc5c2de6177b99b30489.png" - chekc zip file manually to double check
       */

@@ -2,8 +2,8 @@ interface PhotoObject {
       photoKey:string
 }
 interface PhotosArray {
-    photographerId: number,
-    albumId: number,
+    photographerId: string,
+    albumId: string,
     photoName: string,
     'Content-Type':string
 }
@@ -17,11 +17,11 @@ interface CreateAlbumBody {
     name: string,
     location: string,
     date: string,
-    photographerId: number
+    photographerId: string
 }
 
 interface GetThumbnailIconBody {
-    albumId: number
+    albumId: string
 }
 
 export {

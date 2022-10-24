@@ -3,7 +3,7 @@
 import { Optional, Model } from 'sequelize';
 // Photographer
 interface PhotographerAttributes {
-  id: number;
+  id: string;
   login: string;
   password: string;
   email: string;
@@ -16,11 +16,11 @@ interface PhotographerInstance extends Model<PhotographerAttributes,
 
 // Album
 interface AlbumAttributes {
-  id: number;
+  id: string;
   name: string,
   location: string,
   date: string,
-  photographerId:number
+  photographerId:string
 }
 
 interface AlbumCreationAttributes extends Optional<AlbumAttributes, 'id' > { }
@@ -30,11 +30,11 @@ interface AlbumInstance extends Model<AlbumAttributes, AlbumCreationAttributes>,
 // Photo
 
 interface PhotoAttributes {
-  id: number;
+  id: string;
   name: string,
   photoUrl: string,
-  photographerId: number
-  albumId:number
+  photographerId: string
+  albumId:string
 }
 
 interface PhotoCreationAttributes extends Optional<PhotoAttributes, 'id'> { }
@@ -44,11 +44,11 @@ interface PhotoInstance extends Model<PhotoAttributes, PhotoCreationAttributes>,
 // PhotoMini
 
 interface PhotoMiniAttributes {
-  id: number;
+  id: string;
   name: string,
   photoMiniUrl: string
-  albumId: number,
-  photographerId:number
+  albumId: string,
+  photographerId:string
 }
 interface PhotoMiniCreationAttributes extends Optional<PhotoMiniAttributes, 'id'> { }
 interface PhotoMiniInstance extends Model<PhotoMiniAttributes, PhotoMiniCreationAttributes>,
@@ -57,10 +57,10 @@ interface PhotoMiniInstance extends Model<PhotoMiniAttributes, PhotoMiniCreation
 // PhotoMiniWaterMark
 
 interface PhotoMiniWaterMarkAttributes {
-  id: number;
+  id: string;
   name: string,
-  albumId: number,
-  photographerId: number,
+  albumId: string,
+  photographerId: string,
   photoMiniWaterMarkUrl:string
 }
 
@@ -71,7 +71,7 @@ interface PhotoMiniWaterMarkInstance extends
 
 // Person
 interface PersonAttributes {
-  id: number;
+  id: string;
   phone: string,
   name: string,
 }
@@ -84,7 +84,7 @@ interface PersonInstance extends
 // AppUser
 
 interface AppUserAttributes {
-  id: number,
+  id: string,
   name: string,
   phone: string,
   countryCode:string,
@@ -102,11 +102,11 @@ interface AppUserInstance extends
 // Selfie
 
 interface SelfieAttributes {
-  id: number,
+  id: string,
   name: string,
   selfieUrl: string,
   active: boolean,
-  appUserId:number
+  appUserId:string
 }
 
 interface SelfieCreationAttributes extends Optional<SelfieAttributes, 'id'> { }
@@ -116,11 +116,11 @@ interface SelfieInstance extends
 
 // SelfirMini
 interface SelfieMiniAttributes {
-  id: number,
+  id: string,
   name: string,
   selfieUrl: string,
   active: boolean
-  appUserId:number
+  appUserId:string
 }
 interface SelfieMiniCreationAttributes extends Optional<SelfieMiniAttributes, 'id'> { }
 interface SelfieMiniInstance extends
@@ -129,10 +129,10 @@ interface SelfieMiniInstance extends
 
 // UserAlbum
 interface UserAlbumAttributes {
- id: number,
-  userId: number,
+ id: string,
+  userId: string,
   userName: string,
-  albumId: number,
+  albumId: string,
   isPaid: boolean,
 }
 
@@ -143,8 +143,8 @@ interface UserAlbumInstance extends
 
 // Photo_Pesron
 interface Photo_PesronAttributes {
- photoId: number,
-  personId: number,
+ photoId: string,
+  personId: string,
 }
 
 interface Photo_PesronInstance extends

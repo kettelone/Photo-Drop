@@ -16,7 +16,7 @@ aws.config.update({
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 });
 
-const generateJwt = (id:number, login:string) => jwt.sign({ id, login }, process.env.SECRET_KEY!, {
+const generateJwt = (id:string, login:string) => jwt.sign({ id, login }, process.env.SECRET_KEY!, {
   expiresIn: '24h',
 });
 
@@ -128,7 +128,7 @@ class PhotographerController {
   }
 
   async getAlbums(req: Request, res: Response): Promise<void> {
-    const photographerId = req.query.photographerId as number |undefined;
+    const photographerId = req.query.photographerId as string |undefined;
     try {
       if (photographerId) {
         const PhotographerExist = await Photographer.findOne({ where: { id: photographerId } });
@@ -155,7 +155,7 @@ class PhotographerController {
     interface ThumbnailsObject{
       [key: string] : string | null
     }
-    const albumIds = req.body.albumIds as number[];
+    const albumIds = req.body.albumIds as string[];
     const albumThumbnails:ThumbnailsObject = {};
     const albumIdsLength = albumIds.length;
     try {
@@ -194,8 +194,8 @@ class PhotographerController {
      unless the query itself returns fewer records than the number specified by LIMIT.
     OFFSET is used to skip the number of records from the results. */
 
-    const albumId = req.query.albumId as number | undefined;
-    const photographerId = req.query.photographerId as number | undefined;
+    const albumId = req.query.albumId as string | undefined;
+    const photographerId = req.query.photographerId as string | undefined;
     let limit = req.query.limit as number | undefined;
     let page = req.query.page as number | undefined;
 

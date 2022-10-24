@@ -16,7 +16,7 @@ aws.config.update({
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 });
 
-const checkIfPaid = async (userId:number, albumId:number) :Promise<boolean> => {
+const checkIfPaid = async (userId:string, albumId:string) :Promise<boolean> => {
   try {
     const info = await UserAlbum.findOne({ where: { userId, albumId } });
     if (info === null) {
@@ -34,7 +34,7 @@ const checkIfPaid = async (userId:number, albumId:number) :Promise<boolean> => {
   return false;
 };
 
-const generatePaymnet = async (albumId:Number, userId:Number):Promise<string |undefined> => {
+const generatePaymnet = async (albumId:string, userId:string):Promise<string |undefined> => {
   const albumItem = { id: 1, priceInCents: 500, name: 'Album' };
   if (albumId !== undefined && userId !== undefined) {
     try {
@@ -74,7 +74,7 @@ class PhotoController {
   async signSelfie(req: Request, res: Response) :Promise<void> {
     interface Body {
     name: string;
-    userId: number;
+    userId: string;
   }
     const s3 = new aws.S3();
     const { name, userId } :Body = req.body;
@@ -151,7 +151,7 @@ class PhotoController {
           }
         }
         const photos = await Promise.all(promises);
-        const albumIds:number[] = [];
+        const albumIds:string[] = [];
         for (let i = 0; i < photos.length; i += 1) {
           const albumId = photos[i]?.albumId;
           if (albumId) {
@@ -171,13 +171,13 @@ class PhotoController {
   }
 
   async getThumbnails(req: Request, res: Response) : Promise<void> {
-    const userId = req.query.userId as number|undefined;
-    const albumId = req.query.albumId as number | undefined;
+    const userId = req.query.userId as string|undefined;
+    const albumId = req.query.albumId as string | undefined;
        interface Thumbnails {
             isPaid: boolean,
             url: string,
             originalKey: string,
-            albumId: number
+            albumId: string
           }
        if (userId && albumId) {
          const isPaid = await checkIfPaid(userId, albumId);
@@ -237,8 +237,8 @@ class PhotoController {
   async getOriginalPhoto(req: Request, res: Response): Promise <void> {
     const s3 = new aws.S3();
     const originalKey = req.query.originalKey as string | undefined;
-    const albumId = req.query.albumId as number|undefined;
-    const userId = req.query.userId as number|undefined;
+    const albumId = req.query.albumId as string |undefined;
+    const userId = req.query.userId as string |undefined;
     // check if the album photo belongs to and is paid by current user
     if (userId && albumId) {
       try {

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { AppUser, Person, SelfieMini } from '../../../models/model';
 
 const generateJwt = (
-  id: number,
+  id: string,
   phone: string,
   countryCode:string,
 ):string => jwt.sign(
@@ -92,7 +92,7 @@ class UserAccountController {
 
   async getMe(req: Request, res: Response):Promise<void> {
     try {
-      const userId = req.query.userId as number | undefined;
+      const userId = req.query.userId as string | undefined;
       if (req.headers.authorization !== undefined) {
         const token = req.headers.authorization.split(' ')[1]; // Bearer ddhcjhdsjcsdcs
 
@@ -110,7 +110,7 @@ class UserAccountController {
               textMessagesNotification, emailNotification, unsubscribe,
             } = user;
             interface UserObject{
-              id:number,
+              id:string,
               name:string,
               phone: string,
               countryCode:string,
@@ -154,7 +154,7 @@ class UserAccountController {
 
   async editName(req: Request, res: Response): Promise<void> {
     interface Body {
-      id: number,
+      id: string,
       name: string
     }
     const { id, name }:Body = req.body;
@@ -184,7 +184,7 @@ class UserAccountController {
 
   async editPhone(req: Request, res: Response): Promise<void> {
       interface Body {
-      id: number,
+      id: string,
       phone: string,
       countryCode: string
     }
@@ -225,7 +225,7 @@ class UserAccountController {
 
   async editEmail(req: Request, res: Response): Promise<void> {
     interface Body {
-      id: number,
+      id: string,
       email: string
     }
     const { id, email }:Body = req.body;
@@ -256,7 +256,7 @@ class UserAccountController {
 
   async editNotificationSettings(req: Request, res: Response): Promise<void> {
     interface Body {
-      id: number,
+      id: string,
       textMessagesNotification: boolean,
       emailNotification: boolean,
       unsubscribe: boolean

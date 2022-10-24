@@ -44,9 +44,9 @@ class StripeController {
         const customer = await stripe.customers.retrieve(data.customer);
         if (customer) {
           // @ts-ignore
-          const userId = customer.metadata.userId as number;
+          const userId = customer.metadata.userId as string;
           // @ts-ignore
-          const albumId = customer.metadata.albumId as number;
+          const albumId = customer.metadata.albumId as string;
           try {
             const albumPaidExist = await UserAlbum.findOne({ where: { userId, albumId } });
             if (albumPaidExist) {

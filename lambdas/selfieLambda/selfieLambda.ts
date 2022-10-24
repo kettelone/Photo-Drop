@@ -23,7 +23,7 @@ const baseHandler = async (event) => {
     const data = await s3.getObject(params).promise();
     const metadata = (!data) ? null : data.Metadata;
     if (metadata) {
-      const userid = Number(metadata.userid);
+      const { userid } = metadata;
       // save selfie info to db
       const urlSelfie = `https://${bucket}.s3.eu-west-1.amazonaws.com/${key}`;
 
