@@ -1,7 +1,6 @@
 import {
   DataTypes,
 } from 'sequelize'; // с помощью DataTypes описываются типы поля(String, Int,  Array ect.)
-import { v4 as uuidv4 } from 'uuid';
 import sequelize from '../db';
 import {
   PhotographerInstance, AlbumInstance, PhotoInstance, PhotoMiniInstance, PhotoMiniWaterMarkInstance,
@@ -11,7 +10,8 @@ import {
 
 // Photographer
 const Photographer = sequelize.define<PhotographerInstance>('photographer', {
-  id: { type: DataTypes.UUIDV4, primaryKey: true, defaultValue: uuidv4() },
+  id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+  index: { type: DataTypes.INTEGER, autoIncrement: true },
   login: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -20,49 +20,51 @@ const Photographer = sequelize.define<PhotographerInstance>('photographer', {
   password: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING },
   fullName: { type: DataTypes.STRING },
+  createdAt: { type: DataTypes.DATE, allowNull: true },
+  updatedAt: { type: DataTypes.DATE, allowNull: true },
 });
 
 // Album
 const Album = sequelize.define<AlbumInstance>('album', {
-  id: { type: DataTypes.UUIDV4, primaryKey: true, defaultValue: uuidv4() },
+  id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
   name: { type: DataTypes.STRING, allowNull: false },
   location: { type: DataTypes.STRING, allowNull: false },
   date: { type: DataTypes.DATE, allowNull: false },
-  photographerId: { type: DataTypes.UUIDV4, allowNull: false },
+  photographerId: { type: DataTypes.UUID, allowNull: false },
 });
 
 // Photo
 const Photo = sequelize.define<PhotoInstance>('photo', {
-  id: { type: DataTypes.UUIDV4, primaryKey: true, defaultValue: uuidv4() },
+  id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
   name: { type: DataTypes.STRING },
   photoUrl: { type: DataTypes.STRING },
-  photographerId: { type: DataTypes.UUIDV4, allowNull: false },
-  albumId: { type: DataTypes.UUIDV4, allowNull: false },
+  photographerId: { type: DataTypes.UUID, allowNull: false },
+  albumId: { type: DataTypes.UUID, allowNull: false },
 
 });
 
 // PhotoMini
 const PhotoMini = sequelize.define<PhotoMiniInstance>('photoMini', {
-  id: { type: DataTypes.UUIDV4, primaryKey: true, defaultValue: uuidv4() },
+  id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
   name: { type: DataTypes.STRING },
   photoMiniUrl: { type: DataTypes.STRING },
-  photographerId: { type: DataTypes.UUIDV4, allowNull: false },
-  albumId: { type: DataTypes.UUIDV4, allowNull: false },
+  photographerId: { type: DataTypes.UUID, allowNull: false },
+  albumId: { type: DataTypes.UUID, allowNull: false },
 });
 
 // PhotoMiniWaterMark
 const PhotoMiniWaterMark = sequelize.define<PhotoMiniWaterMarkInstance>('photoMiniWaterMark', {
-  id: { type: DataTypes.UUIDV4, primaryKey: true, defaultValue: uuidv4() },
+  id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
   name: { type: DataTypes.STRING },
   photoMiniWaterMarkUrl: { type: DataTypes.STRING },
-  photographerId: { type: DataTypes.UUIDV4, allowNull: false },
-  albumId: { type: DataTypes.UUIDV4, allowNull: false },
+  photographerId: { type: DataTypes.UUID, allowNull: false },
+  albumId: { type: DataTypes.UUID, allowNull: false },
 });
 
 // Person
 const Person = sequelize.define<PersonInstance>('person', {
   id: {
-    type: DataTypes.UUIDV4, primaryKey: true, defaultValue: uuidv4(),
+    type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4,
   },
   phone: { type: DataTypes.STRING, unique: true },
   name: { type: DataTypes.STRING },
@@ -70,7 +72,7 @@ const Person = sequelize.define<PersonInstance>('person', {
 
 // Appuser
 const AppUser = sequelize.define<AppUserInstance>('appUser', {
-  id: { type: DataTypes.UUIDV4, primaryKey: true, defaultValue: uuidv4() },
+  id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
   name: { type: DataTypes.STRING },
   phone: { type: DataTypes.STRING, unique: true },
   countryCode: { type: DataTypes.STRING },
@@ -82,35 +84,35 @@ const AppUser = sequelize.define<AppUserInstance>('appUser', {
 
 // Selfie
 const Selfie = sequelize.define<SelfieInstance>('selfie', {
-  id: { type: DataTypes.UUIDV4, primaryKey: true, defaultValue: uuidv4() },
+  id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
   name: { type: DataTypes.STRING },
   selfieUrl: { type: DataTypes.STRING },
   active: { type: DataTypes.BOOLEAN },
-  appUserId: { type: DataTypes.UUIDV4, allowNull: false },
+  appUserId: { type: DataTypes.UUID, allowNull: false },
 });
 
 // SelfieMini
 const SelfieMini = sequelize.define<SelfieMiniInstance>('selfieMini', {
-  id: { type: DataTypes.UUIDV4, primaryKey: true, defaultValue: uuidv4() },
+  id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
   name: { type: DataTypes.STRING },
   selfieUrl: { type: DataTypes.STRING },
   active: { type: DataTypes.BOOLEAN },
-  appUserId: { type: DataTypes.UUIDV4, allowNull: false },
+  appUserId: { type: DataTypes.UUID, allowNull: false },
 });
 
 // UserAlbum
 const UserAlbum = sequelize.define<UserAlbumInstance>('userAlbum', {
-  id: { type: DataTypes.UUIDV4, primaryKey: true, defaultValue: uuidv4() },
-  userId: { type: DataTypes.UUIDV4 },
+  id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+  userId: { type: DataTypes.UUID },
   userName: { type: DataTypes.STRING },
-  albumId: { type: DataTypes.UUIDV4 },
+  albumId: { type: DataTypes.UUID },
   isPaid: { type: DataTypes.BOOLEAN },
 });
 
 // Photo_Person
 const Photo_Person = sequelize.define<Photo_PesronInstance>('Photo_Person', {
-  photoId: { type: DataTypes.UUIDV4 },
-  personId: { type: DataTypes.UUIDV4 },
+  photoId: { type: DataTypes.UUID },
+  personId: { type: DataTypes.UUID },
 });
 
 // Photographer & Album

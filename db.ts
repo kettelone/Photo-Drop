@@ -14,7 +14,7 @@ const sequelize = new Sequelize(
     dialect: 'postgres',
     dialectModule: pg,
     define: {
-      timestamps: false,
+      timestamps: true,
     },
   },
 );

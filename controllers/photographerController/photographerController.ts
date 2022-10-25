@@ -70,6 +70,10 @@ class PhotographerController {
 
     if (name && location && date && photographerId) {
       try {
+        const photographerExist = Photographer.findOne({ where: { id: photographerId } });
+        if (!photographerExist) {
+          res.status(403).json({ errors: [{ msg: 'Photographer does not exist already exist' }] });
+        }
         const albumExist = await Album.findOne({ where: { name, photographerId } });
         if (albumExist === null) {
           const album = await Album.create({
@@ -80,9 +84,13 @@ class PhotographerController {
         }
         res.status(403).json({ errors: [{ msg: 'The album with this name already exist' }] });
         return;
-      } catch (e) {
+      } catch (e: any) {
         console.log(e);
-        res.json(e);
+        if (e.parent.routine === 'string_to_uuid') {
+          res.status(403).json({ errors: [{ msg: 'Invalid input syntax for type uuid' }] });
+        } else {
+          res.json(e);
+        }
       }
     }
   }
@@ -225,10 +233,12 @@ class PhotographerController {
             }
             const photos = await Photo.findAndCountAll({
               where: { albumId, photographerId },
-              order: [['id', 'DESC']],
+              order: [['createdAt', 'DESC']],
               limit,
               offset,
             });
+
+            console.log({ photos });
 
             if (photos.count === 0) {
               res.json({ errors: [{ msg: 'The album is empty' }] });

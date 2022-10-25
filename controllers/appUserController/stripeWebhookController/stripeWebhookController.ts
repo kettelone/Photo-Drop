@@ -12,7 +12,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 class StripeController {
-  async webhook(request: Request, response: Response) :Promise<void> {
+  async webhook(request: Request, response: Response): Promise<void> {
+    console.log();
     // This is your Stripe CLI webhook secret for testing your endpoint locally.
     let endpointSecret;
     // endpointSecret = 'whsec_fc1fa7e0c71ba97e7bae2601821dbe0b4e425c3173c9a4f530880bd9abab910b';
@@ -39,6 +40,7 @@ class StripeController {
     // Handle the event
     if (eventType === 'checkout.session.completed') {
       try {
+        console.log('PAYMENT COMPLETED!!!!!!!!!!!!!!!!!!!!!!!!!!!');
         // data.customer - string
         // @ts-ignore
         const customer = await stripe.customers.retrieve(data.customer);
