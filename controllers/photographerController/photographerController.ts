@@ -111,9 +111,12 @@ class PhotographerController {
 
       const { url, fields } = s3.createPresignedPost({
         Fields: {
-          key: `${photographerId}/${albumId}/${uuidv4()}.${photoExtension}`,
+          // key: `${photographerId}/${albumId}/${uuidv4()}.${photoExtension}`,
+          key: `${uuidv4()}.${photoExtension}`,
           'Content-Type': `image/${photoExtension}`,
           'x-amz-meta-people': metadata,
+          'x-amz-meta-photographerId': photographerId,
+          'x-amz-meta-albumId': albumId,
           originalPhotoKey: photoName,
         },
         Conditions: [['content-length-range', 0, 8000000], ['starts-with', '$Content-Type', 'image/']],

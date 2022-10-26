@@ -50,8 +50,11 @@ const baseHandler = async (event: any) => {
   if (!metadata) {
     return;
   }
+  // get data from the metadata
   const peopleString = metadata.people;
   const peopleArray = peopleString.split(',');
+  const { photographerid } = metadata;
+  const { albumid } = metadata;
 
   // resized photos bucket
   const dstBucket = `${srcBucket}-resized`;
@@ -59,19 +62,22 @@ const baseHandler = async (event: any) => {
   // resized with watermark photos bucket
   const dstBucketWM = `${srcBucket}-resized-watermark`;
   const dstKeyWM = `resized-watermark${dstKey}`;
+  console.log({ photographerid });
+  console.log({ albumid });
 
-  // save original photo info to db
-  const idEnd = srcKey.indexOf('/');
-  const photographerId = srcKey.substring(0, idEnd);
-  // 1/1/491e9200-155e-4a19-8935-307b98fc3841_laptop.jpg
+  // // save original photo info to db
+  // const idEnd = srcKey.indexOf('/');
+  // const photographerId = srcKey.substring(0, idEnd);
+  // // 1/1/491e9200-155e-4a19-8935-307b98fc3841_laptop.jpg
 
-  const albumIdStart = srcKey.substring(idEnd + 1);
-  const albumIdEnd = albumIdStart.indexOf('/');
-  const albumId = albumIdStart.substring(0, albumIdEnd);
+  // const albumIdStart = srcKey.substring(idEnd + 1);
+  // const albumIdEnd = albumIdStart.indexOf('/');
+  // const albumId = albumIdStart.substring(0, albumIdEnd);
+
   const urlPhoto = `https://${srcBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
   try {
     const photo = await Photo.create({
-      name: srcKey, photoUrl: urlPhoto, photographerId, albumId,
+      name: srcKey, photoUrl: urlPhoto, photographerId: photographerid, albumId: albumid,
     });
     if (photo) {
       // const photoId = photo.id;
@@ -168,7 +174,10 @@ const baseHandler = async (event: any) => {
         const urlPhotoMini = `https://${dstBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
         try {
           await PhotoMini.create({
-            name: srcKey, photoMiniUrl: urlPhotoMini, photographerId, albumId,
+            name: srcKey,
+            photoMiniUrl: urlPhotoMini,
+            photographerId: photographerid,
+            albumId: albumid,
           });
         } catch (e) {
           console.log(e);
@@ -233,7 +242,10 @@ const baseHandler = async (event: any) => {
         const urlPhotoMiniWaterMark = `https://${dstBucketWM}.s3.eu-west-1.amazonaws.com/${srcKey}`;
         try {
           await PhotoMiniWaterMark.create({
-            name: srcKey, photoMiniWaterMarkUrl: urlPhotoMiniWaterMark, photographerId, albumId,
+            name: srcKey,
+            photoMiniWaterMarkUrl: urlPhotoMiniWaterMark,
+            photographerId: photographerid,
+            albumId: albumid,
           });
         } catch (e) {
           console.log(e);
