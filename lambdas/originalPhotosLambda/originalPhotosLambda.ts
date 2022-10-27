@@ -129,15 +129,21 @@ const baseHandler = async (event: any) => {
   }
 
   // set thumbnail width. Resize will set the height automatically to maintain aspect ratio.
-  const width = 400;
+  // const width = 400;
 
   // Use the sharp module to resize the image and save in a buffer.
   let buffer;
   try {
     // @ts-ignore
     buffer = await Jimp.read(origimage.Body).then((image) => {
+      const originalHeight = image.bitmap.height;
+      const originalWidth = image.bitmap.width;
+      const minValue = originalWidth < originalHeight ? 'width' : 'heigth';
+      const newWidth = minValue === 'width' ? 400 : Jimp.AUTO;
+      const newHeight = minValue === 'heigth' ? 400 : Jimp.AUTO;
+
       const resizedImage = image
-        .resize(width, Jimp.AUTO)
+        .resize(newWidth, newHeight)
         .quality(100) // set JPEG quality
         .getBufferAsync(Jimp.MIME_JPEG);
 
@@ -200,12 +206,18 @@ const baseHandler = async (event: any) => {
         "./d8885004a7cbbc5c2de6177b99b30489.png" - chekc zip file manually to double check
       */
       const logoImage = await Jimp.read('./d8885004a7cbbc5c2de6177b99b30489.png');
-      const resizeWidth = 400;
+      // const resizeWidth = 400;
       if (!image) {
         return;
       }
       let imageResized = await Jimp.read(image);
-      imageResized = imageResized.resize(resizeWidth, Jimp.AUTO);
+      const originalHeight = imageResized.bitmap.height;
+      const originalWidth = imageResized.bitmap.width;
+      const minValue = originalWidth < originalHeight ? 'width' : 'heigth';
+      const newWidth = minValue === 'width' ? 400 : Jimp.AUTO;
+      const newHeight = minValue === 'heigth' ? 400 : Jimp.AUTO;
+
+      imageResized = imageResized.resize(newWidth, newHeight);
       // const imageResized = await sharp(image).resize(resizeWidth).toBuffer();
       const img = await Jimp.read(imageResized);
       img.composite(

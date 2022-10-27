@@ -3,8 +3,9 @@ import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import Stripe from 'stripe';
 import {
-  SelfieMini, Person, Photo_Person, Photo, UserAlbum, PhotoMini, PhotoMiniWaterMark, Album,
+  SelfieMini, Person, Photo_Person, Photo, UserAlbum, PhotoMini, Album, AppUser,
 } from '../../../models/model';
+import { PhotoInstance } from '../../../models/interfaces';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-08-01',
@@ -216,57 +217,81 @@ class PhotoController {
   }
 
   async getThumbnails(req: Request, res: Response) : Promise<void> {
-    const userId = req.query.userId as string|undefined;
+    const userId = req.query.userId as string | undefined;
     const albumId = req.query.albumId as string | undefined;
        interface Thumbnails {
             isPaid: boolean,
             url: string,
             originalKey: string,
             albumId: string
-          }
+    }
+
+       const findUserPhoto = async (uId :string) => {
+         const user = await AppUser.findOne({ where: { id: uId } });
+         const person = await Person.findOne({ where: { phone: user?.phone } });
+         // get all photos where user is present
+         const photoPeople = await Photo_Person.findAll({ where: { personId: person?.id } });
+         // get all photo id`s from the photos where user is present
+         const photoIds: string[] = [];
+         photoPeople.forEach((el) => {
+           photoIds.push(el.photoId);
+         });
+         // find user photos keys(names) using array of ids
+         const promises:Promise<PhotoInstance | null>[] = [];
+
+         photoIds.forEach((id) => {
+           const photo = Photo.findOne({ where: { id } });
+           if (photo) {
+             promises.push(photo);
+           }
+         });
+         const photos = await Promise.all(promises);
+         return photos;
+       };
        if (userId && albumId) {
          const isPaid = await checkIfPaid(userId, albumId);
          if (isPaid === true) {
            try {
-             // return thumbnails without watermark
-             const thumbnails = await PhotoMini.findAll({ where: { albumId } });
-             const signedThumbnails:Thumbnails[] = [];
-             if (thumbnails.length > 0) {
-               thumbnails.forEach((thumbnail) => {
-                 const s3 = new aws.S3();
+             const photos = await findUserPhoto(userId);
 
-                 const url = s3.getSignedUrl('getObject', {
-                   Bucket: process.env.S3_BUCKET_RESIZED,
-                   Key: `resized-${thumbnail.name}`,
-                   Expires: 60 * 5,
-                 });
-                 signedThumbnails.push({
-                   isPaid: true, url, originalKey: thumbnail.name, albumId,
-                 });
+             const signedThumbnails:Thumbnails[] = [];
+             if (photos.length > 0) {
+               photos.forEach((photo) => {
+                 if (photo) {
+                   const s3 = new aws.S3();
+
+                   const url = s3.getSignedUrl('getObject', {
+                     Bucket: process.env.S3_BUCKET_RESIZED,
+                     Key: `resized-${photo.name}`,
+                     Expires: 60 * 5,
+                   });
+                   signedThumbnails.push({
+                     isPaid: true, url, originalKey: photo.name, albumId,
+                   });
+                 }
                });
              }
-             res.json({ totalPhotos: thumbnails.length, thumbnails: signedThumbnails });
+             res.json({ totalPhotos: photos.length, thumbnails: signedThumbnails });
            } catch (e) {
              console.log(e);
            }
          } else {
            try {
-             // return thumbnails with watermark
-             const thumbnailsWaterMark = await PhotoMiniWaterMark.findAll({
-               where: { albumId },
-             });
+             const thumbnailsWaterMark = await findUserPhoto(userId);
              const signedThumbnails:Thumbnails[] = [];
              if (thumbnailsWaterMark.length > 0) {
                thumbnailsWaterMark.forEach((thumbnail) => {
-                 const s3 = new aws.S3();
-                 const url = s3.getSignedUrl('getObject', {
-                   Bucket: process.env.S3_BUCKET_RESIZED_WATERMARK,
-                   Key: `resized-watermarkresized-${thumbnail.name}`,
-                   Expires: 60 * 5,
-                 });
-                 signedThumbnails.push({
-                   isPaid: false, url, originalKey: thumbnail.name, albumId,
-                 });
+                 if (thumbnail) {
+                   const s3 = new aws.S3();
+                   const url = s3.getSignedUrl('getObject', {
+                     Bucket: process.env.S3_BUCKET_RESIZED_WATERMARK,
+                     Key: `resized-watermarkresized-${thumbnail.name}`,
+                     Expires: 60 * 5,
+                   });
+                   signedThumbnails.push({
+                     isPaid: false, url, originalKey: thumbnail.name, albumId,
+                   });
+                 }
                });
              }
              res.json({ totalPhotos: thumbnailsWaterMark.length, thumbnails: signedThumbnails });
