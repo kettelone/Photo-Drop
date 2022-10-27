@@ -65,15 +65,6 @@ const baseHandler = async (event: any) => {
   console.log({ photographerid });
   console.log({ albumid });
 
-  // // save original photo info to db
-  // const idEnd = srcKey.indexOf('/');
-  // const photographerId = srcKey.substring(0, idEnd);
-  // // 1/1/491e9200-155e-4a19-8935-307b98fc3841_laptop.jpg
-
-  // const albumIdStart = srcKey.substring(idEnd + 1);
-  // const albumIdEnd = albumIdStart.indexOf('/');
-  // const albumId = albumIdStart.substring(0, albumIdEnd);
-
   const urlPhoto = `https://${srcBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
   try {
     const photo = await Photo.create({

@@ -3,7 +3,7 @@ import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import Stripe from 'stripe';
 import {
-  SelfieMini, Person, Photo_Person, Photo, UserAlbum, PhotoMini, PhotoMiniWaterMark,
+  SelfieMini, Person, Photo_Person, Photo, UserAlbum, PhotoMini, PhotoMiniWaterMark, Album,
 } from '../../../models/model';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -159,14 +159,59 @@ class PhotoController {
           }
         }
         const uniqueAlbumIds = [...new Set(albumIds)];
+        const albumInfoPromises = [];
+        for (let i = 0; i < uniqueAlbumIds.length; i = +1) {
+          const album = Album.findOne({ where: { id: uniqueAlbumIds[i] } });
+          albumInfoPromises.push(album);
+        }
+        const albumsInfo = await Promise.all(albumInfoPromises);
         // console.log('uniqueAlbumIds are: ', uniqueAlbumIds);
-        res.json({ albumIds: uniqueAlbumIds });
+        res.json({ albumsInfo });
       } else {
         res.json({ message: 'No albums found' });
       }
     } catch (e) {
       console.log(e);
       res.status(500).json({ message: 'Error occured' });
+    }
+  }
+
+  async getAlbumsThumbnailIcon(req: Request, res: Response): Promise<void> {
+    const s3 = new aws.S3();
+    interface ThumbnailsObject{
+      [key: string] : string | null
+    }
+    const albumIds = req.body.albumIds as string[];
+    const albumThumbnails:ThumbnailsObject = {};
+    const albumIdsLength = albumIds.length;
+    try {
+      if (albumIds) {
+        for (let i = 0; i < albumIdsLength; i += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          const albumExist = await Album.findOne({ where: { id: albumIds[i] } });
+          if (albumExist) {
+            // eslint-disable-next-line no-await-in-loop
+            const keyExist = await PhotoMini.findOne({ where: { albumId: albumIds[i] } });
+            if (keyExist) {
+              const url = s3.getSignedUrl('getObject', {
+                Bucket: process.env.S3_BUCKET_RESIZED,
+                Key: `resized-${keyExist.name}`,
+                Expires: 60 * 60,
+              });
+              albumThumbnails[albumIds[i]] = url;
+            } else {
+              albumThumbnails[albumIds[i]] = null;
+            }
+          } else {
+            albumThumbnails[albumIds[i]] = 'Album does not exist';
+          }
+        }
+
+        res.json(albumThumbnails);
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(403).json({ message: 'Error occured' });
     }
   }
 
@@ -200,7 +245,7 @@ class PhotoController {
                  });
                });
              }
-             res.json(signedThumbnails);
+             res.json({ totalPhotos: thumbnails.length, thumbnails: signedThumbnails });
            } catch (e) {
              console.log(e);
            }
@@ -224,7 +269,7 @@ class PhotoController {
                  });
                });
              }
-             res.json(signedThumbnails);
+             res.json({ totalPhotos: thumbnailsWaterMark.length, thumbnails: signedThumbnails });
            } catch (e) {
              console.log(e);
            }

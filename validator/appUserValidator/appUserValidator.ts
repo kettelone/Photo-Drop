@@ -77,6 +77,12 @@ class AppUserValidator {
     ];
   }
 
+  checkGetAlbumThumbnailIcon() {
+    return [
+      body('albumIds').notEmpty().withMessage('The albumIds value should not be empty'),
+      body('albumIds').isArray().withMessage('The albumIds should be an array')];
+  }
+
   checkGetThumbnailsWithPerson() {
     return [
       query('userId').notEmpty().withMessage('The userId value should not be empty'),
