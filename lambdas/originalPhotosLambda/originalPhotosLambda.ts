@@ -20,7 +20,7 @@ import AWS from 'aws-sdk';
 import Jimp from 'jimp';
 import axios from 'axios';
 import {
-  Photo, PhotoMini, PhotoMiniWaterMark, Person, AppUser,
+  Photo, PhotoMini, PhotoMiniWaterMark, Person, AppUser, Photo_Person,
 } from '../../models/model';
 import * as photoDropLogo from './PhotoDropLogo.png';
 
@@ -256,15 +256,52 @@ const baseHandler = async (event: any) => {
       const arrLength = phoneNumbers.length;
       for (let i = 0; i < arrLength; i += 1) {
         const numericPhone = phoneNumbers[i].replace(/[^0-9]/g, '');
+        // check if user with such phone number exist
         const user = await AppUser.findOne({ where: { phone: numericPhone } });
-        console.log({ user });
+        // console.log({ user });
         if (user) {
-          const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phoneNumbers[i]} your photos have dropped🔥\n\nCheck them out here:\n https://userAppUrlWillBeSoonHere.com`);
-          const response = await axios({
-            method: 'get',
-            url: uri,
-          });
-          console.log({ response });
+          const person = await Person.findOne({ where: { phone: user.phone } });
+          if (person) {
+            // get all photos from specific album
+            const photos = await Photo.findAll({ where: { albumId: albumid } });
+            // console.log({ photos });
+            if (photos) {
+              const photoIds: string[] = [];
+              photos.forEach((photo) => {
+                photoIds.push(photo.id);
+              });
+              // console.log({ photoIds });
+              // check if there are already photos from this album with current user
+              const promisesArray: any = [];
+              photoIds.forEach((el) => {
+                const result = Photo_Person.findOne({
+                  where: {
+                    photoId: el,
+                    personId: person.id,
+                  },
+                });
+                promisesArray.push(result);
+              });
+              const photosWithPerson = await Promise.all(promisesArray);
+              const notNullResponse = [];
+              // console.log({ photosWithPerson });
+              photosWithPerson.forEach((element) => {
+                if (element !== null) {
+                  notNullResponse.push(element);
+                }
+              });
+              // console.log({ notNR: notNullResponse.length });
+              /* if there only 1(one) photo(which just got uploaded)
+              with current person in specific album -send one time notification to the telegram */
+              if (notNullResponse.length === 1) {
+                const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phoneNumbers[i]} your photos have dropped🔥\n\nCheck them out here:\n https://userAppUrlWillBeSoonHere.com`);
+                await axios({
+                  method: 'get',
+                  url: uri,
+                });
+              }
+            }
+          }
         }
       }
     }
