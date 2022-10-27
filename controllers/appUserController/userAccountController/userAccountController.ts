@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { AppUser, Person, SelfieMini } from '../../../models/model';
+import axios from 'axios';
+import {
+  AppUser, Person, SelfieMini, Photo_Person, Photo,
+} from '../../../models/model';
+import { PhotoInstance } from '../../../models/interfaces';
 
 const generateJwt = (
   id: string,
@@ -55,9 +59,7 @@ class UserAccountController {
               phone,
             });
             if (person) {
-              const {
-                id,
-              } = appUser;
+              const { id } = appUser;
               const token = generateJwt(
                 id,
                 phone,
@@ -67,9 +69,7 @@ class UserAccountController {
               return;
             }
           } else if (personExist) {
-            const {
-              id,
-            } = appUser;
+            const { id } = appUser;
 
             const token = generateJwt(
               id,
@@ -77,6 +77,42 @@ class UserAccountController {
               countryCode,
             );
             res.json({ token });
+
+            // send notification to TG about users albums
+            const photo_person = await Photo_Person.findAll({
+              where:
+          { personId: personExist.id },
+            });
+            const responseLength = photo_person.length;
+            const promises:Promise<PhotoInstance | null >[] = [];
+            if (responseLength > 0) {
+              for (let i = 0; i < responseLength; i += 1) {
+                const photo = Photo.findOne({ where: { id: photo_person[i].photoId } });
+                if (photo) {
+                  promises.push(photo);
+                }
+              }
+            }
+            const photos = await Promise.all(promises);
+            const albumIds:string[] = [];
+            for (let i = 0; i < photos.length; i += 1) {
+              const albumId = photos[i]?.albumId;
+              if (albumId) {
+                albumIds.push(albumId);
+              }
+            }
+            const uniqueAlbumIds = [...new Set(albumIds)];
+            const startString = 'https://userAppUrl/albumId=';
+            let finalString = '';
+            uniqueAlbumIds.forEach((albumId) => {
+              finalString += `${startString}${albumId}\n\n`;
+            });
+
+            const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phone} your photos have dropped🔥\n\nCheck them out here:\n ${finalString}`);
+            await axios({
+              method: 'get',
+              url: uri,
+            });
             return;
           }
         } catch (e) {
