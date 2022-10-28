@@ -235,12 +235,12 @@ class PhotoController {
          const photos = await Photo.findAll({ where: { id: photoIds } });
          return photos;
        };
+
        if (userId && albumId) {
          const isPaid = await checkIfPaid(userId, albumId);
          if (isPaid === true) {
            try {
              const photos = await findUserPhoto(userId);
-
              const signedThumbnails:Thumbnails[] = [];
              if (photos.length > 0) {
                photos.forEach((photo) => {
@@ -259,6 +259,7 @@ class PhotoController {
                });
              }
              res.json({ totalPhotos: photos.length, thumbnails: signedThumbnails });
+             res.json({ photos });
              return;
            } catch (e) {
              console.log(e);
@@ -277,7 +278,10 @@ class PhotoController {
                      Expires: 60 * 5,
                    });
                    signedThumbnails.push({
-                     isPaid: false, url, originalKey: thumbnail.name, albumId,
+                     isPaid: false,
+                     url,
+                     originalKey: thumbnail.name,
+                     albumId: thumbnail.albumId,
                    });
                  }
                });
