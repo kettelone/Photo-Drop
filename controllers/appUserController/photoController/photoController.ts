@@ -301,8 +301,6 @@ class PhotoController {
     const s3 = new aws.S3();
 
     const { originalKey, albumId, userId } = req.query as { [key: string]: string };
-    // const urlQuery = req;
-    // console.log({ urlQuery });
     if (userId && albumId) {
       try {
         const isPaid = await checkIfPaid(userId, albumId);
