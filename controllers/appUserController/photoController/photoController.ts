@@ -6,7 +6,6 @@ import Stripe from 'stripe';
 import {
   SelfieMini, Person, Photo_Person, Photo, UserAlbum, PhotoMini, Album, AppUser,
 } from '../../../models/model';
-import { PhotoInstance } from '../../../models/interfaces';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-08-01',
@@ -312,11 +311,13 @@ class PhotoController {
             Expires: 60 * 5,
           });
           res.send(`${url}`);
-        } else {
-          // redirect to the payment page
-          const paymentLink = await generatePaymnet(albumId, userId);
-
+          return;
+        }
+        // redirect to the payment page
+        const paymentLink = await generatePaymnet(albumId, userId);
+        if (paymentLink) {
           res.send(`${paymentLink}`);
+          return;
         }
       } catch (e) {
         console.log(e);
