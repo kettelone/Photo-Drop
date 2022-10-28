@@ -311,11 +311,11 @@ class PhotoController {
             Key: originalKey,
             Expires: 60 * 5,
           });
-          res.json(url);
+          res.json({ url });
         } else {
           // redirect to the payment page
           const paymentLink = await generatePaymnet(albumId, userId);
-          res.json(paymentLink);
+          res.json({ paymentLink });
         }
       } catch (e) {
         console.log(e);
