@@ -139,34 +139,35 @@ class PhotoController {
     try {
       const person = await Person.findOne({ where: { phone } });
       if (person) {
-        const photo_person = await Photo_Person.findAll({
-          where:
-          { personId: person.id },
-        });
-        const responseLength = photo_person.length;
-        const promises:Promise<any>[] = [];
-        if (responseLength > 0) {
-          for (let i = 0; i < responseLength; i += 1) {
-            const photo = Photo.findOne({ where: { id: photo_person[i].photoId } });
-            promises.push(photo);
-          }
-        }
-        const photos = await Promise.all(promises);
-        const albumIds:string[] = [];
-        for (let i = 0; i < photos.length; i += 1) {
-          const albumId = photos[i]?.albumId;
-          if (albumId) {
-            albumIds.push(albumId);
-          }
-        }
-        const uniqueAlbumIds = [...new Set(albumIds)];
-        const albumInfoPromises = [];
-        for (let i = 0; i < uniqueAlbumIds.length; i = +1) {
-          const album = Album.findOne({ where: { id: uniqueAlbumIds[i] } });
-          albumInfoPromises.push(album);
-        }
-        const albumsInfo = await Promise.all(albumInfoPromises);
-        // console.log('uniqueAlbumIds are: ', uniqueAlbumIds);
+        // const photo_person = await Photo_Person.findAll({
+        //   where:
+        //   { personId: person.id },
+        // });
+
+        // const responseLength = photo_person.length;
+        // const promises:Promise<any>[] = [];
+        // if (responseLength > 0) {
+        //   for (let i = 0; i < responseLength; i += 1) {
+        //     const photo = Photo.findOne({ where: { id: photo_person[i].photoId } });
+        //     promises.push(photo);
+        //   }
+        // }
+        // const photos = await Promise.all(promises);
+        // const albumIds:string[] = [];
+        // for (let i = 0; i < photos.length; i += 1) {
+        //   const albumId = photos[i]?.albumId;
+        //   if (albumId) {
+        //     albumIds.push(albumId);
+        //   }
+        // }
+        // const uniqueAlbumIds = [...new Set(albumIds)];
+        // const albumInfoPromises = [];
+        // for (let i = 0; i < uniqueAlbumIds.length; i = +1) {
+        //   const album = Album.findOne({ where: { id: uniqueAlbumIds[i] } });
+        //   albumInfoPromises.push(album);
+        // }
+        // const albumsInfo = await Promise.all(albumInfoPromises);
+        const albumsInfo = await Album.findAll();
         res.json({ albumsInfo });
       } else {
         res.json({ message: 'No albums found' });
