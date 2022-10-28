@@ -139,11 +139,21 @@ class PhotoController {
     try {
       const person = await Person.findOne({ where: { phone } });
       if (person) {
-        // const photo_person = await Photo_Person.findAll({
-        //   where:
-        //   { personId: person.id },
-        // });
+        /* MAP instead of for */
 
+        const photo_person = await Photo_Person.findAll({
+          where:
+          { personId: person.id },
+        });
+
+        const photoIds = photo_person.map(({ photoId }) => photoId);
+
+        const photos = await Photo.findAll({ where: { albumId: { in: photoIds } } });
+
+        const albumIds = photos.map(({ albumId }) => albumId);
+
+        const uniqueAlbumIds = [...new Set(albumIds)];
+        // use MAP inasted!!!!!
         // const responseLength = photo_person.length;
         // const promises:Promise<any>[] = [];
         // if (responseLength > 0) {
@@ -166,8 +176,8 @@ class PhotoController {
         //   const album = Album.findOne({ where: { id: uniqueAlbumIds[i] } });
         //   albumInfoPromises.push(album);
         // }
-        // const albumsInfo = await Promise.all(albumInfoPromises);
-        const albumsInfo = await Album.findAll();
+
+        const albumsInfo = await Album.findAll({ where: { id: { in: uniqueAlbumIds } } });
         res.json({ albumsInfo });
       } else {
         res.json({ message: 'No albums found' });
