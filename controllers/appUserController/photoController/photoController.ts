@@ -59,7 +59,7 @@ const generatePaymnet = async (albumId:string, userId:string):Promise<string |un
           quantity: 1,
         }],
         metadata: { userId: `${userId}`, albumId: `${albumId}` },
-        success_url: `${process.env.SERVER_URL}/success`, // here should be client on success url page
+        success_url: `${process.env.FRONT_URL}${albumId}`, // here should be client on success url page
         cancel_url: `${process.env.SERVER_URL}/cancel`, // here should be client on cancel url page
       });
       const { url } = session;
@@ -160,29 +160,6 @@ class PhotoController {
         const albumIds = photos.map(({ albumId }) => albumId);
 
         const uniqueAlbumIds = [...new Set(albumIds)];
-        // use MAP inasted!!!!!
-        // const responseLength = photo_person.length;
-        // const promises:Promise<any>[] = [];
-        // if (responseLength > 0) {
-        //   for (let i = 0; i < responseLength; i += 1) {
-        //     const photo = Photo.findOne({ where: { id: photo_person[i].photoId } });
-        //     promises.push(photo);
-        //   }
-        // }
-        // const photos = await Promise.all(promises);
-        // const albumIds:string[] = [];
-        // for (let i = 0; i < photos.length; i += 1) {
-        //   const albumId = photos[i]?.albumId;
-        //   if (albumId) {
-        //     albumIds.push(albumId);
-        //   }
-        // }
-        // const uniqueAlbumIds = [...new Set(albumIds)];
-        // const albumInfoPromises = [];
-        // for (let i = 0; i < uniqueAlbumIds.length; i = +1) {
-        //   const album = Album.findOne({ where: { id: uniqueAlbumIds[i] } });
-        //   albumInfoPromises.push(album);
-        // }
 
         const albumsInfo = await Album.findAll({ where: { id: uniqueAlbumIds } });
         res.json({ albumsInfo });
@@ -254,16 +231,8 @@ class PhotoController {
          photoPeople.forEach((el) => {
            photoIds.push(el.photoId);
          });
-         // find user photos keys(names) using array of ids
-         const promises:Promise<PhotoInstance | null>[] = [];
 
-         photoIds.forEach((id) => {
-           const photo = Photo.findOne({ where: { id } });
-           if (photo) {
-             promises.push(photo);
-           }
-         });
-         const photos = await Promise.all(promises);
+         const photos = await Photo.findAll({ where: { id: photoIds } });
          return photos;
        };
        if (userId && albumId) {
@@ -284,12 +253,13 @@ class PhotoController {
                      Expires: 60 * 5,
                    });
                    signedThumbnails.push({
-                     isPaid: true, url, originalKey: photo.name, albumId,
+                     isPaid: true, url, originalKey: photo.name, albumId: photo.albumId,
                    });
                  }
                });
              }
              res.json({ totalPhotos: photos.length, thumbnails: signedThumbnails });
+             return;
            } catch (e) {
              console.log(e);
            }
@@ -313,6 +283,7 @@ class PhotoController {
                });
              }
              res.json({ totalPhotos: thumbnailsWaterMark.length, thumbnails: signedThumbnails });
+             return;
            } catch (e) {
              console.log(e);
            }
@@ -324,10 +295,10 @@ class PhotoController {
 
   async getOriginalPhoto(req: Request, res: Response): Promise <void> {
     const s3 = new aws.S3();
-    const originalKey = req.query.originalKey as string | undefined;
-    const albumId = req.query.albumId as string |undefined;
-    const userId = req.query.userId as string |undefined;
-    // check if the album photo belongs to and is paid by current user
+
+    const { originalKey, albumId, userId } = req.query as { [key: string]: string };
+    // const urlQuery = req;
+    // console.log({ urlQuery });
     if (userId && albumId) {
       try {
         const isPaid = await checkIfPaid(userId, albumId);
