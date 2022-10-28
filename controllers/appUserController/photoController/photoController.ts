@@ -1,3 +1,4 @@
+import { Sequelize } from 'sequelize';
 import { Request, Response } from 'express';
 import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
@@ -140,15 +141,21 @@ class PhotoController {
       const person = await Person.findOne({ where: { phone } });
       if (person) {
         /* MAP instead of for */
-
+        console.log({ person });
         const photo_person = await Photo_Person.findAll({
           where:
           { personId: person.id },
         });
+        console.log({ photo_person });
 
         const photoIds = photo_person.map(({ photoId }) => photoId);
-
-        const photos = await Photo.findAll({ where: { albumId: { in: photoIds } } });
+        console.log({ photoIds });
+        const photos = await Photo.findAll({
+          where: Sequelize.or(
+            { id: photoIds },
+          ),
+        });
+        console.log({ photos });
 
         const albumIds = photos.map(({ albumId }) => albumId);
 
@@ -177,7 +184,7 @@ class PhotoController {
         //   albumInfoPromises.push(album);
         // }
 
-        const albumsInfo = await Album.findAll({ where: { id: { in: uniqueAlbumIds } } });
+        const albumsInfo = await Album.findAll({ where: { id: uniqueAlbumIds } });
         res.json({ albumsInfo });
       } else {
         res.json({ message: 'No albums found' });
