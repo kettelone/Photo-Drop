@@ -126,7 +126,8 @@ class UserAccountController {
     }
   }
 
-  async getMe(req: Request, res: Response):Promise<void> {
+  async getMe(req: Request, res: Response): Promise<void> {
+    console.log(req);
     try {
       const userId = req.query.userId as string | undefined;
       if (req.headers.authorization !== undefined) {
