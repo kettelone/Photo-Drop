@@ -43,7 +43,7 @@ const generatePaymnet = async (
   host: any,
 ): Promise<string | undefined> => {
   console.log({ host });
-  const success_base_url = host.includes('dev-photodrop') ? 'http://localhost:3000' : 'https://dev-photodrop-client.vercel.app';
+  const success_base_url = host.includes('dev-photodrop') ? 'https://dev-photodrop-client.vercel.app' : 'http://localhost:3000';
   const albumItem = { id: 1, priceInCents: 500, name: 'Album' };
   if (albumId !== undefined && userId !== undefined) {
     try {
