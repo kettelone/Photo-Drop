@@ -37,7 +37,13 @@ const checkIfPaid = async (userId:string, albumId:string) :Promise<boolean> => {
   return false;
 };
 
-const generatePaymnet = async (albumId:string, userId:string):Promise<string |undefined> => {
+const generatePaymnet = async (
+  albumId: string,
+  userId: string,
+  host: string,
+): Promise<string | undefined> => {
+  console.log({ host });
+  const success_base_url = host.includes('localhost') ? 'http://localhost:3000' : 'https://dev-photodrop-client.vercel.app';
   const albumItem = { id: 1, priceInCents: 500, name: 'Album' };
   if (albumId !== undefined && userId !== undefined) {
     try {
@@ -62,7 +68,7 @@ const generatePaymnet = async (albumId:string, userId:string):Promise<string |un
         metadata: { userId: `${userId}`, albumId: `${albumId}` },
         // success_url: `${process.env.FRONT_URL}${albumId}`,
         // here should be client on success url page
-        success_url: `http://localhost:3000/dashboard/album-id-${albumId}`,
+        success_url: `${success_base_url}/dashboard/success-${albumId}`,
         cancel_url: `${process.env.SERVER_URL}/cancel`, // here should be client on cancel url page
       });
       const { url } = session;
@@ -295,7 +301,7 @@ class PhotoController {
 
   async getOriginalPhoto(req: Request, res: Response): Promise <void> {
     const s3 = new aws.S3();
-
+    const { host } = req;
     const { originalKey, albumId, userId } = req.query as { [key: string]: string };
     if (userId && albumId) {
       try {
@@ -311,7 +317,7 @@ class PhotoController {
           return;
         }
         // redirect to the payment page
-        const paymentLink = await generatePaymnet(albumId, userId);
+        const paymentLink = await generatePaymnet(albumId, userId, host);
         if (paymentLink) {
           res.send(`${paymentLink}`);
           return;
