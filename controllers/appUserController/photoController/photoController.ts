@@ -62,7 +62,7 @@ const generatePaymnet = async (albumId:string, userId:string):Promise<string |un
         metadata: { userId: `${userId}`, albumId: `${albumId}` },
         // success_url: `${process.env.FRONT_URL}${albumId}`,
         // here should be client on success url page
-        success_url: `http://localhost:3000/${albumId}`,
+        success_url: `http://localhost:3000/dashboard/album-id-${albumId}`,
         cancel_url: `${process.env.SERVER_URL}/cancel`, // here should be client on cancel url page
       });
       const { url } = session;
