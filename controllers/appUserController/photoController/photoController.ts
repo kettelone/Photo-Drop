@@ -43,7 +43,7 @@ const generatePaymnet = async (
   host: any,
 ): Promise<string | undefined> => {
   console.log({ host });
-  const success_base_url = host.includes('localhost') ? 'http://localhost:3000' : 'https://dev-photodrop-client.vercel.app';
+  const success_base_url = host.includes('dev-photodrop') ? 'http://localhost:3000' : 'https://dev-photodrop-client.vercel.app';
   const albumItem = { id: 1, priceInCents: 500, name: 'Album' };
   if (albumId !== undefined && userId !== undefined) {
     try {
@@ -301,11 +301,7 @@ class PhotoController {
 
   async getOriginalPhoto(req: Request, res: Response): Promise <void> {
     const s3 = new aws.S3();
-    const host = req;
-    // if (host) {
-    //   const checks = host.includes('localhost');
-    //   console.log({ checks });
-    // }
+    const host = req.headers.origin as string;
     const { originalKey, albumId, userId } = req.query as { [key: string]: string };
     if (userId && albumId) {
       try {
