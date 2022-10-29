@@ -7,6 +7,8 @@ import {
   SelfieMini, Person, Photo_Person, Photo, UserAlbum, PhotoMini, Album, AppUser,
 } from '../../../models/model';
 
+// hjgjhgsdfs
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-08-01',
 });
@@ -58,7 +60,9 @@ const generatePaymnet = async (albumId:string, userId:string):Promise<string |un
           quantity: 1,
         }],
         metadata: { userId: `${userId}`, albumId: `${albumId}` },
-        success_url: `${process.env.FRONT_URL}${albumId}`, // here should be client on success url page
+        // success_url: `${process.env.FRONT_URL}${albumId}`,
+        // here should be client on success url page
+        success_url: 'http://localhost:3000/',
         cancel_url: `${process.env.SERVER_URL}/cancel`, // here should be client on cancel url page
       });
       const { url } = session;
@@ -140,27 +144,21 @@ class PhotoController {
       const person = await Person.findOne({ where: { phone } });
       if (person) {
         /* MAP instead of for */
-        console.log({ person });
         const photo_person = await Photo_Person.findAll({
           where:
           { personId: person.id },
         });
-        console.log({ photo_person });
 
         const photoIds = photo_person.map(({ photoId }) => photoId);
-        console.log({ photoIds });
         const photos = await Photo.findAll({
           where: Sequelize.or(
             { id: photoIds },
           ),
         });
-        console.log({ photos });
-
         const albumIds = photos.map(({ albumId }) => albumId);
-
         const uniqueAlbumIds = [...new Set(albumIds)];
-
         const albumsInfo = await Album.findAll({ where: { id: uniqueAlbumIds } });
+
         res.json({ albumsInfo });
       } else {
         res.json({ message: 'No albums found' });
@@ -178,10 +176,9 @@ class PhotoController {
     }
     const albumIds = req.body.albumIds as string[];
     const albumThumbnails:ThumbnailsObject = {};
-    const albumIdsLength = albumIds.length;
     try {
       if (albumIds) {
-        for (let i = 0; i < albumIdsLength; i += 1) {
+        for (let i = 0; i < albumIds.length; i += 1) {
           // eslint-disable-next-line no-await-in-loop
           const albumExist = await Album.findOne({ where: { id: albumIds[i] } });
           if (albumExist) {
@@ -210,90 +207,90 @@ class PhotoController {
     }
   }
 
-  async getThumbnails(req: Request, res: Response) : Promise<void> {
-    const userId = req.query.userId as string | undefined;
-    const albumId = req.query.albumId as string | undefined;
-       interface Thumbnails {
+  async getThumbnails(req: Request, res: Response): Promise<void> {
+    interface Thumbnails {
             isPaid: boolean,
             url: string,
             originalKey: string,
             albumId: string
     }
+    const userId = req.query.userId as string | undefined;
+    const albumId = req.query.albumId as string | undefined;
 
-       const findUserPhoto = async (uId :string) => {
-         const user = await AppUser.findOne({ where: { id: uId } });
-         const person = await Person.findOne({ where: { phone: user?.phone } });
-         // get all photos where user is present
-         const photoPeople = await Photo_Person.findAll({ where: { personId: person?.id } });
-         // get all photo id`s from the photos where user is present
-         const photoIds: string[] = [];
-         photoPeople.forEach((el) => {
-           photoIds.push(el.photoId);
-         });
+    const findUserPhoto = async (uId :string) => {
+      const user = await AppUser.findOne({ where: { id: uId } });
+      const person = await Person.findOne({ where: { phone: user?.phone } });
+      // get all photos where user is present
+      const photoPeople = await Photo_Person.findAll({ where: { personId: person?.id } });
+      // get all photo id`s from the photos where user is present
+      const photoIds: string[] = [];
+      photoPeople.forEach((el) => {
+        photoIds.push(el.photoId);
+      });
 
-         const photos = await Photo.findAll({ where: { id: photoIds } });
-         return photos;
-       };
+      const photos = await Photo.findAll({ where: { id: photoIds } });
+      return photos;
+    };
 
-       if (userId && albumId) {
-         const isPaid = await checkIfPaid(userId, albumId);
-         if (isPaid === true) {
-           try {
-             const photos = await findUserPhoto(userId);
-             const signedThumbnails:Thumbnails[] = [];
-             if (photos.length > 0) {
-               photos.forEach((photo) => {
-                 if (photo) {
-                   const s3 = new aws.S3();
+    if (userId && albumId) {
+      const isPaid = await checkIfPaid(userId, albumId);
+      if (isPaid === true) {
+        try {
+          const photos = await findUserPhoto(userId);
+          const signedThumbnails:Thumbnails[] = [];
+          if (photos.length > 0) {
+            photos.forEach((photo) => {
+              if (photo) {
+                const s3 = new aws.S3();
 
-                   const url = s3.getSignedUrl('getObject', {
-                     Bucket: process.env.S3_BUCKET_RESIZED,
-                     Key: `resized-${photo.name}`,
-                     Expires: 60 * 5,
-                   });
-                   signedThumbnails.push({
-                     isPaid: true, url, originalKey: photo.name, albumId: photo.albumId,
-                   });
-                 }
-               });
-             }
-             res.json({ totalPhotos: photos.length, thumbnails: signedThumbnails });
-             res.json({ photos });
-             return;
-           } catch (e) {
-             console.log(e);
-           }
-         } else {
-           try {
-             const thumbnailsWaterMark = await findUserPhoto(userId);
-             const signedThumbnails:Thumbnails[] = [];
-             if (thumbnailsWaterMark.length > 0) {
-               thumbnailsWaterMark.forEach((thumbnail) => {
-                 if (thumbnail) {
-                   const s3 = new aws.S3();
-                   const url = s3.getSignedUrl('getObject', {
-                     Bucket: process.env.S3_BUCKET_RESIZED_WATERMARK,
-                     Key: `resized-watermarkresized-${thumbnail.name}`,
-                     Expires: 60 * 5,
-                   });
-                   signedThumbnails.push({
-                     isPaid: false,
-                     url,
-                     originalKey: thumbnail.name,
-                     albumId: thumbnail.albumId,
-                   });
-                 }
-               });
-             }
-             res.json({ totalPhotos: thumbnailsWaterMark.length, thumbnails: signedThumbnails });
-             return;
-           } catch (e) {
-             console.log(e);
-           }
-         }
-       } else {
-         res.json({ message: 'query parameters missing' });
-       }
+                const url = s3.getSignedUrl('getObject', {
+                  Bucket: process.env.S3_BUCKET_RESIZED,
+                  Key: `resized-${photo.name}`,
+                  Expires: 60 * 5,
+                });
+                signedThumbnails.push({
+                  isPaid: true, url, originalKey: photo.name, albumId: photo.albumId,
+                });
+              }
+            });
+          }
+          res.json({ totalPhotos: photos.length, thumbnails: signedThumbnails });
+          res.json({ photos });
+          return;
+        } catch (e) {
+          console.log(e);
+        }
+      } else {
+        try {
+          const thumbnailsWaterMark = await findUserPhoto(userId);
+          const signedThumbnails:Thumbnails[] = [];
+          if (thumbnailsWaterMark.length > 0) {
+            thumbnailsWaterMark.forEach((thumbnail) => {
+              if (thumbnail) {
+                const s3 = new aws.S3();
+                const url = s3.getSignedUrl('getObject', {
+                  Bucket: process.env.S3_BUCKET_RESIZED_WATERMARK,
+                  Key: `resized-watermarkresized-${thumbnail.name}`,
+                  Expires: 60 * 5,
+                });
+                signedThumbnails.push({
+                  isPaid: false,
+                  url,
+                  originalKey: thumbnail.name,
+                  albumId: thumbnail.albumId,
+                });
+              }
+            });
+          }
+          res.json({ totalPhotos: thumbnailsWaterMark.length, thumbnails: signedThumbnails });
+          return;
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    } else {
+      res.json({ message: 'query parameters missing' });
+    }
   }
 
   async getOriginalPhoto(req: Request, res: Response): Promise <void> {
