@@ -261,7 +261,7 @@ class PhotoController {
             });
           }
           res.json({ totalPhotos: photos.length, thumbnails: signedThumbnails });
-          res.json({ photos });
+          // res.json({ photos });
           return;
         } catch (e) {
           console.log(e);
@@ -301,7 +301,7 @@ class PhotoController {
 
   async getOriginalPhoto(req: Request, res: Response): Promise <void> {
     const s3 = new aws.S3();
-    const { host } = req;
+    const host = req.hostname;
     const { originalKey, albumId, userId } = req.query as { [key: string]: string };
     if (userId && albumId) {
       try {
