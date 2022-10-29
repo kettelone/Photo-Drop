@@ -40,7 +40,7 @@ const checkIfPaid = async (userId:string, albumId:string) :Promise<boolean> => {
 const generatePaymnet = async (
   albumId: string,
   userId: string,
-  host: string,
+  host: any,
 ): Promise<string | undefined> => {
   console.log({ host });
   const success_base_url = host.includes('localhost') ? 'http://localhost:3000' : 'https://dev-photodrop-client.vercel.app';
@@ -301,7 +301,7 @@ class PhotoController {
 
   async getOriginalPhoto(req: Request, res: Response): Promise <void> {
     const s3 = new aws.S3();
-    const host = req.headers.origin as string;
+    const host = req.headers;
     // if (host) {
     //   const checks = host.includes('localhost');
     //   console.log({ checks });
