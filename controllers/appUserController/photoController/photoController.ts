@@ -251,7 +251,7 @@ class PhotoController {
     };
 
     if (userId && albumId) {
-      const isPaid = await checkIfPaid(userId, albumId);
+      // const isPaid = await checkIfPaid(userId, albumId);
       // if (isPaid === true) {
       try {
         const { photos, albumPaidStatus } = await findUserPhoto(userId);
@@ -261,7 +261,7 @@ class PhotoController {
             if (photo) {
               const s3 = new aws.S3();
               const url = s3.getSignedUrl('getObject', {
-                Bucket: isPaid ? process.env.S3_BUCKET_RESIZED
+                Bucket: albumPaidStatus[photo.albumId] === true ? process.env.S3_BUCKET_RESIZED
                   : process.env.S3_BUCKET_RESIZED_WATERMAR,
                 Key: albumPaidStatus[photo.albumId] === true ? `resized-${photo.name}` : `resized-watermarkresized-${photo.name}`,
                 Expires: 60 * 5,
