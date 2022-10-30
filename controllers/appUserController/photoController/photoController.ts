@@ -263,7 +263,10 @@ class PhotoController {
                 Expires: 60 * 5,
               });
               signedThumbnails.push({
-                isPaid: true, url, originalKey: photo.name, albumId: photo.albumId,
+                isPaid: albumPaidStatus[photo.albumId],
+                url,
+                originalKey: photo.name,
+                albumId: photo.albumId,
               });
             }
           });
