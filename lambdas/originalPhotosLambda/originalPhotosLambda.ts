@@ -306,7 +306,7 @@ const baseHandler = async (event: any) => {
               /* if there only 1(one) photo(which just got uploaded)
               with current person in specific album -send one time notification to the telegram */
               if (notNullResponse.length === 1) {
-                const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phoneNumbers[i]} your photos have dropped🔥\n\nCheck them out here:\n https://userAppUrlWillBeSoonHere.com`);
+                const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phoneNumbers[i]} your photos have dropped🔥\n\nCheck them out here:\n https://dev-photodrop-client.vercel.app/dashboard/album-id-${albumid}`);
                 await axios({
                   method: 'get',
                   url: uri,
