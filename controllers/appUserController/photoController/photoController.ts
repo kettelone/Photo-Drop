@@ -229,30 +229,30 @@ class PhotoController {
       // get all photos where user is present
       const photoPeople = await Photo_Person.findAll({ where: { personId: person?.id } });
       // get all photo id`s from the photos where user is present
-      const photoIds: string[] = [];
-      photoPeople.forEach((el) => {
-        photoIds.push(el.photoId);
-      });
-
+      const photoIds = photoPeople.map((el) => el.photoId);
       const photos = await Photo.findAll({ where: { id: photoIds } });
-
       const albumIds = photos.map((photo) => photo.albumId);
       const uniqueAlbumIds = [...new Set(albumIds)];
-      const albumPaidStatus: any = {};
-      for (let j = 0; j < uniqueAlbumIds.length; j += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        const paymentStatus = await UserAlbum.findOne({
-          where:
-            { userId: uId, albumId: uniqueAlbumIds[j] },
-        });
-        albumPaidStatus[uniqueAlbumIds[j]] = paymentStatus?.isPaid;
-      }
+      // for (let j = 0; j < uniqueAlbumIds.length; j += 1) {
+      //   // eslint-disable-next-line no-await-in-loop
+      //   const paymentStatus = await UserAlbum.findOne({
+      //     where:
+      //       { userId: uId, albumId: uniqueAlbumIds[j] },
+      //   });
+      //   albumPaidStatus[uniqueAlbumIds[j]] = paymentStatus?.isPaid;
+      // }
+      const albums = await UserAlbum.findAll({ where: { userId: uId, albumId: uniqueAlbumIds } });
+      type InterfaceAlbumPaidStatus = {
+            [key: string]: boolean;
+            };
+      const albumPaidStatus:InterfaceAlbumPaidStatus = {};
+      albums.forEach((album) => {
+        albumPaidStatus[album.albumId] = album.isPaid;
+      });
       return { photos, albumPaidStatus };
     };
 
     if (userId && albumId) {
-      // const isPaid = await checkIfPaid(userId, albumId);
-      // if (isPaid === true) {
       try {
         const { photos, albumPaidStatus } = await findUserPhoto(userId);
         const signedThumbnails:Thumbnails[] = [];
@@ -261,9 +261,10 @@ class PhotoController {
             if (photo) {
               const s3 = new aws.S3();
               const url = s3.getSignedUrl('getObject', {
-                // eslint-disable-next-line max-len
-                Bucket: albumPaidStatus[photo.albumId] === true ? process.env.S3_BUCKET_RESIZED : process.env.S3_BUCKET_RESIZED_WATERMARK,
-                Key: albumPaidStatus[photo.albumId] === true ? `resized-${photo.name}` : `resized-watermarkresized-${photo.name}`,
+                Bucket: albumPaidStatus[photo.albumId] === true ? process.env.S3_BUCKET_RESIZED
+                  : process.env.S3_BUCKET_RESIZED_WATERMARK,
+                Key: albumPaidStatus[photo.albumId] === true ? `resized-${photo.name}`
+                  : `resized-watermarkresized-${photo.name}`,
                 Expires: 60 * 5,
               });
               signedThumbnails.push({
