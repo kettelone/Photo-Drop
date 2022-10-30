@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize';
+// import { Sequelize } from 'sequelize';
 import { Request, Response } from 'express';
 import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
@@ -48,7 +48,8 @@ const generatePaymnet = async (
   if (albumId !== undefined && userId !== undefined) {
     try {
       const customer = await stripe.customers.create({
-        metadata: { userId: `${userId}`, albumId: `${albumId}` },
+        metadata: { userId, albumId },
+        // metadata: { userId: `${userId}`, albumId: `${albumId}` },
       });
 
       const session = await stripe.checkout.sessions.create({
@@ -66,10 +67,8 @@ const generatePaymnet = async (
           quantity: 1,
         }],
         metadata: { userId: `${userId}`, albumId: `${albumId}` },
-        // success_url: `${process.env.FRONT_URL}${albumId}`,
-        // here should be client on success url page
         success_url: `${success_base_url}/dashboard/success-${albumId}`,
-        cancel_url: `${process.env.SERVER_URL}/cancel`, // here should be client on cancel url page
+        cancel_url: `${process.env.SERVER_URL}/cancel`,
       });
       const { url } = session;
       if (url) {
@@ -89,7 +88,7 @@ class PhotoController {
   }
     const s3 = new aws.S3();
     const { name, userId } :Body = req.body;
-    const metadata = `${userId}`;
+    // const metadata = `${userId}`;
     const startIndex = name.indexOf('.') + 1;
     const photoExtension = name.substr(startIndex);
 
@@ -97,7 +96,7 @@ class PhotoController {
       Fields: {
         key: `${uuidv4()}.${photoExtension}`,
         'Content-Type': `image/${photoExtension}`,
-        'x-amz-meta-userId': metadata,
+        'x-amz-meta-userId': userId,
         originalSelfieKey: name,
       },
       Conditions: [['content-length-range', 0, 5000000]],
@@ -108,17 +107,19 @@ class PhotoController {
   }
 
   async getSelfie(req: Request, res: Response) :Promise<void> {
-    const appUserId = req.query.appUserId as string|undefined;
+    // const appUserId = req.query.appUserId as string|undefined;
+    const appUserId = req.query.appUserId as string;
+
     try {
-      if (appUserId !== undefined) {
-        const selfie = await SelfieMini.findOne({ where: { appUserId, active: true } });
-        if (selfie) {
-          res.json(selfie);
-          return;
-        }
-        res.json({ errors: [{ msg: 'User doesn`t have active selfie' }] });
+      // if (appUserId !== undefined) {
+      const selfie = await SelfieMini.findOne({ where: { appUserId, active: true } });
+      if (selfie) {
+        res.json(selfie);
         return;
       }
+      res.json({ errors: [{ msg: 'User doesn`t have active selfie' }] });
+      return;
+      // }
     } catch (e) {
       res.status(500).json({ message: 'Error occured' });
     }
@@ -149,18 +150,10 @@ class PhotoController {
     try {
       const person = await Person.findOne({ where: { phone } });
       if (person) {
-        /* MAP instead of for */
-        const photo_person = await Photo_Person.findAll({
-          where:
-          { personId: person.id },
-        });
-
+        const photo_person = await Photo_Person.findAll({ where: { personId: person.id } });
         const photoIds = photo_person.map(({ photoId }) => photoId);
-        const photos = await Photo.findAll({
-          where: Sequelize.or(
-            { id: photoIds },
-          ),
-        });
+        // const photos = await Photo.findAll({ where: Sequelize.or({ id: photoIds }) });
+        const photos = await Photo.findAll({ where: { id: photoIds } });
         const albumIds = photos.map(({ albumId }) => albumId);
         const uniqueAlbumIds = [...new Set(albumIds)];
         const albumsInfo = await Album.findAll({ where: { id: uniqueAlbumIds } });
@@ -183,30 +176,40 @@ class PhotoController {
     const albumIds = req.body.albumIds as string[];
     const albumThumbnails:ThumbnailsObject = {};
     try {
-      if (albumIds) {
-        for (let i = 0; i < albumIds.length; i += 1) {
-          // eslint-disable-next-line no-await-in-loop
-          const albumExist = await Album.findOne({ where: { id: albumIds[i] } });
-          if (albumExist) {
-            // eslint-disable-next-line no-await-in-loop
-            const keyExist = await PhotoMini.findOne({ where: { albumId: albumIds[i] } });
-            if (keyExist) {
-              const url = s3.getSignedUrl('getObject', {
-                Bucket: process.env.S3_BUCKET_RESIZED,
-                Key: `resized-${keyExist.name}`,
-                Expires: 60 * 60,
-              });
-              albumThumbnails[albumIds[i]] = url;
-            } else {
-              albumThumbnails[albumIds[i]] = null;
-            }
-          } else {
-            albumThumbnails[albumIds[i]] = 'Album does not exist';
-          }
-        }
+      // if (albumIds) {
+      // for (let i = 0; i < albumIds.length; i += 1) {
+      //   // eslint-disable-next-line no-await-in-loop
+      //   const albumExist = await Album.findOne({ where: { id: albumIds[i] } });
+      //   if (albumExist) {
+      //     // eslint-disable-next-line no-await-in-loop
+      //     const keyExist = await PhotoMini.findOne({ where: { albumId: albumIds[i] } });
+      //     if (keyExist) {
+      //       const url = s3.getSignedUrl('getObject', {
+      //         Bucket: process.env.S3_BUCKET_RESIZED,
+      //         Key: `resized-${keyExist.name}`,
+      //         Expires: 60 * 60,
+      //       });
+      //       albumThumbnails[albumIds[i]] = url;
+      //     } else {
+      //       albumThumbnails[albumIds[i]] = null;
+      //     }
+      //   } else {
+      //     albumThumbnails[albumIds[i]] = 'Album does not exist';
+      //   }
+      // }
+      const promises = albumIds.map((id) => PhotoMini.findOne({ where: { albumId: id } }));
+      const albumThumbnailObjects = await Promise.all(promises);
+      albumThumbnailObjects.forEach((obj) => {
+        const url = s3.getSignedUrl('getObject', {
+          Bucket: process.env.S3_BUCKET_RESIZED,
+          Key: `resized-${obj!.name}`,
+          Expires: 60 * 60,
+        });
+        albumThumbnails[obj!.albumId] = url;
+      });
 
-        res.json(albumThumbnails);
-      }
+      res.json(albumThumbnails);
+      // }
     } catch (e) {
       console.log(e);
       res.status(403).json({ message: 'Error occured' });
@@ -233,14 +236,6 @@ class PhotoController {
       const photos = await Photo.findAll({ where: { id: photoIds } });
       const albumIds = photos.map((photo) => photo.albumId);
       const uniqueAlbumIds = [...new Set(albumIds)];
-      // for (let j = 0; j < uniqueAlbumIds.length; j += 1) {
-      //   // eslint-disable-next-line no-await-in-loop
-      //   const paymentStatus = await UserAlbum.findOne({
-      //     where:
-      //       { userId: uId, albumId: uniqueAlbumIds[j] },
-      //   });
-      //   albumPaidStatus[uniqueAlbumIds[j]] = paymentStatus?.isPaid;
-      // }
       const albums = await UserAlbum.findAll({ where: { userId: uId, albumId: uniqueAlbumIds } });
       type InterfaceAlbumPaidStatus = {
             [key: string]: boolean;
