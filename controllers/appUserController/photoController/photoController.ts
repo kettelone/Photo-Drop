@@ -223,7 +223,7 @@ class PhotoController {
     const userId = req.query.userId as string | undefined;
     const albumId = req.query.albumId as string | undefined;
 
-    const findUserPhoto = async (uId :string, albumid: string) => {
+    const findUserPhoto = async (uId :string) => {
       const user = await AppUser.findOne({ where: { id: uId } });
       const person = await Person.findOne({ where: { phone: user?.phone } });
       // get all photos where user is present
@@ -234,7 +234,7 @@ class PhotoController {
         photoIds.push(el.photoId);
       });
 
-      const photos = await Photo.findAll({ where: { id: photoIds, albumId: albumid } });
+      const photos = await Photo.findAll({ where: { id: photoIds } });
 
       const albumIds = photos.map((photo) => photo.albumId);
       const uniqueAlbumIds = [...new Set(albumIds)];
@@ -254,7 +254,7 @@ class PhotoController {
       const isPaid = await checkIfPaid(userId, albumId);
       // if (isPaid === true) {
       try {
-        const { photos, albumPaidStatus } = await findUserPhoto(userId, albumId);
+        const { photos, albumPaidStatus } = await findUserPhoto(userId);
         const signedThumbnails:Thumbnails[] = [];
         if (photos.length > 0) {
           photos.forEach((photo) => {
