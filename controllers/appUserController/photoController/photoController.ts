@@ -261,8 +261,8 @@ class PhotoController {
             if (photo) {
               const s3 = new aws.S3();
               const url = s3.getSignedUrl('getObject', {
-                Bucket: albumPaidStatus[photo.albumId] === true ? process.env.S3_BUCKET_RESIZED
-                  : process.env.S3_BUCKET_RESIZED_WATERMAR,
+                // eslint-disable-next-line max-len
+                Bucket: albumPaidStatus[photo.albumId] === true ? process.env.S3_BUCKET_RESIZED : process.env.S3_BUCKET_RESIZED_WATERMAR,
                 Key: albumPaidStatus[photo.albumId] === true ? `resized-${photo.name}` : `resized-watermarkresized-${photo.name}`,
                 Expires: 60 * 5,
               });
