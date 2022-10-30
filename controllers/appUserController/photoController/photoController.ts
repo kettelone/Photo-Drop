@@ -235,64 +235,47 @@ class PhotoController {
       });
 
       const photos = await Photo.findAll({ where: { id: photoIds, albumId: albumid } });
-      return photos;
+
+      const albumIds = photos.map((photo) => photo.albumId);
+      const uniqueAlbumIds = [...new Set(albumIds)];
+      const albumPaidStatus: any = {};
+      for (let j = 0; j < uniqueAlbumIds.length; j += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        const paymentStatus = await UserAlbum.findOne({
+          where:
+            { userId: uId, albumId: uniqueAlbumIds[j] },
+        });
+        albumPaidStatus[uniqueAlbumIds[j]] = paymentStatus?.isPaid;
+      }
+      return { photos, albumPaidStatus };
     };
 
     if (userId && albumId) {
       const isPaid = await checkIfPaid(userId, albumId);
-      if (isPaid === true) {
-        try {
-          const photos = await findUserPhoto(userId, albumId);
-          const signedThumbnails:Thumbnails[] = [];
-          if (photos.length > 0) {
-            photos.forEach((photo) => {
-              if (photo) {
-                const s3 = new aws.S3();
-
-                const url = s3.getSignedUrl('getObject', {
-                  Bucket: process.env.S3_BUCKET_RESIZED,
-                  Key: `resized-${photo.name}`,
-                  Expires: 60 * 5,
-                });
-                signedThumbnails.push({
-                  isPaid: true, url, originalKey: photo.name, albumId: photo.albumId,
-                });
-              }
-            });
-          }
-          res.json({ totalPhotos: photos.length, thumbnails: signedThumbnails });
-          // res.json({ photos });
-          return;
-        } catch (e) {
-          console.log(e);
+      // if (isPaid === true) {
+      try {
+        const { photos, albumPaidStatus } = await findUserPhoto(userId, albumId);
+        const signedThumbnails:Thumbnails[] = [];
+        if (photos.length > 0) {
+          photos.forEach((photo) => {
+            if (photo) {
+              const s3 = new aws.S3();
+              const url = s3.getSignedUrl('getObject', {
+                Bucket: isPaid ? process.env.S3_BUCKET_RESIZED
+                  : process.env.S3_BUCKET_RESIZED_WATERMAR,
+                Key: albumPaidStatus[photo.albumId] === true ? `resized-${photo.name}` : `resized-watermarkresized-${photo.name}`,
+                Expires: 60 * 5,
+              });
+              signedThumbnails.push({
+                isPaid: true, url, originalKey: photo.name, albumId: photo.albumId,
+              });
+            }
+          });
         }
-      } else {
-        try {
-          const thumbnailsWaterMark = await findUserPhoto(userId, albumId);
-          const signedThumbnails:Thumbnails[] = [];
-          if (thumbnailsWaterMark.length > 0) {
-            thumbnailsWaterMark.forEach((thumbnail) => {
-              if (thumbnail) {
-                const s3 = new aws.S3();
-                const url = s3.getSignedUrl('getObject', {
-                  Bucket: process.env.S3_BUCKET_RESIZED_WATERMARK,
-                  Key: `resized-watermarkresized-${thumbnail.name}`,
-                  Expires: 60 * 5,
-                });
-                signedThumbnails.push({
-                  isPaid: false,
-                  url,
-                  originalKey: thumbnail.name,
-                  albumId: thumbnail.albumId,
-                });
-              }
-            });
-          }
-          res.json({ totalPhotos: thumbnailsWaterMark.length, thumbnails: signedThumbnails });
-          return;
-        } catch (e) {
-          console.log(e);
-        }
+        res.json({ totalPhotos: photos.length, thumbnails: signedThumbnails });
+        return;
+      } catch (e) {
+        console.log(e);
       }
     } else {
       res.json({ message: 'query parameters missing' });
