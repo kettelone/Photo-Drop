@@ -67,8 +67,8 @@ const generatePaymnet = async (
           quantity: 1,
         }],
         metadata: { userId: `${userId}`, albumId: `${albumId}` },
-        success_url: `${success_base_url}/dashboard/success-${albumId}`,
-        cancel_url: `${process.env.SERVER_URL}/cancel`,
+        success_url: `${success_base_url}/albums/success${albumId}`,
+        cancel_url: `${success_base_url}/albums/cancel`,
       });
       const { url } = session;
       if (url) {
@@ -100,7 +100,7 @@ class PhotoController {
         originalSelfieKey: name,
       },
       Conditions: [['content-length-range', 0, 5000000]],
-      Expires: 60 * 60, // seconds
+      Expires: 60 * 120, // seconds
       Bucket: process.env.S3_SELFIE_BUCKET,
     });
     res.send(JSON.stringify({ url, fields }));
@@ -135,7 +135,7 @@ class PhotoController {
       const url = s3.getSignedUrl('getObject', {
         Bucket: process.env.S3_SELFIE_BUCKET_RESIZED,
         Key: selfieKey,
-        Expires: 60 * 5,
+        Expires: 60 * 120,
       });
 
       res.json(url);
@@ -203,7 +203,7 @@ class PhotoController {
         const url = s3.getSignedUrl('getObject', {
           Bucket: process.env.S3_BUCKET_RESIZED,
           Key: `resized-${obj!.name}`,
-          Expires: 60 * 60,
+          Expires: 60 * 120,
         });
         albumThumbnails[obj!.albumId] = url;
       });
@@ -260,7 +260,7 @@ class PhotoController {
                   : process.env.S3_BUCKET_RESIZED_WATERMARK,
                 Key: albumPaidStatus[photo.albumId] === true ? `resized-${photo.name}`
                   : `resized-watermarkresized-${photo.name}`,
-                Expires: 60 * 5,
+                Expires: 60 * 120,
               });
               signedThumbnails.push({
                 isPaid: albumPaidStatus[photo.albumId],
@@ -293,7 +293,8 @@ class PhotoController {
           const url = s3.getSignedUrl('getObject', {
             Bucket: process.env.S3_BUCKET,
             Key: originalKey,
-            Expires: 60 * 5,
+            Expires: 60 * 120,
+            ResponseContentDisposition: `attachment; filename=${originalKey}`,
           });
           res.send(`${url}`);
           return;
