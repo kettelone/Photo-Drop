@@ -174,14 +174,14 @@ class PhotoController {
       [key: string] : string | null
     }
     const albumIds = req.body.albumIds as string[];
-    const userId = req.body.userId as string;
+    // const userId = req.body.userId as string;
     const albumThumbnails:ThumbnailsObject = {};
     try {
-      const user = await AppUser.findOne({ where: { id: userId } });
-      const person = await Person.findOne({ where: { phone: user?.phone } });
-      const photoPeople = await Photo_Person.findAll({ where: { personId: person?.id } });
-      const photoIds = photoPeople.map((el) => el.photoId);
-      const photos = await Photo.findAll({ where: { id: photoIds } });
+      // const user = await AppUser.findOne({ where: { id: userId } });
+      // const person = await Person.findOne({ where: { phone: user?.phone } });
+      // const photoPeople = await Photo_Person.findAll({ where: { personId: person?.id } });
+      // const photoIds = photoPeople.map((el) => el.photoId);
+      // const photos = await Photo.findAll({ where: { id: photoIds } });
       /// //////
       const promises = albumIds.map((id) => PhotoMini.findOne({ where: { albumId: id } }));
       const albumThumbnailObjects = await Promise.all(promises);
