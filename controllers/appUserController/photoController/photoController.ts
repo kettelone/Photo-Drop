@@ -294,7 +294,7 @@ class PhotoController {
             Bucket: process.env.S3_BUCKET,
             Key: originalKey,
             Expires: 60 * 120,
-            ResponseContentDisposition: `attachment; filename=${originalKey}`,
+            // ResponseContentDisposition: `attachment; filename=${originalKey}`,
           });
           res.send(`${url}`);
           return;
