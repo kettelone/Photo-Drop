@@ -183,28 +183,28 @@ class PhotoController {
       const photoIds = photoPeople.map((el) => el.photoId);
       const photos = await Photo.findAll({ where: { id: photoIds } });
       /// //////
-      // const promises = albumIds.map((id) => PhotoMini.findOne({ where: { albumId: id } }));
-      // const albumThumbnailObjects = await Promise.all(promises);
-      // albumThumbnailObjects.forEach((obj) => {
-      //   const url = s3.getSignedUrl('getObject', {
-      //     Bucket: process.env.S3_BUCKET_RESIZED,
-      //     Key: `resized-${obj!.name}`,
-      //     Expires: 60 * 120,
-      //   });
-      //   albumThumbnails[obj!.albumId] = url;
-      // });
-      albumIds.forEach((albumId) => {
-        photos.forEach((photo) => {
-          if (albumId === photo.albumId) {
-            const url = s3.getSignedUrl('getObject', {
-              Bucket: process.env.S3_BUCKET_RESIZED,
-              Key: `resized-${photo!.name}`,
-              Expires: 60 * 120,
-            });
-            albumThumbnails[photo!.albumId] = url;
-          }
+      const promises = albumIds.map((id) => PhotoMini.findOne({ where: { albumId: id } }));
+      const albumThumbnailObjects = await Promise.all(promises);
+      albumThumbnailObjects.forEach((obj) => {
+        const url = s3.getSignedUrl('getObject', {
+          Bucket: process.env.S3_BUCKET_RESIZED,
+          Key: `resized-${obj!.name}`,
+          Expires: 60 * 120,
         });
+        albumThumbnails[obj!.albumId] = url;
       });
+      // albumIds.forEach((albumId) => {
+      //   photos.forEach((photo) => {
+      //     if (albumId === photo.albumId) {
+      //       const url = s3.getSignedUrl('getObject', {
+      //         Bucket: process.env.S3_BUCKET_RESIZED,
+      //         Key: `resized-${photo!.name}`,
+      //         Expires: 60 * 120,
+      //       });
+      //       albumThumbnails[photo!.albumId] = url;
+      //     }
+      //   });
+      // });
 
       res.json(albumThumbnails);
       // }
