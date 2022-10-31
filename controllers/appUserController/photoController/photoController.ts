@@ -174,38 +174,36 @@ class PhotoController {
       [key: string] : string | null
     }
     const albumIds = req.body.albumIds as string[];
+    const userId = req.body.userId as string;
     const albumThumbnails:ThumbnailsObject = {};
     try {
-      // if (albumIds) {
-      // for (let i = 0; i < albumIds.length; i += 1) {
-      //   // eslint-disable-next-line no-await-in-loop
-      //   const albumExist = await Album.findOne({ where: { id: albumIds[i] } });
-      //   if (albumExist) {
-      //     // eslint-disable-next-line no-await-in-loop
-      //     const keyExist = await PhotoMini.findOne({ where: { albumId: albumIds[i] } });
-      //     if (keyExist) {
-      //       const url = s3.getSignedUrl('getObject', {
-      //         Bucket: process.env.S3_BUCKET_RESIZED,
-      //         Key: `resized-${keyExist.name}`,
-      //         Expires: 60 * 60,
-      //       });
-      //       albumThumbnails[albumIds[i]] = url;
-      //     } else {
-      //       albumThumbnails[albumIds[i]] = null;
-      //     }
-      //   } else {
-      //     albumThumbnails[albumIds[i]] = 'Album does not exist';
-      //   }
-      // }
-      const promises = albumIds.map((id) => PhotoMini.findOne({ where: { albumId: id } }));
-      const albumThumbnailObjects = await Promise.all(promises);
-      albumThumbnailObjects.forEach((obj) => {
-        const url = s3.getSignedUrl('getObject', {
-          Bucket: process.env.S3_BUCKET_RESIZED,
-          Key: `resized-${obj!.name}`,
-          Expires: 60 * 120,
+      const user = await AppUser.findOne({ where: { id: userId } });
+      const person = await Person.findOne({ where: { phone: user?.phone } });
+      const photoPeople = await Photo_Person.findAll({ where: { personId: person?.id } });
+      const photoIds = photoPeople.map((el) => el.photoId);
+      const photos = await Photo.findAll({ where: { id: photoIds } });
+      /// //////
+      // const promises = albumIds.map((id) => PhotoMini.findOne({ where: { albumId: id } }));
+      // const albumThumbnailObjects = await Promise.all(promises);
+      // albumThumbnailObjects.forEach((obj) => {
+      //   const url = s3.getSignedUrl('getObject', {
+      //     Bucket: process.env.S3_BUCKET_RESIZED,
+      //     Key: `resized-${obj!.name}`,
+      //     Expires: 60 * 120,
+      //   });
+      //   albumThumbnails[obj!.albumId] = url;
+      // });
+      albumIds.forEach((albumId) => {
+        photos.forEach((photo) => {
+          if (albumId === photo.albumId) {
+            const url = s3.getSignedUrl('getObject', {
+              Bucket: process.env.S3_BUCKET_RESIZED,
+              Key: `resized-${photo!.name}`,
+              Expires: 60 * 120,
+            });
+            albumThumbnails[photo!.albumId] = url;
+          }
         });
-        albumThumbnails[obj!.albumId] = url;
       });
 
       res.json(albumThumbnails);
@@ -229,9 +227,7 @@ class PhotoController {
     const findUserPhoto = async (uId :string) => {
       const user = await AppUser.findOne({ where: { id: uId } });
       const person = await Person.findOne({ where: { phone: user?.phone } });
-      // get all photos where user is present
       const photoPeople = await Photo_Person.findAll({ where: { personId: person?.id } });
-      // get all photo id`s from the photos where user is present
       const photoIds = photoPeople.map((el) => el.photoId);
       const photos = await Photo.findAll({ where: { id: photoIds } });
       const albumIds = photos.map((photo) => photo.albumId);
