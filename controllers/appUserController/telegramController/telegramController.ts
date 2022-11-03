@@ -13,12 +13,24 @@ class TelegramController {
 
     const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
     const phoneExist = await UserOTP.findOne({ where: { phone } });
-    if (phoneExist) {
+    if (phoneExist && phoneExist.secondResend === false) {
       phoneExist.otp = OTP;
+      phoneExist.secondResend = true;
       phoneExist.save();
+    } else if (phoneExist && phoneExist.secondResend === true) {
+      res.status(401).json({ errors: [{ msg: 'Please try to login agagain in 3 minutes' }] });
+      setTimeout(async () => {
+        const user = await UserOTP.findOne({ where: { phone } });
+        if (user) {
+          user.secondResend = false;
+          user.save();
+        }
+      }, 3 * 60 * 1000);
+      return;
     } else {
       await UserOTP.create({ phone, otp: OTP });
     }
+
     try {
       bot.sendMessage(
         Number(process.env.TB_BOT_GROUP_CHAT_ID),

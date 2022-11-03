@@ -107,10 +107,11 @@ interface AppUserInstance extends
 interface UserOTPAttributes {
   id: string,
   phone: string,
-  otp: string
+  otp: string,
+  secondResend: boolean
 }
 
-interface UserOTPCreationAttributes extends Optional<UserOTPAttributes, 'id'> { }
+interface UserOTPCreationAttributes extends Optional<UserOTPAttributes, 'id' | 'secondResend'> { }
 interface UserOTPInstance extends
   Model<UserOTPAttributes, UserOTPCreationAttributes>,
   UserOTPAttributes { }
