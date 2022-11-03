@@ -36,7 +36,7 @@ class TelegramController {
     phoneExist.otp = OTP;
     phoneExist.timeoutId = timeoutId as unknown as number;
     phoneExist.save();
-
+    // console.log('Hello')
     try {
       bot.sendMessage(
         Number(process.env.TB_BOT_GROUP_CHAT_ID),
