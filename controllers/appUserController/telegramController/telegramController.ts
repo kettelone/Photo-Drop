@@ -20,7 +20,6 @@ class TelegramController {
           Number(process.env.TB_BOT_GROUP_CHAT_ID),
           `Your phone is: ${phone}\nYour OTP is: ${OTP}`,
         );
-        res.send();
       };
 
       if (!phoneExist) {
@@ -28,6 +27,7 @@ class TelegramController {
         const newUser = await UserOTP.create({ phone, otp: OTP, otpCreated });
         newUser.save();
         sendOTPToTelegram();
+        res.send();
         return;
       }
 
@@ -36,6 +36,8 @@ class TelegramController {
         phoneExist.otpCreated = Date.now();
         phoneExist.save();
         sendOTPToTelegram();
+        res.send();
+        return;
       }
     } catch (e) {
       console.log(e);
