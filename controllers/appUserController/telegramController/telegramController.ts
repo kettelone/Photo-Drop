@@ -27,7 +27,6 @@ class TelegramController {
         const otpCreated = Date.now();
         const newUser = await UserOTP.create({ phone, otp: OTP, otpCreated });
         newUser.save();
-        res.send();
         sendOTPToTelegram();
         return;
       }
