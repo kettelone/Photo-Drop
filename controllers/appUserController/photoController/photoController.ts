@@ -284,7 +284,6 @@ class PhotoController {
 
   async getOriginalPhoto(req: Request, res: Response): Promise <void> {
     const s3 = new aws.S3();
-    const host = req.headers.origin as string;
     const { originalKey, albumId, userId } = req.query as { [key: string]: string };
     if (userId && albumId) {
       try {

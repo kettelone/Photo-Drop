@@ -7,6 +7,14 @@ class AppUserValidator {
     ];
   }
 
+  checkOTP() {
+    return [
+      query('phone').notEmpty().withMessage('The phone value should not be empty'),
+      query('otp').notEmpty().withMessage('The otp value should not be empty'),
+
+    ];
+  }
+
   checkCreateAppUser() {
     return [
       body('phone').notEmpty().withMessage('The phone value should not be empty'),

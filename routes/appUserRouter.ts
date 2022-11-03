@@ -9,6 +9,7 @@ import { checkAuth, checkValidationErrors } from '../middleware/authMiddleware';
 const router = express.Router();
 
 router.post('/send-otp', appUserValidator.checkGetOTP(), checkValidationErrors, telegramController.generateOTP);
+router.get('/check-otp', appUserValidator.checkOTP(), telegramController.checkOTP);
 router.post('/create-app-user', appUserValidator.checkCreateAppUser(), checkValidationErrors, userAccountController.createAppUser);
 router.get('/get-me', userAccountController.getMe);
 router.post('/presigned-post', checkAuth, appUserValidator.checkGetPresignedUrl(), checkValidationErrors, photoController.signSelfie);
