@@ -108,10 +108,10 @@ interface UserOTPAttributes {
   id: string,
   phone: string,
   otp: string,
-  timeoutId: number
+  otpCreated: number
 }
 
-interface UserOTPCreationAttributes extends Optional<UserOTPAttributes, 'id' | 'timeoutId'> { }
+interface UserOTPCreationAttributes extends Optional<UserOTPAttributes, 'id' | 'otpCreated'> { }
 interface UserOTPInstance extends
   Model<UserOTPAttributes, UserOTPCreationAttributes>,
   UserOTPAttributes { }

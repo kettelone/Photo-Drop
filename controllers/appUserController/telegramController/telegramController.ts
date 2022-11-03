@@ -15,14 +15,6 @@ class TelegramController {
     try {
       const phoneExist = await UserOTP.findOne({ where: { phone } });
 
-      const resetOtpLifetime = () => setTimeout(async () => {
-        const user = await UserOTP.findOne({ where: { phone } });
-        if (user) {
-          user.otp = '';
-          user.save();
-        }
-      }, 30 * 1000);
-
       const sendOTPToTelegram = () => {
         bot.sendMessage(
           Number(process.env.TB_BOT_GROUP_CHAT_ID),
@@ -32,22 +24,20 @@ class TelegramController {
       };
 
       if (!phoneExist) {
-        // craeate new otp NodeJS.Timeout
-        const newUser = await UserOTP.create({ phone, otp: OTP });
-        const timeoutId = resetOtpLifetime();
-        newUser.timeoutId = timeoutId as unknown as number;
+        const otpCreated = Date.now();
+        const newUser = await UserOTP.create({ phone, otp: OTP, otpCreated });
         newUser.save();
         res.send();
         sendOTPToTelegram();
         return;
       }
 
-      clearTimeout(phoneExist.timeoutId);
-      const timeoutId = resetOtpLifetime();
-      phoneExist.otp = OTP;
-      phoneExist.timeoutId = timeoutId as unknown as number;
-      phoneExist.save();
-      sendOTPToTelegram();
+      if (phoneExist) {
+        phoneExist.otp = OTP;
+        phoneExist.otpCreated = Date.now();
+        phoneExist.save();
+        sendOTPToTelegram();
+      }
     } catch (e) {
       console.log(e);
     }
@@ -56,7 +46,7 @@ class TelegramController {
   async checkOTP(req: Request, res: Response) {
     const { phone, otp } = req.query as { [key: string]: string };
     const userOTP = await UserOTP.findOne({ where: { phone, otp } });
-    if (userOTP) {
+    if (userOTP && userOTP.otpCreated && (Date.now() - userOTP.otpCreated > 30 * 1000)) {
       res.send();
     } else {
       res.status(401).json({ errors: [{ msg: 'Incorrect verification code, please check again.' }] });

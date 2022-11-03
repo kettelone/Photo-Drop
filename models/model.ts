@@ -88,7 +88,7 @@ const UserOTP = sequelize.define<UserOTPInstance>('userOTP', {
   id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
   phone: { type: DataTypes.STRING, unique: true },
   otp: { type: DataTypes.STRING },
-  timeoutId: { type: DataTypes.INTEGER },
+  otpCreated: { type: DataTypes.INTEGER },
 });
 
 // Selfie
