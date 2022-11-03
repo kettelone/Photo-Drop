@@ -35,7 +35,7 @@ class TelegramController {
     if (userOTP) {
       res.send();
     } else {
-      res.status(401).json({ errors: [{ msg: 'OTP not matching' }] });
+      res.status(401).json({ errors: [{ msg: 'Incorrect verification code, please check again.' }] });
     }
   }
 
