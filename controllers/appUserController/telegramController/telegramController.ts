@@ -52,16 +52,6 @@ class TelegramController {
       res.status(401).json({ errors: [{ msg: 'Incorrect verification code, please check again.' }] });
     }
   }
-
-  // sendPhotoNotification(req: Request, res: Response) {
-  //   try {
-  //     bot.sendMessage(Number(process.env.TB_BOT_GROUP_CHAT_ID), 'PhotoDrop: your photos have dropped🔥\n\nCheck the out here:\n https://userAppUrlWillBeSoonHere.com');
-  //     // const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phoneNumbers[i]} your photos have dropped🔥\n\nCheck them out here:\n https://dev-photodrop-client.vercel.app/dashboard/album-id-${albumid}`);
-  //     res.send();
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // }
 }
 
 export default new TelegramController();
