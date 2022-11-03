@@ -12,37 +12,42 @@ class TelegramController {
     const { phone }: Phone = req.body;
 
     const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
-    const phoneExist = await UserOTP.findOne({ where: { phone } });
-
-    const resetOtpLifetime = () => setTimeout(async () => {
-      const user = await UserOTP.findOne({ where: { phone } });
-      if (user) {
-        user.otp = '';
-        user.save();
-      }
-    }, 3 * 60 * 1000);
-
-    if (!phoneExist) {
-      // craeate new otp NodeJS.Timeout
-      const newUser = await UserOTP.create({ phone, otp: OTP });
-      const timeoutId = resetOtpLifetime();
-      newUser.timeoutId = timeoutId as unknown as number;
-      newUser.save();
-      return;
-    }
-
-    clearTimeout(phoneExist.timeoutId);
-    const timeoutId = resetOtpLifetime();
-    phoneExist.otp = OTP;
-    phoneExist.timeoutId = timeoutId as unknown as number;
-    phoneExist.save();
-    // console.log('Hello')
     try {
-      bot.sendMessage(
-        Number(process.env.TB_BOT_GROUP_CHAT_ID),
-        `Your phone is: ${phone}\nYour OTP is: ${OTP}`,
-      );
-      res.send();
+      const phoneExist = await UserOTP.findOne({ where: { phone } });
+
+      const resetOtpLifetime = () => setTimeout(async () => {
+        const user = await UserOTP.findOne({ where: { phone } });
+        if (user) {
+          user.otp = '';
+          user.save();
+        }
+      }, 3 * 60 * 1000);
+
+      const sendOTPToTelegram = () => {
+        bot.sendMessage(
+          Number(process.env.TB_BOT_GROUP_CHAT_ID),
+          `Your phone is: ${phone}\nYour OTP is: ${OTP}`,
+        );
+        res.send();
+      };
+
+      if (!phoneExist) {
+        // craeate new otp NodeJS.Timeout
+        const newUser = await UserOTP.create({ phone, otp: OTP });
+        const timeoutId = resetOtpLifetime();
+        newUser.timeoutId = timeoutId as unknown as number;
+        newUser.save();
+        res.send();
+        sendOTPToTelegram();
+        return;
+      }
+
+      clearTimeout(phoneExist.timeoutId);
+      const timeoutId = resetOtpLifetime();
+      phoneExist.otp = OTP;
+      phoneExist.timeoutId = timeoutId as unknown as number;
+      phoneExist.save();
+      sendOTPToTelegram();
     } catch (e) {
       console.log(e);
     }
