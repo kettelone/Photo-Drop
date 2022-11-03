@@ -43,7 +43,12 @@ const generatePaymnet = async (
   host: any,
 ): Promise<string | undefined> => {
   console.log({ host });
-  const success_base_url = host.includes('dev-photodrop') ? 'https://dev-photodrop-client.vercel.app' : 'http://localhost:3000';
+  let success_base_url;
+  if (host) {
+    success_base_url = host.includes('dev-photodrop') ? 'https://dev-photodrop-client.vercel.app' : 'http://localhost:3000';
+  } else {
+    success_base_url = 'http://localhost:3000';
+  }
   const albumItem = { id: 1, priceInCents: 500, name: 'Album' };
   if (albumId !== undefined && userId !== undefined) {
     try {
@@ -295,15 +300,27 @@ class PhotoController {
           res.send(`${url}`);
           return;
         }
-        // redirect to the payment page
-        const paymentLink = await generatePaymnet(albumId, userId, host);
-        if (paymentLink) {
-          res.send(`${paymentLink}`);
-          return;
-        }
+        // send original watermarked photo
+        const url = s3.getSignedUrl('getObject', {
+          Bucket: process.env.S3_BUCKET_ORIGINAL_WATERMARKED,
+          Key: originalKey,
+          Expires: 60 * 120,
+        });
+        res.send(`${url}`);
+        return;
       } catch (e) {
         console.log(e);
       }
+    }
+  }
+
+  async generatePayment(req: Request, res: Response): Promise <void> {
+    const host = req.headers.origin as string;
+    const { albumId, userId } = req.query as { [key: string]: string };
+    // redirect to the payment page
+    const paymentLink = await generatePaymnet(albumId, userId, host);
+    if (paymentLink) {
+      res.send(`${paymentLink}`);
     }
   }
 }

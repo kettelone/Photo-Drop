@@ -4,7 +4,8 @@ import {
 import sequelize from '../db';
 import {
   PhotographerInstance, AlbumInstance, PhotoInstance, PhotoMiniInstance, PhotoMiniWaterMarkInstance,
-  PersonInstance, AppUserInstance, SelfieInstance, SelfieMiniInstance, UserAlbumInstance,
+  PersonInstance, AppUserInstance, UserOTPInstance, SelfieInstance,
+  SelfieMiniInstance, UserAlbumInstance,
   Photo_PesronInstance,
 } from './interfaces';
 
@@ -80,6 +81,13 @@ const AppUser = sequelize.define<AppUserInstance>('appUser', {
   textMessagesNotification: { type: DataTypes.BOOLEAN },
   emailNotification: { type: DataTypes.BOOLEAN },
   unsubscribe: { type: DataTypes.BOOLEAN },
+});
+
+// UserOTP
+const UserOTP = sequelize.define<UserOTPInstance>('userOTP', {
+  id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+  phone: { type: DataTypes.STRING, unique: true },
+  otp: { type: DataTypes.STRING },
 });
 
 // Selfie
@@ -175,6 +183,7 @@ export {
   PhotoMiniWaterMark,
   Person,
   AppUser,
+  UserOTP,
   Selfie,
   SelfieMini,
   Photo_Person,

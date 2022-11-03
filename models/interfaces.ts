@@ -102,6 +102,19 @@ interface AppUserInstance extends
   Model<AppUserAttributes, AppUserCreationAttributes>,
   AppUserAttributes { }
 
+// UserOTP
+
+interface UserOTPAttributes {
+  id: string,
+  phone: string,
+  otp: string
+}
+
+interface UserOTPCreationAttributes extends Optional<UserOTPAttributes, 'id'> { }
+interface UserOTPInstance extends
+  Model<UserOTPAttributes, UserOTPCreationAttributes>,
+  UserOTPAttributes { }
+
 // Selfie
 
 interface SelfieAttributes {
@@ -162,6 +175,7 @@ export {
   PhotoMiniWaterMarkInstance,
   PersonInstance,
   AppUserInstance,
+  UserOTPInstance,
   SelfieInstance,
   SelfieMiniInstance,
   UserAlbumInstance,

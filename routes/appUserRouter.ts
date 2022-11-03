@@ -23,5 +23,6 @@ router.get('/get-albums-with-person', checkAuth, appUserValidator.checkGetAlbums
 router.post('/get-albums-thumbnail-icons', checkAuth, appUserValidator.checkGetAlbumThumbnailIcon(), checkValidationErrors, photoController.getAlbumsThumbnailIcon);
 router.get('/get-thumbnails-with-person', checkAuth, appUserValidator.checkGetThumbnailsWithPerson(), checkValidationErrors, photoController.getThumbnails);
 router.get('/get-original-photo', checkAuth, appUserValidator.checkGetOriginalPhoto(), checkValidationErrors, photoController.getOriginalPhoto);
+router.get('/generate-payment', checkAuth, appUserValidator.checkGeneratePayment(), checkValidationErrors, photoController.generatePayment);
 router.post('/webhook', express.raw({ type: 'application/json' }), stripeController.webhook);
 export default router;

@@ -23,6 +23,7 @@ import {
   Photo, PhotoMini, PhotoMiniWaterMark, Person, AppUser, Photo_Person,
 } from '../../models/model';
 import * as photoDropLogo from './PhotoDropLogo.png';
+import * as photoDropLogoBig from './PhotoDropLogoBig.png';
 
 /*
 1.To import photoDropLogo index.d.ts has to be created and "*.png" has to be initiated and exported
@@ -32,7 +33,7 @@ import * as photoDropLogo from './PhotoDropLogo.png';
 const s3 = new AWS.S3();
 
 const baseHandler = async (event: any) => {
-  if (!photoDropLogo) {
+  if (!photoDropLogo || !photoDropLogoBig) {
     return;
   }
   console.log('test');
@@ -62,8 +63,9 @@ const baseHandler = async (event: any) => {
   // resized with watermark photos bucket
   const dstBucketWM = `${srcBucket}-resized-watermark`;
   const dstKeyWM = `resized-watermark${dstKey}`;
-  console.log({ photographerid });
-  console.log({ albumid });
+  // // watermarked original photo
+  const dstBucketOWM = 'photodropbucket-watermarked';
+  const dstKeyOWM = `${srcKey}`;
 
   const urlPhoto = `https://${srcBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
   try {
@@ -149,7 +151,6 @@ const baseHandler = async (event: any) => {
 
       return resizedImage;
     });
-    // buffer = await sharp(origimage.Body).resize(width).toBuffer();
   } catch (error) {
     console.log(error);
     return;
@@ -261,6 +262,48 @@ const baseHandler = async (event: any) => {
       console.log(`Successfully resized with matermark${srcBucket}/${srcKey} 
       and uploaded to ${dstBucketWM}/${dstKeyWM}`);
     }
+
+    // // watermark original image and save to the photodropbucket-watermarked
+
+    const addWaterMarkToOriginal = async (image: any) => {
+      /*
+      2.After importing the  photoDropLogo and deploying with "serverless deploy" command
+        photoDropLogo image will be present in zip package file
+        under the name "d8885004a7cbbc5c2de6177b99b30489.png"
+        (have no idea why this name. I was trying to fix it with no success.)
+        So later on we will read image using name mentioned above. The path will be
+        "./d8885004a7cbbc5c2de6177b99b30489.png" - chekc zip file manually to double check
+      */
+      const logoImageBig = await Jimp.read('./4de5d5c7c739360235f407fb0f36b3bc.png');
+      if (!image) {
+        return;
+      }
+      const imageOriginal = await Jimp.read(image);
+      const originalHeight = imageOriginal.bitmap.height;
+      const originalWidth = imageOriginal.bitmap.width;
+      const minValue = originalWidth < originalHeight ? 'width' : 'heigth';
+      const newWidth = minValue === 'width' ? originalWidth / 2.5 : Jimp.AUTO;
+      const newHeight = minValue === 'heigth' ? originalHeight / 3.3 : Jimp.AUTO;
+
+      logoImageBig.resize(newWidth, newHeight);// second argument is height
+      imageOriginal.composite(
+        logoImageBig,
+        originalWidth / 2 - logoImageBig.bitmap.width / 2,
+        originalHeight / 2 - logoImageBig.bitmap.height / 2,
+      );
+      return imageOriginal.getBufferAsync(Jimp.MIME_JPEG);
+    };
+
+    const imageOWM = await addWaterMarkToOriginal(origimage.Body);
+
+    const destparamsOWM = {
+      Bucket: dstBucketOWM,
+      Key: dstKeyOWM,
+      Body: imageOWM,
+      ContentType: 'image',
+    };
+
+    await s3.putObject(destparamsOWM).promise();
 
     // notify(in telegram) app user that photo has been uploaded
     const phoneNumbers = peopleArray;

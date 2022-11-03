@@ -19,7 +19,7 @@ const addWatermark = async (image: any) => {
   return imageToReturn.getBufferAsync(Jimp.MIME_PNG);
 };
 
-module.exports.handler = async (event:any, context:any) => {
+const baseHandler = async (event:any) => {
   if (!photoDropLogo) {
     return;
   }
@@ -50,3 +50,8 @@ module.exports.handler = async (event:any, context:any) => {
     };
   }
 };
+
+// @ts-ignore
+const handler = baseHandler;
+
+module.exports.handler = handler;

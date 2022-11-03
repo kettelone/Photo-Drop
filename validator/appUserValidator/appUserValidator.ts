@@ -97,6 +97,13 @@ class AppUserValidator {
       query('originalKey').notEmpty().withMessage('The originalKey value should not be empty'),
     ];
   }
+
+  checkGeneratePayment() {
+    return [
+      query('albumId').notEmpty().withMessage('The albumId value should not be empty'),
+      query('userId').notEmpty().withMessage('The userId value should not be empty'),
+    ];
+  }
 }
 
 export default new AppUserValidator();
