@@ -18,7 +18,7 @@ aws.config.update({
   accessKeyId: process.env.S3_ACCESS_KEY_ID,
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 });
-
+// console.log('Hello')
 const checkIfPaid = async (userId:string, albumId:string) :Promise<boolean> => {
   try {
     const info = await UserAlbum.findOne({ where: { userId, albumId } });
