@@ -3,7 +3,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import { UserOTP } from '../../../models/model';
 
 const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY!}`, { polling: true });
-///
+
 class TelegramController {
   async generateOTP(req: Request, res: Response): Promise<void> {
     interface Phone {
