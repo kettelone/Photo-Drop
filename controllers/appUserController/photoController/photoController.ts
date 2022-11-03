@@ -72,7 +72,7 @@ const generatePaymnet = async (
           quantity: 1,
         }],
         metadata: { userId: `${userId}`, albumId: `${albumId}` },
-        success_url: `${success_base_url}/albums/success${albumId}`,
+        success_url: `${success_base_url}/albums/success/${albumId}`,
         cancel_url: `${success_base_url}/albums/cancel`,
       });
       const { url } = session;
