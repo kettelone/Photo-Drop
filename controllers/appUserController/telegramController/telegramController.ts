@@ -5,7 +5,7 @@ import { UserOTP } from '../../../models/model';
 const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY!}`, { polling: true });
 
 class TelegramController {
-  async generateOTP(req: Request): Promise<void> {
+  async generateOTP(req: Request, res: Response): Promise<void> {
     interface Phone {
       phone: string
     }
@@ -24,6 +24,7 @@ class TelegramController {
         Number(process.env.TB_BOT_GROUP_CHAT_ID),
         `Your phone is: ${phone}\nYour OTP is: ${OTP}`,
       );
+      res.send();
     } catch (e) {
       console.log(e);
     }
