@@ -4,7 +4,7 @@ import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import Stripe from 'stripe';
 import {
-  SelfieMini, Person, Photo_Person, Photo, UserAlbum, PhotoMini, Album, AppUser,
+  SelfieMini, Person, Photo_Person, Photo, UserAlbum, Album, AppUser,
 } from '../../../models/model';
 
 // hjgjhgsdfs

@@ -111,11 +111,11 @@ const baseHandler = async (event: any) => {
     return;
   }
   // Check that the image type is supported
-  const imageType = typeMatch[1].toLowerCase();
-  if (imageType !== 'jpg' && imageType !== 'png' && imageType !== 'jpeg') {
-    console.log(`Unsupported image type: ${imageType}`);
-    return;
-  }
+  // const imageType = typeMatch[1].toLowerCase();
+  // if (imageType !== 'jpg' && imageType !== 'png' && imageType !== 'jpeg') {
+  //   console.log(`Unsupported image type: ${imageType}`);
+  //   return;
+  // }
 
   // Download the image from the S3 source bucket.
   let origimage;

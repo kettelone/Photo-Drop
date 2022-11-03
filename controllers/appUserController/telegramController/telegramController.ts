@@ -13,23 +13,29 @@ class TelegramController {
 
     const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
     const phoneExist = await UserOTP.findOne({ where: { phone } });
-    if (phoneExist && phoneExist.secondResend === false) {
-      phoneExist.otp = OTP;
-      phoneExist.secondResend = true;
-      phoneExist.save();
-    } else if (phoneExist && phoneExist.secondResend === true) {
-      res.status(401).json({ errors: [{ msg: 'Please try to login agagain in 3 minutes' }] });
-      setTimeout(async () => {
-        const user = await UserOTP.findOne({ where: { phone } });
-        if (user) {
-          user.secondResend = false;
-          user.save();
-        }
-      }, 3 * 60 * 1000);
+
+    const resetOtpLifetime = () => setTimeout(async () => {
+      const user = await UserOTP.findOne({ where: { phone } });
+      if (user) {
+        user.otp = '';
+        user.save();
+      }
+    }, 3 * 60 * 1000);
+
+    if (!phoneExist) {
+      // craeate new otp NodeJS.Timeout
+      const newUser = await UserOTP.create({ phone, otp: OTP });
+      const timeoutId = resetOtpLifetime();
+      newUser.timeoutId = timeoutId as unknown as number;
+      newUser.save();
       return;
-    } else {
-      await UserOTP.create({ phone, otp: OTP });
     }
+
+    clearTimeout(phoneExist.timeoutId);
+    const timeoutId = resetOtpLifetime();
+    phoneExist.otp = OTP;
+    phoneExist.timeoutId = timeoutId as unknown as number;
+    phoneExist.save();
 
     try {
       bot.sendMessage(
@@ -52,15 +58,15 @@ class TelegramController {
     }
   }
 
-  sendPhotoNotification(req: Request, res: Response) {
-    try {
-      bot.sendMessage(Number(process.env.TB_BOT_GROUP_CHAT_ID), 'PhotoDrop: your photos have dropped🔥\n\nCheck the out here:\n https://userAppUrlWillBeSoonHere.com');
-      // const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phoneNumbers[i]} your photos have dropped🔥\n\nCheck them out here:\n https://dev-photodrop-client.vercel.app/dashboard/album-id-${albumid}`);
-      res.send();
-    } catch (e) {
-      console.log(e);
-    }
-  }
+  // sendPhotoNotification(req: Request, res: Response) {
+  //   try {
+  //     bot.sendMessage(Number(process.env.TB_BOT_GROUP_CHAT_ID), 'PhotoDrop: your photos have dropped🔥\n\nCheck the out here:\n https://userAppUrlWillBeSoonHere.com');
+  //     // const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phoneNumbers[i]} your photos have dropped🔥\n\nCheck them out here:\n https://dev-photodrop-client.vercel.app/dashboard/album-id-${albumid}`);
+  //     res.send();
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // }
 }
 
 export default new TelegramController();
