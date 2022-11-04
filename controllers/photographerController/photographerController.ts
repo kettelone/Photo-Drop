@@ -180,7 +180,7 @@ class PhotographerController {
             if (keyExist) {
               const url = s3.getSignedUrl('getObject', {
                 Bucket: process.env.S3_BUCKET_RESIZED,
-                Key: `resized-${keyExist.name}`,
+                Key: keyExist.name,
                 Expires: 60 * 60,
               });
               albumThumbnails[albumIds[i]] = url;
