@@ -77,9 +77,10 @@ interface PersonAttributes {
   id: string;
   phone: string,
   name: string,
+  // addPhoto: any
 }
 
-interface PersonCreationAttributes extends Optional<PersonAttributes, 'id' | 'name'> { }
+interface PersonCreationAttributes extends Optional<PersonAttributes, 'id' | 'name' > { }
 interface PersonInstance extends
   Model<PersonAttributes, PersonCreationAttributes>,
   PersonAttributes { }

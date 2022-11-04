@@ -220,12 +220,6 @@ class PhotoController {
   }
 
   async getThumbnails(req: Request, res: Response): Promise<void> {
-    interface Thumbnails {
-            isPaid: boolean,
-            url: string,
-            originalKey: string,
-            albumId: string
-    }
     const userId = req.query.userId as string | undefined;
     const albumId = req.query.albumId as string | undefined;
 
@@ -251,29 +245,27 @@ class PhotoController {
     if (userId && albumId) {
       try {
         const { photos, albumPaidStatus } = await findUserPhoto(userId);
-        const signedThumbnails:Thumbnails[] = [];
+
         if (photos.length > 0) {
-          photos.forEach((photo) => {
-            if (photo) {
-              const s3 = new aws.S3();
-              const url = s3.getSignedUrl('getObject', {
-                Bucket: albumPaidStatus[photo.albumId] === true ? process.env.S3_BUCKET_RESIZED
-                  : process.env.S3_BUCKET_RESIZED_WATERMARK,
-                Key: albumPaidStatus[photo.albumId] === true ? `resized-${photo.name}`
-                  : `resized-watermarkresized-${photo.name}`,
-                Expires: 60 * 120,
-              });
-              signedThumbnails.push({
-                isPaid: albumPaidStatus[photo.albumId],
-                url,
-                originalKey: photo.name,
-                albumId: photo.albumId,
-              });
-            }
+          const signedThumbnails = photos.map((photo) => {
+            const s3 = new aws.S3();
+            const url = s3.getSignedUrl('getObject', {
+              Bucket: albumPaidStatus[photo.albumId] === true ? process.env.S3_BUCKET_RESIZED
+                : process.env.S3_BUCKET_RESIZED_WATERMARK,
+              Key: photo.name,
+              Expires: 60 * 120,
+            });
+            const thumbnail = {
+              isPaid: albumPaidStatus[photo.albumId],
+              url,
+              originalKey: photo.name,
+              albumId: photo.albumId,
+            };
+            return thumbnail;
           });
+          res.json({ totalPhotos: photos.length, thumbnails: signedThumbnails });
+          return;
         }
-        res.json({ totalPhotos: photos.length, thumbnails: signedThumbnails });
-        return;
       } catch (e) {
         console.log(e);
       }

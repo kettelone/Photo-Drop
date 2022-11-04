@@ -14,19 +14,16 @@ https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html#object-
 5.How can I get my CloudFormation stack to update if it's stuck in the UPDATE_ROLLBACK_FAILED state
 https://aws.amazon.com/premiumsupport/knowledge-center/cloudformation-update-rollback-failed/
 */
-
 import 'dotenv/config';
 import AWS from 'aws-sdk';
 import Jimp from 'jimp';
 import axios from 'axios';
-// import convert from 'heic-convert';
-
 import {
   Photo, PhotoMini, PhotoMiniWaterMark, Person, AppUser, Photo_Person,
 } from '../../models/model';
 import * as photoDropLogo from './PhotoDropLogo.png';
 import * as photoDropLogoBig from './PhotoDropLogoBig.png';
-
+import { PhotoInstance } from '../../models/interfaces';
 /*
 1.To import photoDropLogo index.d.ts has to be created and "*.png" has to be initiated and exported
 */
@@ -34,111 +31,72 @@ import * as photoDropLogoBig from './PhotoDropLogoBig.png';
 // delete this line after
 const s3 = new AWS.S3();
 
-const baseHandler = async (event: any) => {
-  if (!photoDropLogo || !photoDropLogoBig) {
-    return;
-  }
-  const srcBucket = event.Records[0].s3.bucket.name;
-  // Object key may have spaces or unicode non-ASCII characters.
-  const srcKey = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
-
-  // for obtainig the meta data for the bucket and key
+// 1. Get metadata from the photo
+const getMetaData = async (srcBucket:string, srcKey:string) => {
   const paramsS3 = {
     Bucket: srcBucket,
     Key: srcKey,
   };
+
   const data = await s3.headObject(paramsS3).promise();
   const metadata = (!data) ? null : data.Metadata;
   if (!metadata) {
     return;
   }
-  // get data from the metadata
   const peopleString = metadata.people;
   const peopleArray = peopleString.split(',');
   const { photographerid } = metadata;
   const { albumid } = metadata;
 
-  // resized photos bucket
-  const dstBucket = `${srcBucket}-resized`;
-  const dstKey = `resized-${srcKey}`;
-  // resized with watermark photos bucket
-  const dstBucketWM = `${srcBucket}-resized-watermark`;
-  const dstKeyWM = `resized-watermark${dstKey}`;
-  // // watermarked original photo
-  const dstBucketOWM = 'photodropbucket-watermarked';
-  const dstKeyOWM = `${srcKey}`;
+  return { peopleArray, photographerid, albumid };
+};
 
-  const urlPhoto = `https://${srcBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
-  try {
-    const photo = await Photo.create({
-      name: srcKey, photoUrl: urlPhoto, photographerId: photographerid, albumId: albumid,
-    });
-    if (photo) {
-      // const photoId = photo.id;
-      for (let i = 0; i < peopleArray.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        const personExist = await Person.findOne({ where: { phone: peopleArray[i] } });
-        if (personExist === null) {
-          /* eslint-disable no-await-in-loop */
-          const numericPhone = peopleArray[i].replace(/[^0-9]/g, '');
-          const person = await Person.create({
-            phone: numericPhone,
-            // photoId,
-          });
-            // @ts-ignore
-          await person.addPhoto(photo);
-        } else {
-          // @ts-ignore
-          await personExist.addPhoto(photo);
-        }
-      }
-      console.log('Successfully uploaded');
-    } else {
-      console.log({ message: 'Photo was not found' });
-    }
-  } catch (e) {
-    console.log(e);
-    return;
-  }
+// 2.Add people to photo
+const addPeopleToPhoto = async (phoneNumbersArray: string[], image: PhotoInstance): Promise<void> => {
+  const promises = phoneNumbersArray.map((phoneNumber) => Person.findOne(
+    { where: { phone: phoneNumber } },
+  ));
+  const allPeople = await Promise.all(promises);
+  const peopleExistPromises = allPeople.filter((personExist) => personExist !== null);
+  const peopleNotExistPromise = allPeople.filter((personExist) => personExist === null);
+  const peopleExist = await Promise.all(peopleExistPromises);
+  const peopleNotExist = await Promise.all(peopleNotExistPromise);
+  const addExistingPerson = peopleExist.map((person) => Photo_Person.create(
+    { photoId: image.id, personId: person!.id },
+  ));
+  const addNotExistingPerson = peopleNotExist.map((person) => Photo_Person.create(
+    { photoId: image.id, personId: person!.id },
+  ));
+  await Promise.all(addExistingPerson);
+  await Promise.all(addNotExistingPerson);
+};
 
+// 3. Handle image type
+const handleImageType = (srcKey: string): boolean => {
   // Infer the image type from the file suffix.
   const typeMatch = srcKey.match(/\.([^.]*)$/);
   if (!typeMatch) {
     console.log('Could not determine the image type.');
-    return;
+    return false;
   }
-
   // Check that the image type is supported
   const imageType = typeMatch[1].toLowerCase();
   if (imageType !== 'jpg' && imageType !== 'png' && imageType !== 'jpeg') {
     console.log(`Unsupported image type: ${imageType}`);
-    return;
+    return false;
   }
+  return true;
+};
 
-  // Download the image from the S3 source bucket.
-  let origimage;
+// 4. Create thumbnail
+const createThumbnail = async (Bucket: string, Key: string, paramsObject:any, photographerid:string, albumid:string) => {
   try {
-    const params = {
-      Bucket: srcBucket,
-      Key: srcKey,
-    };
-    origimage = await s3.getObject(params).promise();
-    // if (imageType === 'heic' || imageType === 'heif') {
-    //   origimage = convert({
-    //     buffer: origimage.Body, // the HEIC file buffer
-    //     format: 'PNG', // output format
-    //   });
-    // }
-  } catch (error) {
-    console.log(error);
-    return;
-  }
-
-  // resize the original image to thumbnail size
-  let buffer;
-  try {
+    const origimage = await s3.getObject({
+      Bucket,
+      Key,
+    }).promise();
     // @ts-ignore
-    buffer = await Jimp.read(origimage.Body).then((image) => {
+    const buffer = await Jimp.read(origimage.Body).then((image) => {
       const originalHeight = image.bitmap.height;
       const originalWidth = image.bitmap.width;
       const minValue = originalWidth < originalHeight ? 'width' : 'heigth';
@@ -152,66 +110,46 @@ const baseHandler = async (event: any) => {
 
       return resizedImage;
     });
-  } catch (error) {
-    console.log(error);
-    return;
-  }
 
-  // Upload the thumbnail image to the destination bucket
-  try {
     const destparams = {
-      Bucket: dstBucket,
-      Key: dstKey,
+      Bucket: paramsObject.dstBucket,
+      Key: paramsObject.dstKey,
       Body: buffer,
       ContentType: 'image',
     };
 
     const putResult = await s3.putObject(destparams).promise();
     if (putResult) {
-      try {
-        // save resized photo info to db
-        const urlPhotoMini = `https://${dstBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
-        try {
-          await PhotoMini.create({
-            name: srcKey,
-            photoMiniUrl: urlPhotoMini,
-            photographerId: photographerid,
-            albumId: albumid,
-          });
-        } catch (e) {
-          console.log(e);
-          return;
-        }
-      } catch (e) {
-        console.log(e);
-        return;
-      }
-      console.log(`Successfully resized ${srcBucket}/${srcKey
-      } and uploaded to ${dstBucket}/${dstKey}`);
+      // save resized photo info to db
+      const urlPhotoMini = `https://${paramsObject.dstBucket}.s3.eu-west-1.amazonaws.com/${paramsObject.dstKey}`;
+      await PhotoMini.create({
+        name: Key,
+        photoMiniUrl: urlPhotoMini,
+        photographerId: photographerid,
+        albumId: albumid,
+      });
 
-      console.log('METADATA IS:   ', metadata);
+      console.log(`Successfully resized ${Bucket}/${Key} and uploaded to ${paramsObject.dstBucket}/${paramsObject.dstKey}`);
     }
-  } catch (error) {
-    console.log(error);
-    return;
+  } catch (e) {
+    console.log(e);
   }
+};
 
-  try {
-    // add watermark add upload to photodropbucket-resized-watermark
-    const addWaterMark = async (image: any) => {
-      /*
-      2.After importing the  photoDropLogo and deploying with "serverless deploy" command
+// 5. Create watermarked thumbnail
+
+const createWatermarkedThumbnail = async (Bucket: string, Key: string, paramsObject:any, photographerid:string, albumid:string) => {
+  /*
+        After importing the  photoDropLogo and deploying with "serverless deploy" command
         photoDropLogo image will be present in zip package file
         under the name "d8885004a7cbbc5c2de6177b99b30489.png"
         (have no idea why this name. I was trying to fix it with no success.)
         So later on we will read image using name mentioned above. The path will be
         "./d8885004a7cbbc5c2de6177b99b30489.png" - chekc zip file manually to double check
       */
-      const logoImage = await Jimp.read('./d8885004a7cbbc5c2de6177b99b30489.png');
-      // const resizeWidth = 400;
-      if (!image) {
-        return;
-      }
+  const logoImage = await Jimp.read('./d8885004a7cbbc5c2de6177b99b30489.png');
+  try {
+    const addWaterMark = async (image: any) => {
       let imageResized = await Jimp.read(image);
       const originalHeight = imageResized.bitmap.height;
       const originalWidth = imageResized.bitmap.width;
@@ -220,7 +158,6 @@ const baseHandler = async (event: any) => {
       const newHeight = minValue === 'heigth' ? 400 : Jimp.AUTO;
 
       imageResized = imageResized.resize(newWidth, newHeight);
-      // const imageResized = await sharp(image).resize(resizeWidth).toBuffer();
       const img = await Jimp.read(imageResized);
       img.composite(
         logoImage,
@@ -230,55 +167,45 @@ const baseHandler = async (event: any) => {
       return img.getBufferAsync(Jimp.MIME_JPEG);
     };
 
+    const origimage = await s3.getObject({ Bucket, Key }).promise();
     const imageWM = await addWaterMark(origimage.Body);
-
     const destparamsWM = {
-      Bucket: dstBucketWM,
-      Key: dstKeyWM,
+      Bucket: paramsObject.dstBucketWM,
+      Key: paramsObject.dstKeyWM,
       Body: imageWM,
       ContentType: 'image',
     };
-
     const putResultWM = await s3.putObject(destparamsWM).promise();
 
     if (putResultWM) {
-      try {
-        // save resized photo info to db
-        const urlPhotoMiniWaterMark = `https://${dstBucketWM}.s3.eu-west-1.amazonaws.com/${srcKey}`;
-        try {
-          await PhotoMiniWaterMark.create({
-            name: srcKey,
-            photoMiniWaterMarkUrl: urlPhotoMiniWaterMark,
-            photographerId: photographerid,
-            albumId: albumid,
-          });
-        } catch (e) {
-          console.log(e);
-          return;
-        }
-      } catch (e) {
-        console.log(e);
-        return;
-      }
-      console.log(`Successfully resized with matermark${srcBucket}/${srcKey} 
-      and uploaded to ${dstBucketWM}/${dstKeyWM}`);
+      // save resized photo info to db
+      const urlPhotoMiniWaterMark = `https://${paramsObject.dstBucketWM}.s3.eu-west-1.amazonaws.com/${paramsObject.dstKeyWM}`;
+      await PhotoMiniWaterMark.create({
+        name: Key,
+        photoMiniWaterMarkUrl: urlPhotoMiniWaterMark,
+        photographerId: photographerid,
+        albumId: albumid,
+      });
+      console.log(`Successfully resized  ${Key} and uploaded to ${paramsObject.dstBucketWM}`);
     }
+  } catch (e) {
+    console.log(e);
+  }
+};
 
-    // // watermark original image and save to the photodropbucket-watermarked
-
-    const addWaterMarkToOriginal = async (image: any) => {
-      /*
-      2.After importing the  photoDropLogo and deploying with "serverless deploy" command
+// 6. Create Watermarked original photo
+const createOriginalWatermarked = async (Bucket: string, Key: string, paramsObject: any) => {
+  try {
+    /*
+        After importing the  photoDropLogo and deploying with "serverless deploy" command
         photoDropLogo image will be present in zip package file
         under the name "d8885004a7cbbc5c2de6177b99b30489.png"
         (have no idea why this name. I was trying to fix it with no success.)
         So later on we will read image using name mentioned above. The path will be
         "./d8885004a7cbbc5c2de6177b99b30489.png" - chekc zip file manually to double check
       */
+    const addWaterMarkToOriginal = async (image: any) => {
       const logoImageBig = await Jimp.read('./4de5d5c7c739360235f407fb0f36b3bc.png');
-      if (!image) {
-        return;
-      }
       const imageOriginal = await Jimp.read(image);
       const originalHeight = imageOriginal.bitmap.height;
       const originalWidth = imageOriginal.bitmap.width;
@@ -294,59 +221,90 @@ const baseHandler = async (event: any) => {
       );
       return imageOriginal.getBufferAsync(Jimp.MIME_JPEG);
     };
-
+    const origimage = await s3.getObject({ Bucket, Key }).promise();
     const imageOWM = await addWaterMarkToOriginal(origimage.Body);
-
     const destparamsOWM = {
-      Bucket: dstBucketOWM,
-      Key: dstKeyOWM,
+      Bucket: paramsObject.dstBucketOWM,
+      Key: paramsObject.dstKeyOWM,
       Body: imageOWM,
       ContentType: 'image',
     };
 
     await s3.putObject(destparamsOWM).promise();
+  } catch (e) {
+    console.log(e);
+  }
+};
 
-    // notify(in telegram) app user that photo has been uploaded
+const handleNotification = async (peopleArray: string[], albumid: string) => {
+  try {
+    // // notify(in telegram) app user that photo has been uploaded
     const phoneNumbers = peopleArray;
+
+    /* // 1. Check if user with such phone number exist
+    const userExistPromises = phoneNumbers.map((phone) => AppUser.findOne({ where: { phone } }));
+    let ExistingUsers = await Promise.all(userExistPromises);
+    ExistingUsers = ExistingUsers.filter((user) => user !== null);
+    // 2. Find person with user phone
+    const peoplePromises = ExistingUsers.map((user) => Person.findOne({ where: { phone: user!.phone } }));
+    let people = await Promise.all(peoplePromises);
+    people = people.filter((person) => person !== null);
+    // 3. Find all photos from album
+    const photos = await Photo.findAll({ where: { albumId: albumid } });
+    // 4. Find all photos id
+    const photoIds = photos.map((photo) => photo.id);
+    // 5. Check if photo belongs to the person
+    const photoPersonPromise: any[] = [];
+    people.forEach((person) => {
+      photoIds.forEach((id) => {
+        const result = Photo_Person.findOne({
+          where: {
+            photoId: id,
+            personId: person!.id,
+          },
+        });
+        photoPersonPromise.push(result);
+      });
+    });
+    const photosWithPerson = await Promise.all(photoPersonPromise);
+    // 6. Filter to have only not null responses
+    const notNullResponse = photosWithPerson.filter((photo) => photo !== null);
+
+    notNullResponse.forEach((el) => {
+      if (el.length === 1) {
+        const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phoneNumbers[i]} your photos have dropped🔥\n\nCheck them out here:\n  https://dev-photodrop-client.vercel.app/albums/${albumid}`);
+        await axios({
+          method: 'get',
+          url: uri,
+        });
+      }
+    });
+    */
     if (phoneNumbers) {
-      const arrLength = phoneNumbers.length;
-      for (let i = 0; i < arrLength; i += 1) {
+      for (let i = 0; i < phoneNumbers.length; i += 1) {
         const numericPhone = phoneNumbers[i].replace(/[^0-9]/g, '');
         // check if user with such phone number exist
+        /* eslint-disable no-await-in-loop */
         const user = await AppUser.findOne({ where: { phone: numericPhone } });
-        // console.log({ user });
         if (user) {
+          /* eslint-disable no-await-in-loop */
           const person = await Person.findOne({ where: { phone: user.phone } });
           if (person) {
             // get all photos from specific album
+            /* eslint-disable no-await-in-loop */
             const photos = await Photo.findAll({ where: { albumId: albumid } });
             // console.log({ photos });
             if (photos) {
-              const photoIds: string[] = [];
-              photos.forEach((photo) => {
-                photoIds.push(photo.id);
-              });
-              // console.log({ photoIds });
+              const photoIds = photos.map((image) => image.id);
               // check if there are already photos from this album with current user
-              const promisesArray: any = [];
-              photoIds.forEach((el) => {
-                const result = Photo_Person.findOne({
-                  where: {
-                    photoId: el,
-                    personId: person.id,
-                  },
-                });
-                promisesArray.push(result);
-              });
+              const promisesArray = photoIds.map((el) => Photo_Person.findOne({
+                where: {
+                  photoId: el,
+                  personId: person.id,
+                },
+              }));
               const photosWithPerson = await Promise.all(promisesArray);
-              const notNullResponse = [];
-              // console.log({ photosWithPerson });
-              photosWithPerson.forEach((element) => {
-                if (element !== null) {
-                  notNullResponse.push(element);
-                }
-              });
-              // console.log({ notNR: notNullResponse.length });
+              const notNullResponse = photosWithPerson.filter((element) => element !== null);
               /* if there only 1(one) photo(which just got uploaded)
               with current person in specific album -send one time notification to the telegram */
               if (notNullResponse.length === 1) {
@@ -361,8 +319,62 @@ const baseHandler = async (event: any) => {
         }
       }
     }
-  } catch (error) {
-    console.log(error);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const baseHandler = async (event: any) => {
+  try {
+    if (!photoDropLogo || !photoDropLogoBig) {
+      return;
+    }
+    const srcBucket = event.Records[0].s3.bucket.name;
+    const srcKey = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
+
+    const response = await getMetaData(srcBucket, srcKey);
+    if (response) {
+      const { peopleArray, photographerid, albumid } = response;
+
+      const paramsObject = {
+        dstBucket: `${srcBucket}-resized`,
+        dstBucketWM: `${srcBucket}-resized-watermark`,
+        dstBucketOWM: `${srcBucket}-watermarked`,
+        dstKey: `${srcKey}`,
+        dstKeyWM: `${srcKey}`,
+        dstKeyOWM: `${srcKey}`,
+      };
+
+      // 1.Save photo to DB
+      const urlPhoto = `https://${srcBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
+      const photo = await Photo.create({
+        name: srcKey, photoUrl: urlPhoto, photographerId: photographerid, albumId: albumid,
+      });
+      // 2.Add people that are marked on the photo
+      if (photo) {
+        await addPeopleToPhoto(peopleArray, photo);
+        console.log('Successfully uploaded');
+      } else {
+        console.log({ message: 'Photo was not found' });
+      }
+      // 3. Check image type
+      const imageTypeCheck = handleImageType(srcKey);
+      if (!imageTypeCheck) { return; }
+
+      // 4. Create thumbnail and save to DB
+      await createThumbnail(srcBucket, srcKey, paramsObject, photographerid, albumid);
+
+      // 5. Create watermarked thumbnail and save to DB
+      await createWatermarkedThumbnail(srcBucket, srcKey, paramsObject, photographerid, albumid);
+
+      // 6. Watermark original photo and save to DB
+      await createOriginalWatermarked(srcBucket, srcKey, paramsObject);
+
+      // 7. Handle Telegram notification
+      await handleNotification(peopleArray, albumid);
+    }
+  } catch (e) {
+    console.log(e);
   }
 };
 // @ts-ignore
