@@ -19,6 +19,8 @@ import 'dotenv/config';
 import AWS from 'aws-sdk';
 import Jimp from 'jimp';
 import axios from 'axios';
+// import convert from 'heic-convert';
+
 import {
   Photo, PhotoMini, PhotoMiniWaterMark, Person, AppUser, Photo_Person,
 } from '../../models/model';
@@ -36,7 +38,6 @@ const baseHandler = async (event: any) => {
   if (!photoDropLogo || !photoDropLogoBig) {
     return;
   }
-  console.log('test');
   const srcBucket = event.Records[0].s3.bucket.name;
   // Object key may have spaces or unicode non-ASCII characters.
   const srcKey = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
@@ -75,24 +76,20 @@ const baseHandler = async (event: any) => {
     if (photo) {
       // const photoId = photo.id;
       for (let i = 0; i < peopleArray.length; i += 1) {
-        try {
-          // eslint-disable-next-line no-await-in-loop
-          const personExist = await Person.findOne({ where: { phone: peopleArray[i] } });
-          if (personExist === null) {
-            /* eslint-disable no-await-in-loop */
-            const numericPhone = peopleArray[i].replace(/[^0-9]/g, '');
-            const person = await Person.create({
-              phone: numericPhone,
-              // photoId,
-            });
+        // eslint-disable-next-line no-await-in-loop
+        const personExist = await Person.findOne({ where: { phone: peopleArray[i] } });
+        if (personExist === null) {
+          /* eslint-disable no-await-in-loop */
+          const numericPhone = peopleArray[i].replace(/[^0-9]/g, '');
+          const person = await Person.create({
+            phone: numericPhone,
+            // photoId,
+          });
             // @ts-ignore
-            await person.addPhoto(photo);
-          } else {
-            // @ts-ignore
-            await personExist.addPhoto(photo);
-          }
-        } catch (e) {
-          console.log(e);
+          await person.addPhoto(photo);
+        } else {
+          // @ts-ignore
+          await personExist.addPhoto(photo);
         }
       }
       console.log('Successfully uploaded');
@@ -110,12 +107,13 @@ const baseHandler = async (event: any) => {
     console.log('Could not determine the image type.');
     return;
   }
+
   // Check that the image type is supported
-  // const imageType = typeMatch[1].toLowerCase();
-  // if (imageType !== 'jpg' && imageType !== 'png' && imageType !== 'jpeg') {
-  //   console.log(`Unsupported image type: ${imageType}`);
-  //   return;
-  // }
+  const imageType = typeMatch[1].toLowerCase();
+  if (imageType !== 'jpg' && imageType !== 'png' && imageType !== 'jpeg') {
+    console.log(`Unsupported image type: ${imageType}`);
+    return;
+  }
 
   // Download the image from the S3 source bucket.
   let origimage;
@@ -125,15 +123,18 @@ const baseHandler = async (event: any) => {
       Key: srcKey,
     };
     origimage = await s3.getObject(params).promise();
+    // if (imageType === 'heic' || imageType === 'heif') {
+    //   origimage = convert({
+    //     buffer: origimage.Body, // the HEIC file buffer
+    //     format: 'PNG', // output format
+    //   });
+    // }
   } catch (error) {
     console.log(error);
     return;
   }
 
-  // set thumbnail width. Resize will set the height automatically to maintain aspect ratio.
-  // const width = 400;
-
-  // Use the sharp module to resize the image and save in a buffer.
+  // resize the original image to thumbnail size
   let buffer;
   try {
     // @ts-ignore

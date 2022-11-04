@@ -119,7 +119,7 @@ class PhotographerController {
           'x-amz-meta-albumId': albumId,
           originalPhotoKey: photoName,
         },
-        Conditions: [['content-length-range', 0, 8000000], ['starts-with', '$Content-Type', 'image/']],
+        Conditions: [['content-length-range', 0, 10000000], ['starts-with', '$Content-Type', 'image/']],
         Expires: 60 * 60, // seconds
         Bucket: process.env.S3_BUCKET,
       });
