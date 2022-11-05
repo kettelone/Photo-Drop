@@ -17,6 +17,9 @@ https://aws.amazon.com/premiumsupport/knowledge-center/cloudformation-update-rol
 import 'dotenv/config';
 import AWS from 'aws-sdk';
 import Jimp from 'jimp';
+import sharp from 'sharp';
+import convert from 'heic-convert';
+
 import axios from 'axios';
 import {
   Photo, PhotoMini, PhotoMiniWaterMark, Person, AppUser, Photo_Person,
@@ -72,7 +75,7 @@ const addPeopleToPhoto = async (phoneNumbersArray: string[], image: PhotoInstanc
 };
 
 // 3. Handle image type
-const handleImageType = (srcKey: string): boolean => {
+const handleImageType = (srcKey: string): boolean | string => {
   // Infer the image type from the file suffix.
   const typeMatch = srcKey.match(/\.([^.]*)$/);
   if (!typeMatch) {
@@ -83,20 +86,16 @@ const handleImageType = (srcKey: string): boolean => {
   const imageType = typeMatch[1].toLowerCase();
   if (imageType !== 'jpg' && imageType !== 'png' && imageType !== 'jpeg') {
     console.log(`Unsupported image type: ${imageType}`);
-    return false;
+    return imageType;
   }
   return true;
 };
 
 // 4. Create thumbnail
-const createThumbnail = async (Bucket: string, Key: string, paramsObject:any, photographerid:string, albumid:string) => {
+const createThumbnail = async (paramsObject:any, photographerid:string, albumid:string, originalImage:Buffer) => {
   try {
-    const origimage = await s3.getObject({
-      Bucket,
-      Key,
-    }).promise();
     // @ts-ignore
-    const buffer = await Jimp.read(origimage.Body).then((image) => {
+    const buffer = await Jimp.read(originalImage).then((image) => {
       const originalHeight = image.bitmap.height;
       const originalWidth = image.bitmap.width;
       const minValue = originalWidth < originalHeight ? 'width' : 'heigth';
@@ -123,13 +122,13 @@ const createThumbnail = async (Bucket: string, Key: string, paramsObject:any, ph
       // save resized photo info to db
       const urlPhotoMini = `https://${paramsObject.dstBucket}.s3.eu-west-1.amazonaws.com/${paramsObject.dstKey}`;
       await PhotoMini.create({
-        name: Key,
+        name: paramsObject.dstKey,
         photoMiniUrl: urlPhotoMini,
         photographerId: photographerid,
         albumId: albumid,
       });
 
-      console.log(`Successfully resized ${Bucket}/${Key} and uploaded to ${paramsObject.dstBucket}/${paramsObject.dstKey}`);
+      console.log(`Successfully resized ${paramsObject.dstKey} and uploaded to ${paramsObject.dstBucket}/${paramsObject.dstKey}`);
     }
   } catch (e) {
     console.log(e);
@@ -138,7 +137,7 @@ const createThumbnail = async (Bucket: string, Key: string, paramsObject:any, ph
 
 // 5. Create watermarked thumbnail
 
-const createWatermarkedThumbnail = async (Bucket: string, Key: string, paramsObject:any, photographerid:string, albumid:string) => {
+const createWatermarkedThumbnail = async (paramsObject:any, photographerid:string, albumid:string, originalImage :Buffer) => {
   /*
         After importing the  photoDropLogo and deploying with "serverless deploy" command
         photoDropLogo image will be present in zip package file
@@ -149,7 +148,7 @@ const createWatermarkedThumbnail = async (Bucket: string, Key: string, paramsObj
       */
   const logoImage = await Jimp.read('./d8885004a7cbbc5c2de6177b99b30489.png');
   try {
-    const addWaterMark = async (image: any) => {
+    const addWaterMark = async (image: Buffer) => {
       let imageResized = await Jimp.read(image);
       const originalHeight = imageResized.bitmap.height;
       const originalWidth = imageResized.bitmap.width;
@@ -167,8 +166,7 @@ const createWatermarkedThumbnail = async (Bucket: string, Key: string, paramsObj
       return img.getBufferAsync(Jimp.MIME_JPEG);
     };
 
-    const origimage = await s3.getObject({ Bucket, Key }).promise();
-    const imageWM = await addWaterMark(origimage.Body);
+    const imageWM = await addWaterMark(originalImage);
     const destparamsWM = {
       Bucket: paramsObject.dstBucketWM,
       Key: paramsObject.dstKeyWM,
@@ -181,12 +179,12 @@ const createWatermarkedThumbnail = async (Bucket: string, Key: string, paramsObj
       // save resized photo info to db
       const urlPhotoMiniWaterMark = `https://${paramsObject.dstBucketWM}.s3.eu-west-1.amazonaws.com/${paramsObject.dstKeyWM}`;
       await PhotoMiniWaterMark.create({
-        name: Key,
+        name: paramsObject.dstKeyWM,
         photoMiniWaterMarkUrl: urlPhotoMiniWaterMark,
         photographerId: photographerid,
         albumId: albumid,
       });
-      console.log(`Successfully resized  ${Key} and uploaded to ${paramsObject.dstBucketWM}`);
+      console.log(`Successfully resized  ${paramsObject.dstKeyWM} and uploaded to ${paramsObject.dstBucketWM}`);
     }
   } catch (e) {
     console.log(e);
@@ -194,7 +192,7 @@ const createWatermarkedThumbnail = async (Bucket: string, Key: string, paramsObj
 };
 
 // 6. Create Watermarked original photo
-const createOriginalWatermarked = async (Bucket: string, Key: string, paramsObject: any) => {
+const createOriginalWatermarked = async (paramsObject: any, originalImage :Buffer) => {
   try {
     /*
         After importing the  photoDropLogo and deploying with "serverless deploy" command
@@ -204,7 +202,7 @@ const createOriginalWatermarked = async (Bucket: string, Key: string, paramsObje
         So later on we will read image using name mentioned above. The path will be
         "./d8885004a7cbbc5c2de6177b99b30489.png" - chekc zip file manually to double check
       */
-    const addWaterMarkToOriginal = async (image: any) => {
+    const addWaterMarkToOriginal = async (image: Buffer) => {
       const logoImageBig = await Jimp.read('./4de5d5c7c739360235f407fb0f36b3bc.png');
       const imageOriginal = await Jimp.read(image);
       const originalHeight = imageOriginal.bitmap.height;
@@ -213,7 +211,7 @@ const createOriginalWatermarked = async (Bucket: string, Key: string, paramsObje
       const newWidth = minValue === 'width' ? originalWidth / 2.5 : Jimp.AUTO;
       const newHeight = minValue === 'heigth' ? originalHeight / 3.3 : Jimp.AUTO;
 
-      logoImageBig.resize(newWidth, newHeight);// second argument is height
+      logoImageBig.resize(newWidth, newHeight);
       imageOriginal.composite(
         logoImageBig,
         originalWidth / 2 - logoImageBig.bitmap.width / 2,
@@ -221,8 +219,7 @@ const createOriginalWatermarked = async (Bucket: string, Key: string, paramsObje
       );
       return imageOriginal.getBufferAsync(Jimp.MIME_JPEG);
     };
-    const origimage = await s3.getObject({ Bucket, Key }).promise();
-    const imageOWM = await addWaterMarkToOriginal(origimage.Body);
+    const imageOWM = await addWaterMarkToOriginal(originalImage);
     const destparamsOWM = {
       Bucket: paramsObject.dstBucketOWM,
       Key: paramsObject.dstKeyOWM,
@@ -329,8 +326,8 @@ const baseHandler = async (event: any) => {
     if (!photoDropLogo || !photoDropLogoBig) {
       return;
     }
-    const srcBucket = event.Records[0].s3.bucket.name;
-    const srcKey = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
+    const srcBucket:string = event.Records[0].s3.bucket.name;
+    const srcKey: string = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
 
     const response = await getMetaData(srcBucket, srcKey);
     if (response) {
@@ -340,9 +337,9 @@ const baseHandler = async (event: any) => {
         dstBucket: `${srcBucket}-resized`,
         dstBucketWM: `${srcBucket}-resized-watermark`,
         dstBucketOWM: `${srcBucket}-watermarked`,
-        dstKey: `${srcKey}`,
-        dstKeyWM: `${srcKey}`,
-        dstKeyOWM: `${srcKey}`,
+        dstKey: srcKey,
+        dstKeyWM: srcKey,
+        dstKeyOWM: srcKey,
       };
 
       // 1.Save photo to DB
@@ -357,18 +354,32 @@ const baseHandler = async (event: any) => {
       } else {
         console.log({ message: 'Photo was not found' });
       }
+      // Get original image
+      const origimage = await s3.getObject({ Bucket: srcBucket, Key: srcKey }).promise();
+      let originalImage = origimage.Body as Buffer;
+
       // 3. Check image type
       const imageTypeCheck = handleImageType(srcKey);
-      if (!imageTypeCheck) { return; }
-
+      if (imageTypeCheck === false) { return; }
+      if (imageTypeCheck === 'webp') {
+        originalImage = await sharp(originalImage).jpeg().toBuffer();
+      }
+      if (imageTypeCheck === 'heic' || imageTypeCheck === 'heif') {
+        const outputBuffer = await convert({
+          buffer: originalImage, // the HEIC file buffer
+          format: 'JPEG', // output format
+          quality: 1, // the jpeg compression quality, between 0 and 1
+        });
+        originalImage = Buffer.from(outputBuffer);
+      }
       // 4. Create thumbnail and save to DB
-      await createThumbnail(srcBucket, srcKey, paramsObject, photographerid, albumid);
+      await createThumbnail(paramsObject, photographerid, albumid, originalImage);
 
       // 5. Create watermarked thumbnail and save to DB
-      await createWatermarkedThumbnail(srcBucket, srcKey, paramsObject, photographerid, albumid);
+      await createWatermarkedThumbnail(paramsObject, photographerid, albumid, originalImage);
 
       // 6. Watermark original photo and save to DB
-      await createOriginalWatermarked(srcBucket, srcKey, paramsObject);
+      await createOriginalWatermarked(paramsObject, originalImage);
 
       // 7. Handle Telegram notification
       await handleNotification(peopleArray, albumid);
