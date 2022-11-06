@@ -6,6 +6,7 @@ const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY!}`, { polling: true 
 
 class TelegramController {
   async generateOTP(req: Request, res: Response): Promise<void> {
+    // console.log('Hello');
     interface Phone {
       phone: string
     }
