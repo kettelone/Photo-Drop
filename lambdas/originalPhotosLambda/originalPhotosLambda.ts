@@ -94,7 +94,6 @@ const handleImageType = (srcKey: string): boolean | string => {
 // 4. Create thumbnail
 const createThumbnail = async (paramsObject:any, photographerid:string, albumid:string, originalImage:Buffer) => {
   try {
-    // @ts-ignore
     const buffer = await Jimp.read(originalImage).then((image) => {
       const originalHeight = image.bitmap.height;
       const originalWidth = image.bitmap.width;
@@ -321,7 +320,7 @@ const handleNotification = async (peopleArray: string[], albumid: string) => {
   }
 };
 
-const baseHandler = async (event: any) => {
+const baseHandler = async (event :any) => {
   try {
     if (!photoDropLogo || !photoDropLogoBig) {
       return;

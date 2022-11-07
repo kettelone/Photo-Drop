@@ -17,6 +17,7 @@ aws.config.update({
   region: 'eu-west-1',
   accessKeyId: process.env.S3_ACCESS_KEY_ID,
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+  signatureVersion: 'v4', // It fixes the issue of "Missing Authentication Token" when generating presignedUrl for Object lambda Access Point
 });
 // console.log('Hello')
 const checkIfPaid = async (userId:string, albumId:string) :Promise<boolean> => {
@@ -273,10 +274,10 @@ class PhotoController {
         if (isPaid === true) {
           // send original photo
           const url = s3.getSignedUrl('getObject', {
-            Bucket: process.env.S3_BUCKET,
+            Bucket: 'arn:aws:s3-object-lambda:eu-west-1:092155721766:accesspoint/s3-lambda-access-point-image-watermark',
             Key: originalKey,
             Expires: 60 * 120,
-            ResponseContentDisposition: 'attachment',
+            // ResponseContentDisposition: 'attachment',
           });
           res.send(`${url}`);
           return;
