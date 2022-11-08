@@ -56,22 +56,18 @@ const getMetaData = async (srcBucket:string, srcKey:string) => {
 
 // 2.Add people to photo
 const addPeopleToPhoto = async (phoneNumbersArray: string[], image: PhotoInstance): Promise<void> => {
-  const promises = phoneNumbersArray.map((phoneNumber) => Person.findOne(
-    { where: { phone: phoneNumber } },
-  ));
-  const allPeople = await Promise.all(promises);
-  const peopleExistPromises = allPeople.filter((personExist) => personExist !== null);
-  const peopleNotExistPromise = allPeople.filter((personExist) => personExist === null);
-  const peopleExist = await Promise.all(peopleExistPromises);
-  const peopleNotExist = await Promise.all(peopleNotExistPromise);
-  const addExistingPerson = peopleExist.map((person) => Photo_Person.create(
-    { photoId: image.id, personId: person!.id },
-  ));
-  const addNotExistingPerson = peopleNotExist.map((person) => Photo_Person.create(
-    { photoId: image.id, personId: person!.id },
-  ));
-  await Promise.all(addExistingPerson);
-  await Promise.all(addNotExistingPerson);
+  for (let i = 0; i < phoneNumbersArray.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const personExist = await Person.findOne({ where: { phone: phoneNumbersArray[i] } });
+    if (personExist === null) {
+      /* eslint-disable no-await-in-loop */
+      const numericPhone = phoneNumbersArray[i].replace(/[^0-9]/g, '');
+      const person = await Person.create({ phone: numericPhone });
+      await Photo_Person.create({ photoId: image.id, personId: person!.id });
+    } else {
+      await Photo_Person.create({ photoId: image.id, personId: personExist!.id });
+    }
+  }
 };
 
 // 3. Handle image type
