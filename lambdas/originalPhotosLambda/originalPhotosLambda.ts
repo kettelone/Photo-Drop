@@ -56,22 +56,21 @@ const getMetaData = async (srcBucket:string, srcKey:string) => {
 
 // 2.Add people to photo
 const addPeopleToPhoto = async (phoneNumbersArray: string[], image: PhotoInstance): Promise<void> => {
-  const promises = phoneNumbersArray.map((phoneNumber) => Person.findOne(
-    { where: { phone: phoneNumber } },
-  ));
-  const allPeople = await Promise.all(promises);
-  const peopleExistPromises = allPeople.filter((personExist) => personExist !== null);
-  const peopleNotExistPromise = allPeople.filter((personExist) => personExist === null);
-  const peopleExist = await Promise.all(peopleExistPromises);
-  const peopleNotExist = await Promise.all(peopleNotExistPromise);
-  const addExistingPerson = peopleExist.map((person) => Photo_Person.create(
-    { photoId: image.id, personId: person!.id },
-  ));
-  const addNotExistingPerson = peopleNotExist.map((person) => Photo_Person.create(
-    { photoId: image.id, personId: person!.id },
-  ));
-  await Promise.all(addExistingPerson);
-  await Promise.all(addNotExistingPerson);
+  // const promises = phoneNumbersArray.map((phone) => ({ personPhone: Person.findOne({ where: { phone } }) }));
+  // const results = await Promise.all(promises);
+  // results.map
+  for (let i = 0; i < phoneNumbersArray.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const personExist = await Person.findOne({ where: { phone: phoneNumbersArray[i] } });
+    if (personExist === null) {
+      /* eslint-disable no-await-in-loop */
+      const numericPhone = phoneNumbersArray[i].replace(/[^0-9]/g, '');
+      const person = await Person.create({ phone: numericPhone });
+      await Photo_Person.create({ photoId: image.id, personId: person!.id });
+    } else {
+      await Photo_Person.create({ photoId: image.id, personId: personExist!.id });
+    }
+  }
 };
 
 // 3. Handle image type
@@ -332,14 +331,14 @@ const baseHandler = async (event :any) => {
     if (response) {
       const { peopleArray, photographerid, albumid } = response;
 
-      const paramsObject = {
-        dstBucket: `${srcBucket}-resized`,
-        dstBucketWM: `${srcBucket}-resized-watermark`,
-        dstBucketOWM: `${srcBucket}-watermarked`,
-        dstKey: srcKey,
-        dstKeyWM: srcKey,
-        dstKeyOWM: srcKey,
-      };
+      // const paramsObject = {
+      //   dstBucket: `${srcBucket}-resized`,
+      //   dstBucketWM: `${srcBucket}-resized-watermark`,
+      //   dstBucketOWM: `${srcBucket}-watermarked`,
+      //   dstKey: srcKey,
+      //   dstKeyWM: srcKey,
+      //   dstKeyOWM: srcKey,
+      // };
 
       // 1.Save photo to DB
       const urlPhoto = `https://${srcBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
@@ -372,13 +371,13 @@ const baseHandler = async (event :any) => {
         originalImage = Buffer.from(outputBuffer);
       }
       // 4. Create thumbnail and save to DB
-      await createThumbnail(paramsObject, photographerid, albumid, originalImage);
+      // await createThumbnail(paramsObject, photographerid, albumid, originalImage);
 
       // 5. Create watermarked thumbnail and save to DB
-      await createWatermarkedThumbnail(paramsObject, photographerid, albumid, originalImage);
+      // await createWatermarkedThumbnail(paramsObject, photographerid, albumid, originalImage);
 
       // 6. Watermark original photo and save to DB
-      await createOriginalWatermarked(paramsObject, originalImage);
+      // await createOriginalWatermarked(paramsObject, originalImage);
 
       // 7. Handle Telegram notification
       await handleNotification(peopleArray, albumid);

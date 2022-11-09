@@ -193,7 +193,7 @@ class PhotoController {
         photos.forEach((photo) => {
           if (albumId === photo.albumId) {
             const url = s3.getSignedUrl('getObject', {
-              Bucket: process.env.S3_BUCKET_RESIZED,
+              Bucket: process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE,
               Key: photo.name,
               Expires: 60 * 120,
             });
@@ -241,8 +241,8 @@ class PhotoController {
           const signedThumbnails = photos.map((photo) => {
             const s3 = new aws.S3();
             const url = s3.getSignedUrl('getObject', {
-              Bucket: albumPaidStatus[photo.albumId] === true ? process.env.S3_BUCKET_RESIZED
-                : process.env.S3_BUCKET_RESIZED_WATERMARK,
+              Bucket: albumPaidStatus[photo.albumId] === true ? process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE
+                : process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE_WATERMARK,
               Key: photo.name,
               Expires: 60 * 120,
             });
@@ -274,7 +274,7 @@ class PhotoController {
         if (isPaid === true) {
           // send original photo
           const url = s3.getSignedUrl('getObject', {
-            Bucket: 'arn:aws:s3-object-lambda:eu-west-1:092155721766:accesspoint/s3-lambda-access-point-image-watermark',
+            Bucket: process.env.S3_BUCKET,
             Key: originalKey,
             Expires: 60 * 120,
             // ResponseContentDisposition: 'attachment',
@@ -284,7 +284,7 @@ class PhotoController {
         }
         // send original watermarked photo
         const url = s3.getSignedUrl('getObject', {
-          Bucket: process.env.S3_BUCKET_ORIGINAL_WATERMARKED,
+          Bucket: process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_WATERMARK,
           Key: originalKey,
           Expires: 60 * 120,
         });
