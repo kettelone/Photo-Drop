@@ -18,13 +18,14 @@ aws.config.update({
   signatureVersion: 'v4', // It fixes the issue of "Missing Authentication Token" when generating presignedUrl for Object lambda Access Point
 });
 
-const generatePaymnet = async (
+const generPaymment = async (
   albumId: string,
   userId: string,
   host: any,
 ): Promise<string | undefined> => {
   const albumItem = { id: 1, priceInCents: 500, name: 'Album' };
   if (albumId !== undefined && userId !== undefined) {
+    // TODO: create separate service fot the below(Controller- Service separation)
     try {
       const customer = await stripe.customers.create({
         metadata: { userId, albumId },
@@ -59,14 +60,9 @@ const generatePaymnet = async (
 };
 
 class PhotoController {
-  async signSelfie(req: Request, res: Response) :Promise<void> {
-    interface Body {
-    name: string;
-    userId: string;
-  }
+  async signSelfie(req: Request<any, any, { name: string; userId: string }>, res: Response) :Promise<void> {
     const s3 = new aws.S3();
-    const { name, userId } :Body = req.body;
-    // const metadata = `${userId}`;
+    const { name, userId } = req.body;
     const startIndex = name.indexOf('.') + 1;
     const photoExtension = name.substr(startIndex);
 
@@ -85,7 +81,6 @@ class PhotoController {
   }
 
   async getSelfie(req: Request, res: Response) :Promise<void> {
-    // const appUserId = req.query.appUserId as string|undefined;
     const appUserId = req.query.appUserId as string;
 
     try {
@@ -123,14 +118,13 @@ class PhotoController {
     }
   }
 
-  async getAlbumsWithPerson(req: Request, res: Response): Promise<void> {
-    const phone = `${req.query.phone}`;
+  async getAlbumsWithPerson(req: Request<any, any, any, {phone:string}>, res: Response): Promise<void> {
+    const { phone } = req.query;
     try {
       const person = await Person.findOne({ where: { phone } });
       if (person) {
         const photo_person = await Photo_Person.findAll({ where: { personId: person.id } });
         const photoIds = photo_person.map(({ photoId }) => photoId);
-        // const photos = await Photo.findAll({ where: Sequelize.or({ id: photoIds }) });
         const photos = await Photo.findAll({ where: { id: photoIds } });
         const albumIds = photos.map(({ albumId }) => albumId);
         const uniqueAlbumIds = [...new Set(albumIds)];
@@ -146,13 +140,12 @@ class PhotoController {
     }
   }
 
-  async getAlbumsThumbnailIcon(req: Request, res: Response): Promise<void> {
+  async getAlbumsThumbnailIcon(req: Request<any, any, {albumIds:string[], userId: string}>, res: Response): Promise<void> {
     const s3 = new aws.S3();
     interface ThumbnailsObject{
       [key: string] : string | null
     }
-    const albumIds = req.body.albumIds as string[];
-    const userId = req.body.userId as string;
+    const { albumIds, userId } = req.body;
     const albumThumbnails:ThumbnailsObject = {};
     try {
       const user = await AppUser.findOne({ where: { id: userId } });
@@ -173,6 +166,12 @@ class PhotoController {
           }
         });
       });
+
+      // const urls = albumIds.map((id) => photos.map((photo) => (id === photo.albumId ? s3.getSignedUrl('getObject', {
+      //   Bucket: process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE,
+      //   Key: photo.name,
+      //   Expires: 60 * 120,
+      // }) : '')));
 
       res.json(albumThumbnails);
       // }
@@ -274,7 +273,7 @@ class PhotoController {
 
     const { albumId, userId } = req.query as { [key: string]: string };
     // redirect to the payment page
-    const paymentLink = await generatePaymnet(albumId, userId, host);
+    const paymentLink = await generPaymment(albumId, userId, host);
     if (paymentLink) {
       res.send(`${paymentLink}`);
     }
