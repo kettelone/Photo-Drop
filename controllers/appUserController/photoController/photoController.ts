@@ -17,39 +17,17 @@ aws.config.update({
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
   signatureVersion: 'v4', // It fixes the issue of "Missing Authentication Token" when generating presignedUrl for Object lambda Access Point
 });
-// const checkIfPaid = async (userId:string, albumId:string) :Promise<boolean> => {
-//   try {
-//     const { isPaid } = await UserAlbum.findOne({ where: { userId, albumId } });
-//     if (info === null) {
-//       return false;
-//     }
-//     if (info.isPaid === false) {
-//       return false;
-//     }
-//     if (info.isPaid === true) {
-//       return true;
-//     }
-//   } catch (e) {
-//     console.log(e);
-//   }
-//   return false;
-// };
 
 const generatePaymnet = async (
   albumId: string,
   userId: string,
   host: any,
 ): Promise<string | undefined> => {
-  // let success_base_url;
-  // if (host) {
-  //   success_base_url = host.includes('dev-photodrop') ? 'https://dev-photodrop-client.vercel.app' : 'http://localhost:3000';
-  // }
   const albumItem = { id: 1, priceInCents: 500, name: 'Album' };
   if (albumId !== undefined && userId !== undefined) {
     try {
       const customer = await stripe.customers.create({
         metadata: { userId, albumId },
-        // metadata: { userId: `${userId}`, albumId: `${albumId}` },
       });
 
       const session = await stripe.checkout.sessions.create({
@@ -264,7 +242,6 @@ class PhotoController {
     const { originalKey, albumId, userId } = req.query as { [key: string]: string };
     if (userId && albumId) {
       try {
-        // const isPaid = await checkIfPaid(userId, albumId); // TODO
         const info = await UserAlbum.findOne({ where: { userId, albumId } });
         if (info && info.isPaid === true) {
           // send original photo
@@ -299,7 +276,7 @@ class PhotoController {
     // redirect to the payment page
     const paymentLink = await generatePaymnet(albumId, userId, host);
     if (paymentLink) {
-      res.send({ paymentLink: `${paymentLink}`, host });
+      res.send(`${paymentLink}`);
     }
   }
 }
