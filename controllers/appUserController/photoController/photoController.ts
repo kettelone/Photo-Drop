@@ -40,12 +40,10 @@ const generatePaymnet = async (
   userId: string,
   host: any,
 ): Promise<string | undefined> => {
-  let success_base_url;
-  if (host) {
-    success_base_url = host.includes('dev-photodrop') ? 'https://dev-photodrop-client.vercel.app' : 'http://localhost:3000';
-  } else {
-    success_base_url = 'http://localhost:3000';
-  }
+  // let success_base_url;
+  // if (host) {
+  //   success_base_url = host.includes('dev-photodrop') ? 'https://dev-photodrop-client.vercel.app' : 'http://localhost:3000';
+  // }
   const albumItem = { id: 1, priceInCents: 500, name: 'Album' };
   if (albumId !== undefined && userId !== undefined) {
     try {
@@ -69,8 +67,8 @@ const generatePaymnet = async (
           quantity: 1,
         }],
         metadata: { userId: `${userId}`, albumId: `${albumId}` },
-        success_url: `${host || 'https://dev-photodrop-client.vercel.app'}/albums/success/${albumId}`,
-        cancel_url: `${host || 'https://dev-photodrop-client.vercel.app'}/albums/cancel`,
+        success_url: `${host}/albums/success/${albumId}`,
+        cancel_url: `${host}/albums/cancel`,
       });
       const { url } = session;
       if (url) {
