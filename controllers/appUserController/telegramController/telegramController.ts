@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import TelegramBot from 'node-telegram-bot-api';
+// import TelegramBot from 'node-telegram-bot-api';
 import { UserOTP } from '../../../models/model';
 
-const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY!}`, { polling: true });
+// const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY!}`, { polling: true });
 
 class TelegramController {
   async generateOTP(req: Request, res: Response): Promise<void> {
@@ -16,10 +16,10 @@ class TelegramController {
       const phoneExist = await UserOTP.findOne({ where: { phone } });
 
       const sendOTPToTelegram = () => {
-        bot.sendMessage(
-          Number(process.env.TB_BOT_GROUP_CHAT_ID),
-          `Your phone is: ${phone}\nYour OTP is: ${OTP}`,
-        );
+        // bot.sendMessage(
+        //   Number(process.env.TB_BOT_GROUP_CHAT_ID),
+        //   `Your phone is: ${phone}\nYour OTP is: ${OTP}`,
+        // );
       };
 
       if (!phoneExist) {

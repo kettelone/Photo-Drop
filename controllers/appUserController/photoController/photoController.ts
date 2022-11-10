@@ -7,8 +7,6 @@ import {
   SelfieMini, Person, Photo_Person, Photo, UserAlbum, Album, AppUser,
 } from '../../../models/model';
 
-// hjgjhgsdfs
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-08-01',
 });
@@ -19,31 +17,29 @@ aws.config.update({
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
   signatureVersion: 'v4', // It fixes the issue of "Missing Authentication Token" when generating presignedUrl for Object lambda Access Point
 });
-// console.log('Hello')
-const checkIfPaid = async (userId:string, albumId:string) :Promise<boolean> => {
-  try {
-    const info = await UserAlbum.findOne({ where: { userId, albumId } });
-    if (info === null) {
-      return false;
-    }
-    if (info.isPaid === false) {
-      return false;
-    }
-    if (info.isPaid === true) {
-      return true;
-    }
-  } catch (e) {
-    console.log(e);
-  }
-  return false;
-};
+// const checkIfPaid = async (userId:string, albumId:string) :Promise<boolean> => {
+//   try {
+//     const { isPaid } = await UserAlbum.findOne({ where: { userId, albumId } });
+//     if (info === null) {
+//       return false;
+//     }
+//     if (info.isPaid === false) {
+//       return false;
+//     }
+//     if (info.isPaid === true) {
+//       return true;
+//     }
+//   } catch (e) {
+//     console.log(e);
+//   }
+//   return false;
+// };
 
 const generatePaymnet = async (
   albumId: string,
   userId: string,
   host: any,
 ): Promise<string | undefined> => {
-  console.log({ host });
   let success_base_url;
   if (host) {
     success_base_url = host.includes('dev-photodrop') ? 'https://dev-photodrop-client.vercel.app' : 'http://localhost:3000';
@@ -73,8 +69,8 @@ const generatePaymnet = async (
           quantity: 1,
         }],
         metadata: { userId: `${userId}`, albumId: `${albumId}` },
-        success_url: `${success_base_url}/albums/success/${albumId}`,
-        cancel_url: `${success_base_url}/albums/cancel`,
+        success_url: `${host || 'https://dev-photodrop-client.vercel.app'}/albums/success/${albumId}`,
+        cancel_url: `${host || 'https://dev-photodrop-client.vercel.app'}/albums/cancel`,
       });
       const { url } = session;
       if (url) {
@@ -270,8 +266,9 @@ class PhotoController {
     const { originalKey, albumId, userId } = req.query as { [key: string]: string };
     if (userId && albumId) {
       try {
-        const isPaid = await checkIfPaid(userId, albumId);
-        if (isPaid === true) {
+        // const isPaid = await checkIfPaid(userId, albumId); // TODO
+        const info = await UserAlbum.findOne({ where: { userId, albumId } });
+        if (info && info.isPaid === true) {
           // send original photo
           const url = s3.getSignedUrl('getObject', {
             Bucket: process.env.S3_BUCKET,
@@ -298,11 +295,13 @@ class PhotoController {
 
   async generatePayment(req: Request, res: Response): Promise <void> {
     const host = req.headers.origin as string;
+    console.log({ host });
+
     const { albumId, userId } = req.query as { [key: string]: string };
     // redirect to the payment page
     const paymentLink = await generatePaymnet(albumId, userId, host);
     if (paymentLink) {
-      res.send(`${paymentLink}`);
+      res.send({ paymentLink: `${paymentLink}`, host });
     }
   }
 }
