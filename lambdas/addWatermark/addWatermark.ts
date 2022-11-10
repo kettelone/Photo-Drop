@@ -2,6 +2,7 @@ import AWS from 'aws-sdk';
 import axios from 'axios';
 import Jimp from 'jimp';
 import * as photoDropLogo from './PhotoDropLogoBig.png';
+// import handleImageType from '../handleImageType';
 
 const S3 = new AWS.S3();
 

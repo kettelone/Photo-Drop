@@ -1,6 +1,8 @@
 import AWS from 'aws-sdk';
 import axios from 'axios';
 import Jimp from 'jimp';
+import sharp from 'sharp';
+import convert from 'heic-convert';
 import * as photoDropLogo from './PhotoDropLogo.png';
 
 const S3 = new AWS.S3();
@@ -38,8 +40,21 @@ const baseHandler = async (event:any) => {
 
     console.log('Start Event', event);
     const { outputRoute, outputToken, inputS3Url } = event.getObjectContext || {};
-    const { data: originalImage } = await axios.get(inputS3Url, { responseType: 'arraybuffer' });
+    let { data: originalImage } = await axios.get(inputS3Url, { responseType: 'arraybuffer' });
+
+    if (inputS3Url.includes('.webp?')) {
+      originalImage = await sharp(originalImage).jpeg().toBuffer();
+    }
+    if (inputS3Url.includes('.heic?')) {
+      const outputBuffer = await convert({
+        buffer: originalImage, // the HEIC file buffer
+        format: 'JPEG', // output format
+        quality: 1, // the jpeg compression quality, between 0 and 1
+      });
+      originalImage = Buffer.from(outputBuffer);
+    }
     const imageResizedWatermarked = await resizeAddWatermark(originalImage);
+
     await S3.writeGetObjectResponse({
       RequestRoute: outputRoute,
       RequestToken: outputToken,

@@ -16,13 +16,12 @@ https://aws.amazon.com/premiumsupport/knowledge-center/cloudformation-update-rol
 */
 import 'dotenv/config';
 import AWS from 'aws-sdk';
-import Jimp from 'jimp';
 import sharp from 'sharp';
 import convert from 'heic-convert';
 
 import axios from 'axios';
 import {
-  Photo, PhotoMini, PhotoMiniWaterMark, Person, AppUser, Photo_Person,
+  Photo, Person, AppUser, Photo_Person,
 } from '../../models/model';
 import * as photoDropLogo from './PhotoDropLogo.png';
 import * as photoDropLogoBig from './PhotoDropLogoBig.png';
@@ -56,9 +55,6 @@ const getMetaData = async (srcBucket:string, srcKey:string) => {
 
 // 2.Add people to photo
 const addPeopleToPhoto = async (phoneNumbersArray: string[], image: PhotoInstance): Promise<void> => {
-  // const promises = phoneNumbersArray.map((phone) => ({ personPhone: Person.findOne({ where: { phone } }) }));
-  // const results = await Promise.all(promises);
-  // results.map
   for (let i = 0; i < phoneNumbersArray.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
     const personExist = await Person.findOne({ where: { phone: phoneNumbersArray[i] } });
@@ -90,191 +86,10 @@ const handleImageType = (srcKey: string): boolean | string => {
   return true;
 };
 
-// 4. Create thumbnail
-const createThumbnail = async (paramsObject:any, photographerid:string, albumid:string, originalImage:Buffer) => {
-  try {
-    const buffer = await Jimp.read(originalImage).then((image) => {
-      const originalHeight = image.bitmap.height;
-      const originalWidth = image.bitmap.width;
-      const minValue = originalWidth < originalHeight ? 'width' : 'heigth';
-      const newWidth = minValue === 'width' ? 400 : Jimp.AUTO;
-      const newHeight = minValue === 'heigth' ? 400 : Jimp.AUTO;
-
-      const resizedImage = image
-        .resize(newWidth, newHeight)
-        .quality(100) // set JPEG quality
-        .getBufferAsync(Jimp.MIME_JPEG);
-
-      return resizedImage;
-    });
-
-    const destparams = {
-      Bucket: paramsObject.dstBucket,
-      Key: paramsObject.dstKey,
-      Body: buffer,
-      ContentType: 'image',
-    };
-
-    const putResult = await s3.putObject(destparams).promise();
-    if (putResult) {
-      // save resized photo info to db
-      const urlPhotoMini = `https://${paramsObject.dstBucket}.s3.eu-west-1.amazonaws.com/${paramsObject.dstKey}`;
-      await PhotoMini.create({
-        name: paramsObject.dstKey,
-        photoMiniUrl: urlPhotoMini,
-        photographerId: photographerid,
-        albumId: albumid,
-      });
-
-      console.log(`Successfully resized ${paramsObject.dstKey} and uploaded to ${paramsObject.dstBucket}/${paramsObject.dstKey}`);
-    }
-  } catch (e) {
-    console.log(e);
-  }
-};
-
-// 5. Create watermarked thumbnail
-
-const createWatermarkedThumbnail = async (paramsObject:any, photographerid:string, albumid:string, originalImage :Buffer) => {
-  /*
-        After importing the  photoDropLogo and deploying with "serverless deploy" command
-        photoDropLogo image will be present in zip package file
-        under the name "d8885004a7cbbc5c2de6177b99b30489.png"
-        (have no idea why this name. I was trying to fix it with no success.)
-        So later on we will read image using name mentioned above. The path will be
-        "./d8885004a7cbbc5c2de6177b99b30489.png" - chekc zip file manually to double check
-      */
-  const logoImage = await Jimp.read('./d8885004a7cbbc5c2de6177b99b30489.png');
-  try {
-    const addWaterMark = async (image: Buffer) => {
-      let imageResized = await Jimp.read(image);
-      const originalHeight = imageResized.bitmap.height;
-      const originalWidth = imageResized.bitmap.width;
-      const minValue = originalWidth < originalHeight ? 'width' : 'heigth';
-      const newWidth = minValue === 'width' ? 400 : Jimp.AUTO;
-      const newHeight = minValue === 'heigth' ? 400 : Jimp.AUTO;
-
-      imageResized = imageResized.resize(newWidth, newHeight);
-      const img = await Jimp.read(imageResized);
-      img.composite(
-        logoImage,
-        img.bitmap.width / 2 - logoImage.bitmap.width / 2,
-        img.bitmap.height / 2 - logoImage.bitmap.height / 2,
-      );
-      return img.getBufferAsync(Jimp.MIME_JPEG);
-    };
-
-    const imageWM = await addWaterMark(originalImage);
-    const destparamsWM = {
-      Bucket: paramsObject.dstBucketWM,
-      Key: paramsObject.dstKeyWM,
-      Body: imageWM,
-      ContentType: 'image',
-    };
-    const putResultWM = await s3.putObject(destparamsWM).promise();
-
-    if (putResultWM) {
-      // save resized photo info to db
-      const urlPhotoMiniWaterMark = `https://${paramsObject.dstBucketWM}.s3.eu-west-1.amazonaws.com/${paramsObject.dstKeyWM}`;
-      await PhotoMiniWaterMark.create({
-        name: paramsObject.dstKeyWM,
-        photoMiniWaterMarkUrl: urlPhotoMiniWaterMark,
-        photographerId: photographerid,
-        albumId: albumid,
-      });
-      console.log(`Successfully resized  ${paramsObject.dstKeyWM} and uploaded to ${paramsObject.dstBucketWM}`);
-    }
-  } catch (e) {
-    console.log(e);
-  }
-};
-
-// 6. Create Watermarked original photo
-const createOriginalWatermarked = async (paramsObject: any, originalImage :Buffer) => {
-  try {
-    /*
-        After importing the  photoDropLogo and deploying with "serverless deploy" command
-        photoDropLogo image will be present in zip package file
-        under the name "d8885004a7cbbc5c2de6177b99b30489.png"
-        (have no idea why this name. I was trying to fix it with no success.)
-        So later on we will read image using name mentioned above. The path will be
-        "./d8885004a7cbbc5c2de6177b99b30489.png" - chekc zip file manually to double check
-      */
-    const addWaterMarkToOriginal = async (image: Buffer) => {
-      const logoImageBig = await Jimp.read('./4de5d5c7c739360235f407fb0f36b3bc.png');
-      const imageOriginal = await Jimp.read(image);
-      const originalHeight = imageOriginal.bitmap.height;
-      const originalWidth = imageOriginal.bitmap.width;
-      const minValue = originalWidth < originalHeight ? 'width' : 'heigth';
-      const newWidth = minValue === 'width' ? originalWidth / 2.5 : Jimp.AUTO;
-      const newHeight = minValue === 'heigth' ? originalHeight / 3.3 : Jimp.AUTO;
-
-      logoImageBig.resize(newWidth, newHeight);
-      imageOriginal.composite(
-        logoImageBig,
-        originalWidth / 2 - logoImageBig.bitmap.width / 2,
-        originalHeight / 2 - logoImageBig.bitmap.height / 2,
-      );
-      return imageOriginal.getBufferAsync(Jimp.MIME_JPEG);
-    };
-    const imageOWM = await addWaterMarkToOriginal(originalImage);
-    const destparamsOWM = {
-      Bucket: paramsObject.dstBucketOWM,
-      Key: paramsObject.dstKeyOWM,
-      Body: imageOWM,
-      ContentType: 'image',
-    };
-
-    await s3.putObject(destparamsOWM).promise();
-  } catch (e) {
-    console.log(e);
-  }
-};
-
 const handleNotification = async (peopleArray: string[], albumid: string) => {
   try {
     // // notify(in telegram) app user that photo has been uploaded
     const phoneNumbers = peopleArray;
-
-    /* // 1. Check if user with such phone number exist
-    const userExistPromises = phoneNumbers.map((phone) => AppUser.findOne({ where: { phone } }));
-    let ExistingUsers = await Promise.all(userExistPromises);
-    ExistingUsers = ExistingUsers.filter((user) => user !== null);
-    // 2. Find person with user phone
-    const peoplePromises = ExistingUsers.map((user) => Person.findOne({ where: { phone: user!.phone } }));
-    let people = await Promise.all(peoplePromises);
-    people = people.filter((person) => person !== null);
-    // 3. Find all photos from album
-    const photos = await Photo.findAll({ where: { albumId: albumid } });
-    // 4. Find all photos id
-    const photoIds = photos.map((photo) => photo.id);
-    // 5. Check if photo belongs to the person
-    const photoPersonPromise: any[] = [];
-    people.forEach((person) => {
-      photoIds.forEach((id) => {
-        const result = Photo_Person.findOne({
-          where: {
-            photoId: id,
-            personId: person!.id,
-          },
-        });
-        photoPersonPromise.push(result);
-      });
-    });
-    const photosWithPerson = await Promise.all(photoPersonPromise);
-    // 6. Filter to have only not null responses
-    const notNullResponse = photosWithPerson.filter((photo) => photo !== null);
-
-    notNullResponse.forEach((el) => {
-      if (el.length === 1) {
-        const uri = encodeURI(`https://api.telegram.org/bot5620754624:AAECaxHAR6n5ITV14KjCpP-JPGCrFKcCRjY/sendMessage?chat_id=-678774504&text=PhotoDrop:${phoneNumbers[i]} your photos have dropped🔥\n\nCheck them out here:\n  https://dev-photodrop-client.vercel.app/albums/${albumid}`);
-        await axios({
-          method: 'get',
-          url: uri,
-        });
-      }
-    });
-    */
     if (phoneNumbers) {
       for (let i = 0; i < phoneNumbers.length; i += 1) {
         const numericPhone = phoneNumbers[i].replace(/[^0-9]/g, '');
@@ -331,15 +146,6 @@ const baseHandler = async (event :any) => {
     if (response) {
       const { peopleArray, photographerid, albumid } = response;
 
-      // const paramsObject = {
-      //   dstBucket: `${srcBucket}-resized`,
-      //   dstBucketWM: `${srcBucket}-resized-watermark`,
-      //   dstBucketOWM: `${srcBucket}-watermarked`,
-      //   dstKey: srcKey,
-      //   dstKeyWM: srcKey,
-      //   dstKeyOWM: srcKey,
-      // };
-
       // 1.Save photo to DB
       const urlPhoto = `https://${srcBucket}.s3.eu-west-1.amazonaws.com/${srcKey}`;
       const photo = await Photo.create({
@@ -370,14 +176,6 @@ const baseHandler = async (event :any) => {
         });
         originalImage = Buffer.from(outputBuffer);
       }
-      // 4. Create thumbnail and save to DB
-      // await createThumbnail(paramsObject, photographerid, albumid, originalImage);
-
-      // 5. Create watermarked thumbnail and save to DB
-      // await createWatermarkedThumbnail(paramsObject, photographerid, albumid, originalImage);
-
-      // 6. Watermark original photo and save to DB
-      // await createOriginalWatermarked(paramsObject, originalImage);
 
       // 7. Handle Telegram notification
       await handleNotification(peopleArray, albumid);
