@@ -94,7 +94,6 @@ class AppUserValidator {
   checkGetThumbnailsWithPerson() {
     return [
       query('userId').notEmpty().withMessage('The userId value should not be empty'),
-      query('albumId').notEmpty().withMessage('The albumId value should not be empty'),
     ];
   }
 

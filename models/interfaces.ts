@@ -169,6 +169,8 @@ interface Photo_PesronInstance extends
   Model<Photo_PesronAttributes>,
   Photo_PesronAttributes { }
 
+type TypeAlbumPaidStatus = { [key: string]: boolean };
+
 export {
   PhotographerInstance,
   AlbumInstance,
@@ -182,4 +184,5 @@ export {
   SelfieMiniInstance,
   UserAlbumInstance,
   Photo_PesronInstance,
+  TypeAlbumPaidStatus,
 };
