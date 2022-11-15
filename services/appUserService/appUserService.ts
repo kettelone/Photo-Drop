@@ -76,6 +76,7 @@ class AppUserService {
             }
           });
         });
+        return albumThumbnails;
   }
 
   async findUserPhotos(userId: string) {

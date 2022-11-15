@@ -33,7 +33,7 @@ class PhotoController {
         res.json(selfie);
         return;
       }
-      // TO DO: inform from about changes
+      // TO DO: inform about changes
       // res.json({ errors: [{ msg: 'User doesn`t have active selfie' }] });
       res.json({ message: 'User doesn`t have active selfie' });
       return;
@@ -100,8 +100,8 @@ class PhotoController {
   async getOriginalPhoto(req: Request, res: Response): Promise <void> {
     const { originalKey, albumId, userId } = req.query as { [key: string]: string };
     try {
-      const url = appUserService.getOriginalPhoto(originalKey, albumId, userId);
-      res.send(url);
+      const url = await appUserService.getOriginalPhoto(originalKey, albumId, userId);
+      res.json(url);
       return;
     } catch (e) {
       ApiError.internal(res, 'Internal error while getting original photo');
@@ -118,10 +118,10 @@ class PhotoController {
     const { albumId, userId } = req.query as { [key: string]: string };
     // TODO: create separate service fot the below(Controller- Service separation)
     try {
-      const paymentLink = appUserService.generatePaymentLink(albumId, userId, host);
+      const paymentLink = await appUserService.generatePaymentLink(albumId, userId, host);
 
       if (paymentLink) {
-        res.send(paymentLink);
+        res.json(paymentLink);
         return;
       }
       throw Error;
