@@ -42,6 +42,9 @@ class UserAccountController {
 
       // Send notification to TG about user albums
       const uniqueAlbumIds = await userAccountService.findUniqueAlbumIds(personExist.id);
+      if (!uniqueAlbumIds) {
+        return;
+      }
       const startString = `${process.env.FRONT_BASE_URL}/albums/`;
       let finalString = '';
       uniqueAlbumIds.forEach((albumId) => { finalString += `${startString}${albumId}\n\n`; });
