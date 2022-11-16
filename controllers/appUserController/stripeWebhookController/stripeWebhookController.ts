@@ -5,7 +5,7 @@ https://stripe.com/docs/payments/checkout
 
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
-import stripeService from '../../../services/stripeService/stripeService';
+import stripeService from '../../../services/AppUserService/stripeService/stripeService';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-08-01',

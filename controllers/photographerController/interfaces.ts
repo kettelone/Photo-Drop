@@ -1,6 +1,3 @@
-interface PhotoObject {
-      photoKey:string
-}
 interface PhotosArray {
     photographerId: string,
     albumId: string,
@@ -25,5 +22,5 @@ interface GetThumbnailIconBody {
 }
 
 export {
-  PhotoObject, PhotosArray, LoginBody, CreateAlbumBody, GetThumbnailIconBody,
+  PhotosArray, LoginBody, CreateAlbumBody, GetThumbnailIconBody,
 };

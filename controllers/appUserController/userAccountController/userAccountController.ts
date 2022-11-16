@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { AppUser, Person, SelfieMini } from '../../../models/model';
 import ApiError from '../../../errors/APIErrors';
-import userAccountService from '../../../services/userAccountService/userAccountService';
+import userAccountService from '../../../services/AppUserService/userAccountService/userAccountService';
 
 const generateJwt = (
   id: string,
@@ -63,11 +63,11 @@ class UserAccountController {
       const token = req.headers.authorization.split(' ')[1]; // Bearer ddhcjhdsjcsdcs
       jwt.verify(token, process.env.SECRET_KEY!);
       const user = await AppUser.findOne({ where: { id: userId } });
-      const selfie = await SelfieMini.findOne({ where: { appUserId: userId, active: true } });
       if (!user) {
         ApiError.forbidden(res, 'User was not found');
         return;
       }
+      const selfie = await SelfieMini.findOne({ where: { appUserId: userId, active: true } });
       const {
         id, name, phone, countryCode, email, textMessagesNotification, emailNotification, unsubscribe,
       } = user;
@@ -115,7 +115,6 @@ class UserAccountController {
         res.send({ message: 'User not found' });
         return;
       }
-
       const oldPhone = user.phone;
       user.phone = phone;
       user.countryCode = countryCode;
@@ -126,7 +125,6 @@ class UserAccountController {
         person.save();
       }
       const token = generateJwt(id, phone, countryCode);
-
       res.json({ user, token });
       return;
     } catch (e) {

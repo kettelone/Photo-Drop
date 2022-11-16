@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Photo_Person, Photo } from '../../models/model';
+import { Photo_Person, Photo } from '../../../models/model';
 
 class UserService {
   async findUniqueAlbumIds(personid: string) {

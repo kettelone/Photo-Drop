@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import aws from 'aws-sdk';
 import { SelfieMini } from '../../../models/model';
-import appUserService from '../../../services/appUserService/appUserService';
+import appUserService from '../../../services/AppUserService/photoService/photoService';
 import ApiError from '../../../errors/APIErrors';
 
 // This is your test secret API key.

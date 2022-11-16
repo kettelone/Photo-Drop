@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { Response } from 'express';
-import { UserAlbum } from '../../models/model';
+import { UserAlbum } from '../../../models/model';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-08-01',

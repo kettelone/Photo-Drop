@@ -3,8 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import Stripe from 'stripe';
 import {
   Person, Photo_Person, Photo, Album, AppUser, UserAlbum,
-} from '../../models/model';
-import { PhotoInstance, TypeAlbumPaidStatus } from '../../models/interfaces';
+} from '../../../models/model';
+import { PhotoInstance, TypeAlbumPaidStatus } from '../../../models/interfaces';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-08-01',
