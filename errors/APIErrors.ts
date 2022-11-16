@@ -1,4 +1,6 @@
 import { Response } from 'express';
+// rewrite using middleware
+// add error handlers for xase like "No albums found", "No selfie found", "No photos found" ect.
 
 class ApiError extends Error {
   constructor(message:string) {

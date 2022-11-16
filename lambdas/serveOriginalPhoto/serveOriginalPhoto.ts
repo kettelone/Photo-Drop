@@ -10,9 +10,20 @@ const baseHandler = async (event:any) => {
     /* inputS3Url is a presigned URL that the function can use to download
     the original object from the supporting Access Point */
 
-    console.log('Start Event', event);
-    const { outputRoute, outputToken, inputS3Url } = event.getObjectContext || {};
+    const getOriginalName = async () => {
+      const { url }: {url:string} = event.userRequest;
+      const srcKey = url.substring(url.lastIndexOf('/') + 1);
+      const paramsS3 = {
+        Bucket: process.env.S3_BUCKET!,
+        Key: srcKey,
+      };
+      const data = await S3.headObject(paramsS3).promise();
+      const fileName = data.ContentDisposition!.substring(data.ContentDisposition!.lastIndexOf('=') + 1);
+      return fileName;
+    };
 
+    const originalImageName = await getOriginalName();
+    const { outputRoute, outputToken, inputS3Url } = event.getObjectContext || {};
     let { data: originalImage } = await axios.get(inputS3Url, { responseType: 'arraybuffer' });
 
     if (inputS3Url.includes('.heic?')) {
@@ -27,6 +38,7 @@ const baseHandler = async (event:any) => {
       RequestRoute: outputRoute,
       RequestToken: outputToken,
       Body: originalImage,
+      ContentDisposition: `attachment;filename=${originalImageName}`,
     }).promise();
 
     return {

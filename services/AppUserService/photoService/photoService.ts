@@ -48,35 +48,68 @@ class AppUserService {
       const albumIds = photos.map(({ albumId }) => albumId);
       const uniqueAlbumIds = [...new Set(albumIds)];
       const albumsInfo = await Album.findAll({ where: { id: uniqueAlbumIds } });
-      return albumsInfo;
+
+      // TO DO: check arr.find()
+      // check git commint amend
+      // Update VS Code
+      // check git stash
+      // This routes has to return albumInfo including albumIcon url
+
+      const infoCollection = albumsInfo.map(({ id, date, location }) => {
+        const currentPhotos = photos.filter(({ albumId }) => albumId === id);
+
+        const icon = currentPhotos.length ? s3.getSignedUrl('getObject', {
+          Bucket: process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE,
+          Key: currentPhotos[0].name,
+          Expires: 60 * 120,
+        }) : null;
+
+        return {
+          id,
+          date,
+          location,
+          icon,
+          photos: currentPhotos,
+        };
+      });
+
+      return { infoCollection };
     }
     return false;
   }
 
   async findAlbumsIcons(albumIds: string[], userId: string) {
-        interface ThumbnailsObject{
+          interface ThumbnailsObject{
       [key: string] : string | null
       }
-        const albumThumbnails: ThumbnailsObject = {};
-        const user = await AppUser.findOne({ where: { id: userId } });
-        const person = await Person.findOne({ where: { phone: user?.phone } });
-        const photoPeople = await Photo_Person.findAll({ where: { personId: person?.id } });
-        const photoIds = photoPeople.map((el) => el.photoId);
-        const photos = await Photo.findAll({ where: { id: photoIds } });
+          const albumThumbnails: ThumbnailsObject = {};
 
-        albumIds.forEach((albumId) => {
-          photos.forEach((photo) => {
-            if (albumId === photo.albumId) {
-              const url = s3.getSignedUrl('getObject', {
-                Bucket: process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE,
-                Key: photo.name,
-                Expires: 60 * 120,
-              });
-              albumThumbnails[photo!.albumId] = url;
-            }
+          const user = await AppUser.findOne({ where: { id: userId } });
+          const person = await Person.findOne({ where: { phone: user?.phone } });
+          const photoPeople = await Photo_Person.findAll({ where: { personId: person?.id } });
+          const photoIds = photoPeople.map((el) => el.photoId);
+          const photos = await Photo.findAll({ where: { id: photoIds } });
+
+          albumIds.forEach((albumId) => {
+            photos.forEach((photo) => {
+              if (albumId === photo.albumId) {
+                const url = s3.getSignedUrl('getObject', {
+                  Bucket: process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE,
+                  Key: photo.name,
+                  Expires: 60 * 120,
+                });
+                albumThumbnails[photo!.albumId] = url;
+              }
+            });
           });
-        });
-        return albumThumbnails;
+
+          // [{
+          //   albumId: '',
+          //   location,
+          //   date,
+          //   icon,
+          // }];
+          return albumThumbnails;
   }
 
   async findUserPhotos(userId: string) {

@@ -35,6 +35,7 @@ class PhotoController {
       }
       // TO DO: inform about changes
       // res.json({ errors: [{ msg: 'User doesn`t have active selfie' }] });
+
       res.json({ message: 'User doesn`t have active selfie' });
       return;
     } catch (e) {
