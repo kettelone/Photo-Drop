@@ -45,7 +45,6 @@ class PhotographerService {
         Bucket: process.env.S3_BUCKET_ORIGINAL,
         Key: el.photoKey,
         Expires: 60 * 60,
-        'Content-Disposition': 'attachment',
       });
       return url;
     });

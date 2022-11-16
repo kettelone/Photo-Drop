@@ -124,7 +124,6 @@ class AppUserService {
         : process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_WATERMARK,
       Key: originalKey,
       Expires: 60 * 120,
-      'Content-Disposition': 'attachment',
     });
 
     return url;
