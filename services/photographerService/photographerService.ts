@@ -25,7 +25,7 @@ class PhotographerService {
           key: `${uuidv4()}.${photoExtension}`,
           'Content-Type': `image/${photoExtension}`,
           'Content-Disposition': `attachment;filename=${photoName}`,
-          'x-amz-meta-people': people,
+          'x-amz-meta-people': `${people}`,
           'x-amz-meta-photographerId': photographerId,
           'x-amz-meta-albumId': albumId,
           originalPhotoKey: photoName,
