@@ -120,7 +120,7 @@ class AppUserService {
     const info = await UserAlbum.findOne({ where: { userId, albumId } });
     const url = s3.getSignedUrl('getObject', {
       Bucket: info && info.isPaid === true
-        ? process.env.S3_BUCKET
+        ? process.env.S3_BUCKET_ORIGINAL
         : process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_WATERMARK,
       Key: originalKey,
       Expires: 60 * 120,

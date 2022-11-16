@@ -32,7 +32,7 @@ class PhotographerService {
         },
         Conditions: [['content-length-range', 0, 15000000], ['starts-with', '$Content-Type', 'image/']],
         Expires: 60 * 60, // seconds
-        Bucket: process.env.S3_BUCKET,
+        Bucket: process.env.S3_BUCKET_ORIGINAL,
       });
       return { url, fields };
     });
@@ -42,7 +42,7 @@ class PhotographerService {
   generatePresignedGet(PhotoKeys :{ photoKey: string }[]) {
     const photoUrls = PhotoKeys.map((el) => {
       const url = s3.getSignedUrl('getObject', {
-        Bucket: process.env.S3_BUCKET,
+        Bucket: process.env.S3_BUCKET_ORIGINAL,
         Key: el.photoKey,
         Expires: 60 * 60,
       });
