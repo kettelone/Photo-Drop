@@ -55,25 +55,25 @@ class AppUserService {
       // check git stash
       // This routes has to return albumInfo including albumIcon url
 
-      const infoCollection = albumsInfo.map(({ id, date, location }) => {
-        const currentPhotos = photos.filter(({ albumId }) => albumId === id);
+      // const infoCollection = albumsInfo.map(({ id, date, location }) => {
+      //   const currentPhotos = photos.filter(({ albumId }) => albumId === id);
 
-        const icon = currentPhotos.length ? s3.getSignedUrl('getObject', {
-          Bucket: process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE,
-          Key: currentPhotos[0].name,
-          Expires: 60 * 120,
-        }) : null;
+      //   const icon = currentPhotos.length ? s3.getSignedUrl('getObject', {
+      //     Bucket: process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE,
+      //     Key: currentPhotos[0].name,
+      //     Expires: 60 * 120,
+      //   }) : null;
 
-        return {
-          id,
-          date,
-          location,
-          icon,
-          photos: currentPhotos,
-        };
-      });
+      //   return {
+      //     id,
+      //     date,
+      //     location,
+      //     icon,
+      //     photos: currentPhotos,
+      //   };
+      // });
 
-      return { infoCollection };
+      return { albumsInfo };
     }
     return false;
   }
