@@ -73,7 +73,7 @@ class AppUserService {
       //   };
       // });
 
-      return { albumsInfo };
+      return albumsInfo;
     }
     return false;
   }
