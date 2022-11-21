@@ -42,12 +42,14 @@ class AppUserService {
   async getAlbums(phone:string) {
     const person = await Person.findOne({ where: { phone } });
     if (person) {
+      const user = await AppUser.findOne({ where: { phone } });
       const photo_person = await Photo_Person.findAll({ where: { personId: person.id } });
       const photoIds = photo_person.map(({ photoId }) => photoId);
       const photos = await Photo.findAll({ where: { id: photoIds } });
       const albumIds = photos.map(({ albumId }) => albumId);
       const uniqueAlbumIds = [...new Set(albumIds)];
       const albumsInfo = await Album.findAll({ where: { id: uniqueAlbumIds } });
+      const userAlbums = await UserAlbum.findAll({ where: { userId: user!.id, albumId: uniqueAlbumIds } });
 
       // TO DO: check arr.find()
       // check git commint amend
@@ -55,25 +57,49 @@ class AppUserService {
       // check git stash
       // This routes has to return albumInfo including albumIcon url
 
-      // const infoCollection = albumsInfo.map(({ id, date, location }) => {
-      //   const currentPhotos = photos.filter(({ albumId }) => albumId === id);
+      const infoCollection = albumsInfo.map(({ id, date, location }) => {
+        // get photos which belongs to current album
+        const currentPhotos = photos.filter(({ albumId }) => albumId === id);
 
-      //   const icon = currentPhotos.length ? s3.getSignedUrl('getObject', {
-      //     Bucket: process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE,
-      //     Key: currentPhotos[0].name,
-      //     Expires: 60 * 120,
-      //   }) : null;
+        // generate thumbnails info(paid or not)
+        const albumPaidStatus: TypeAlbumPaidStatus = {};
+        userAlbums.forEach((album) => {
+          albumPaidStatus[album.albumId] = album.isPaid;
+        });
 
-      //   return {
-      //     id,
-      //     date,
-      //     location,
-      //     icon,
-      //     photos: currentPhotos,
-      //   };
-      // });
+        // sign thumbnails
+        const signedThumbnails = currentPhotos.map((photo) => {
+          const url = s3.getSignedUrl('getObject', {
+            Bucket: albumPaidStatus[photo.albumId] === true
+              ? process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE
+              : process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE_WATERMARK,
+            Key: photo.name,
+            Expires: 60 * 120,
+          });
+          const thumbnail = {
+            url,
+            originalKey: photo.name,
+          };
+          return thumbnail;
+        });
 
-      return albumsInfo;
+        // generate album icon url
+        const icon = currentPhotos.length ? s3.getSignedUrl('getObject', {
+          Bucket: process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE,
+          Key: currentPhotos[0].name,
+          Expires: 60 * 120,
+        }) : null;
+
+        return {
+          id,
+          date,
+          location,
+          icon,
+          thumbnails: signedThumbnails,
+        };
+      });
+
+      return infoCollection;
     }
     return false;
   }
