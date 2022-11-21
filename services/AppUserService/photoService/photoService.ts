@@ -32,7 +32,7 @@ class AppUserService {
 
   generateSignedUrl(selfieKey:string) {
     const url = s3.getSignedUrl('getObject', {
-      Bucket: process.env.S3_SELFIE_BUCKET_RESIZED,
+      Bucket: process.env.S3_LAMBDA_ACCESS_POINT_SELFIE_RESIZE,
       Key: selfieKey,
       Expires: 60 * 120,
     });

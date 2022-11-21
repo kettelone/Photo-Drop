@@ -22,10 +22,10 @@ import convert from 'heic-convert';
 import axios from 'axios';
 import {
   Photo, Person, AppUser, Photo_Person,
-} from '../../models/model';
+} from '../../../models/model';
 import * as photoDropLogo from './PhotoDropLogo.png';
 import * as photoDropLogoBig from './PhotoDropLogoBig.png';
-import { PhotoInstance } from '../../models/interfaces';
+import { PhotoInstance } from '../../../models/interfaces';
 /*
 1.To import photoDropLogo index.d.ts has to be created and "*.png" has to be initiated and exported
 */
