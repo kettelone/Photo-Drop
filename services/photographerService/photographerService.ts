@@ -51,6 +51,7 @@ class PhotographerService {
     return photoUrls;
   }
 
+  // TO DO: remove after Alexey implements changes
   async getAlbumThumbnails(albumIds:string[]) {
     const albumThumbnails: { [key: string]: string | null } = {};
     const promises = albumIds.map((albumId) => Photo.findOne({ where: { albumId } }));

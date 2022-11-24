@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 import {
   Person, Photo_Person, Photo, Album, AppUser, UserAlbum,
 } from '../../../models/model';
-import { PhotoInstance, TypeAlbumPaidStatus } from '../../../models/interfaces';
+import { TypeAlbumPaidStatus } from '../../../models/interfaces';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-08-01',
@@ -39,7 +39,12 @@ class AppUserService {
     return url;
   }
 
-  async getAlbums(phone:string) {
+  async getAlbums(phone: string) {
+    // TO DO: check arr.find()
+    // check git commint amend
+    // Update VS Code
+    // check git stash
+
     const person = await Person.findOne({ where: { phone } });
     if (person) {
       const user = await AppUser.findOne({ where: { phone } });
@@ -51,17 +56,11 @@ class AppUserService {
       const albumsInfo = await Album.findAll({ where: { id: uniqueAlbumIds } });
       const userAlbums = await UserAlbum.findAll({ where: { userId: user!.id, albumId: uniqueAlbumIds } });
 
-      // TO DO: check arr.find()
-      // check git commint amend
-      // Update VS Code
-      // check git stash
-      // This routes has to return albumInfo including albumIcon url
-
       const infoCollection = albumsInfo.map(({ id, date, location }) => {
         // get photos which belongs to current album
         const currentPhotos = photos.filter(({ albumId }) => albumId === id);
 
-        // generate thumbnails info(paid or not)
+        // generate thumbnails payment status
         const albumPaidStatus: TypeAlbumPaidStatus = {};
         userAlbums.forEach((album) => {
           albumPaidStatus[album.albumId] = album.isPaid;
@@ -102,77 +101,6 @@ class AppUserService {
       return infoCollection;
     }
     return false;
-  }
-
-  async findAlbumsIcons(albumIds: string[], userId: string) {
-          interface ThumbnailsObject{
-      [key: string] : string | null
-      }
-          const albumThumbnails: ThumbnailsObject = {};
-
-          const user = await AppUser.findOne({ where: { id: userId } });
-          const person = await Person.findOne({ where: { phone: user?.phone } });
-          const photoPeople = await Photo_Person.findAll({ where: { personId: person?.id } });
-          const photoIds = photoPeople.map((el) => el.photoId);
-          const photos = await Photo.findAll({ where: { id: photoIds } });
-
-          albumIds.forEach((albumId) => {
-            photos.forEach((photo) => {
-              if (albumId === photo.albumId) {
-                const url = s3.getSignedUrl('getObject', {
-                  Bucket: process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE,
-                  Key: photo.name,
-                  Expires: 60 * 120,
-                });
-                albumThumbnails[photo!.albumId] = url;
-              }
-            });
-          });
-
-          // [{
-          //   albumId: '',
-          //   location,
-          //   date,
-          //   icon,
-          // }];
-          return albumThumbnails;
-  }
-
-  async findUserPhotos(userId: string) {
-    const albumPaidStatus: TypeAlbumPaidStatus = {};
-
-    const user = await AppUser.findOne({ where: { id: userId } });
-    const person = await Person.findOne({ where: { phone: user?.phone } });
-    const photoPeople = await Photo_Person.findAll({ where: { personId: person?.id } });
-    const photoIds = photoPeople.map((photoPerson) => photoPerson.photoId);
-    const photos = await Photo.findAll({ where: { id: photoIds } });
-    const albumIds = photos.map((photo) => photo.albumId);
-    const uniqueAlbumIds = [...new Set(albumIds)];
-    const albums = await UserAlbum.findAll({ where: { userId, albumId: uniqueAlbumIds } });
-    albums.forEach((album) => {
-      albumPaidStatus[album.albumId] = album.isPaid;
-    });
-    return { photos, albumPaidStatus };
-  }
-
-  getSignedThumbnails(photos: PhotoInstance[], albumPaidStatus:TypeAlbumPaidStatus) {
-    const signedThumbnails = photos.map((photo) => {
-      const url = s3.getSignedUrl('getObject', {
-        Bucket: albumPaidStatus[photo.albumId] === true
-          ? process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE
-          : process.env.S3_LAMBDA_ACCESS_POINT_IMAGE_RESIZE_WATERMARK,
-        Key: photo.name,
-        Expires: 60 * 120,
-      });
-      const thumbnail = {
-        isPaid: albumPaidStatus[photo.albumId],
-        url,
-        originalKey: photo.name,
-        albumId: photo.albumId,
-      };
-      return thumbnail;
-    });
-    return signedThumbnails;
   }
 
   async getOriginalPhoto(originalKey:string, albumId: string, userId:string) {

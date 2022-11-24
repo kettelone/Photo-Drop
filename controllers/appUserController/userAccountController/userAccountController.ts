@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { AppUser, Person, SelfieMini } from '../../../models/model';
 import ApiError from '../../../errors/APIErrors';
@@ -11,7 +11,7 @@ const generateJwt = (
 ):string => jwt.sign({ id, phone, countryCode }, process.env.SECRET_KEY!, { expiresIn: '24h' });
 
 class UserAccountController {
-  async createAppUser(req: Request, res: Response): Promise<void> {
+  async createAppUser(req: Request, res: Response, next:NextFunction): Promise<void> {
     const { phone, countryCode } = req.body as { [key: string]: string };
     try {
       const appUserExist = await AppUser.findOne({ where: { phone } });
@@ -52,22 +52,22 @@ class UserAccountController {
       return;
     } catch (e) {
       console.log(e);
-      ApiError.internal(res, 'Internal error while creating user');
+      next(new ApiError(500, 'Internal error while creating user'));
     }
   }
 
-  async getMe(req: Request<{}, {}, {}, { userId:string }>, res: Response): Promise<void> {
+  async getMe(req: Request<{}, {}, {}, { userId:string }>, res: Response, next:NextFunction): Promise<void> {
     try {
       const { userId } = req.query;
       if (!req.headers.authorization) {
-        ApiError.forbidden(res, 'Missing authorization token');
+        next(new ApiError(401, 'Missing authorization token'));
         return;
       }
       const token = req.headers.authorization.split(' ')[1]; // Bearer ddhcjhdsjcsdcs
       jwt.verify(token, process.env.SECRET_KEY!);
       const user = await AppUser.findOne({ where: { id: userId } });
       if (!user) {
-        ApiError.forbidden(res, 'User was not found');
+        next(new ApiError(401, 'User was not found'));
         return;
       }
       const selfie = await SelfieMini.findOne({ where: { appUserId: userId, active: true } });
@@ -88,16 +88,16 @@ class UserAccountController {
       res.json({ userObject });
       return;
     } catch (e) {
-      ApiError.internal(res, 'Internal error');
+      next(new ApiError(500, 'Internal error'));
     }
   }
 
-  async editName(req: Request, res: Response): Promise<void> {
+  async editName(req: Request, res: Response, next:NextFunction): Promise<void> {
     const { id, name } = req.body as {[key: string]: string};
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (!user) {
-        res.send({ message: 'User not found' });
+        next(new ApiError(404, 'User not found'));
         return;
       }
       user.name = name;
@@ -106,16 +106,16 @@ class UserAccountController {
       return;
     } catch (e) {
       console.log(e);
-      ApiError.internal(res, 'Internal error on edit name');
+      next(new ApiError(500, 'Internal error on edit name'));
     }
   }
 
-  async editPhone(req: Request, res: Response): Promise<void> {
+  async editPhone(req: Request, res: Response, next:NextFunction): Promise<void> {
     const { id, phone, countryCode } = req.body as {[key: string]: string};
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (!user) {
-        res.send({ message: 'User not found' });
+        next(new ApiError(404, 'User not found'));
         return;
       }
       const oldPhone = user.phone;
@@ -132,16 +132,17 @@ class UserAccountController {
       return;
     } catch (e) {
       console.log(e);
-      ApiError.internal(res, 'Internal error on edit phone');
+      next(new ApiError(500, 'Internal error on edit phone'));
     }
   }
 
-  async editEmail(req: Request, res: Response): Promise<void> {
+  async editEmail(req: Request, res: Response, next:NextFunction): Promise<void> {
     const { id, email } = req.body as {[key: string]: string};
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (!user) {
-        res.send({ message: 'User not found' });
+        next(new ApiError(404, 'User not found'));
+        // res.send({ message: 'User not found' });
         return;
       }
       user.email = email;
@@ -150,17 +151,18 @@ class UserAccountController {
       return;
     } catch (e) {
       console.log(e);
-      ApiError.internal(res, 'internal error on edit email');
+      next(new ApiError(500, 'Internal error on edit email'));
     }
   }
 
-  async editNotificationSettings(req: Request, res: Response): Promise<void> {
+  async editNotificationSettings(req: Request, res: Response, next:NextFunction): Promise<void> {
     const { id } = req.body as {id: string};
     const { textMessagesNotification, emailNotification, unsubscribe } = req.body as {[key:string]: boolean};
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (!user) {
-        res.send({ message: 'User not found' });
+        next(new ApiError(404, 'User not found'));
+        // res.send({ message: 'User not found' });
         return;
       }
       user.textMessagesNotification = textMessagesNotification;
@@ -171,7 +173,7 @@ class UserAccountController {
       return;
     } catch (e) {
       console.log(e);
-      ApiError.internal(res, 'Internal Error on Edit Notification');
+      next(new ApiError(500, 'Internal error on edit Notification'));
     }
   }
 }

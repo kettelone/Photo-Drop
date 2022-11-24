@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import aws from 'aws-sdk';
 import { SelfieMini } from '../../../models/model';
 import appUserService from '../../../services/AppUserService/photoService/photoService';
@@ -13,19 +13,19 @@ aws.config.update({
 });
 
 class PhotoController {
-  async signSelfie(req: Request<any, any, { name: string; userId: string }>, res: Response): Promise<void> {
+  async signSelfie(req: Request<any, any, { name: string; userId: string }>, res: Response, next: NextFunction): Promise<void> {
     try {
       const { name, userId } = req.body;
       const { url, fields } = appUserService.generatePresignedPost(name, userId);
       res.send(JSON.stringify({ url, fields }));
       return;
     } catch (e) {
-      ApiError.internal(res, 'Internal error while signing selfie');
+      next(new ApiError(500, 'Internal error while signing selfie'));
       console.log(e);
     }
   }
 
-  async getSelfie(req: Request<any, any, any, {appUserId:string}>, res: Response) :Promise<void> {
+  async getSelfie(req: Request<any, any, any, {appUserId:string}>, res: Response, next: NextFunction) :Promise<void> {
     const { appUserId } = req.query;
     try {
       const selfie = await SelfieMini.findOne({ where: { appUserId, active: true } });
@@ -33,30 +33,28 @@ class PhotoController {
         res.json(selfie);
         return;
       }
-      // TO DO: inform about changes
-      // res.json({ errors: [{ msg: 'User doesn`t have active selfie' }] });
+      next(new ApiError(404, 'User doesn`t have active selfie'));
 
-      res.json({ message: 'User doesn`t have active selfie' });
       return;
     } catch (e) {
-      ApiError.internal(res, 'Internal error while getting selfie');
+      next(new ApiError(500, 'Internal error while getting selfie'));
       console.log(e);
     }
   }
 
-  async createPresignedGetForSelfie(req: Request<any, any, { selfieKey: string }>, res: Response): Promise<void> {
+  async createPresignedGetForSelfie(req: Request<any, any, { selfieKey: string }>, res: Response, next: NextFunction): Promise<void> {
     const { selfieKey } = req.body;
     try {
       const url = appUserService.generateSignedUrl(selfieKey);
       res.json(url);
       return;
     } catch (e) {
-      ApiError.internal(res, 'Internal error while creating signed url for selfie');
+      next(new ApiError(500, 'Internal error while creating signed url for selfie'));
       console.log(e);
     }
   }
 
-  async getAlbumsWithPerson(req: Request<any, any, any, { phone:string }>, res: Response): Promise<void> {
+  async getAlbumsWithPerson(req: Request<any, any, any, { phone:string }>, res: Response, next: NextFunction): Promise<void> {
     const { phone } = req.query;
     try {
       const albumsInfo = await appUserService.getAlbums(phone);
@@ -64,53 +62,27 @@ class PhotoController {
         res.json({ albumsInfo });
         return;
       }
-      res.json({ message: 'No albums found' });
+      next(new ApiError(404, 'No albums found'));
       return;
     } catch (e) {
-      ApiError.internal(res, 'Internal error while getting albums with person');
+      next(new ApiError(500, 'Internal error while getting albums with person'));
       console.log(e);
     }
   }
 
-  async getAlbumsThumbnailIcon(req: Request<any, any, {albumIds:string[], userId: string}>, res: Response): Promise<void> {
-    const { albumIds, userId } = req.body;
-    try {
-      const albumThumbnails = await appUserService.findAlbumsIcons(albumIds, userId);
-      res.json(albumThumbnails);
-      return;
-    } catch (e) {
-      ApiError.internal(res, 'Internal error while getting albums thumbnail icons');
-      console.log(e);
-    }
-  }
-
-  async getThumbnails(req: Request<any, any, any, { userId: string }>, res: Response): Promise<void> {
-    const { userId } = req.query;
-    // TO DO: say Alexey to remove albumId from request
-    try {
-      const { photos, albumPaidStatus } = await appUserService.findUserPhotos(userId);
-      const signedThumbnails = appUserService.getSignedThumbnails(photos, albumPaidStatus);
-      res.json({ totalPhotos: photos.length, thumbnails: signedThumbnails });
-      return;
-    } catch (e) {
-      ApiError.internal(res, 'Internal error while getting all thumbnails');
-      console.log(e);
-    }
-  }
-
-  async getOriginalPhoto(req: Request, res: Response): Promise <void> {
+  async getOriginalPhoto(req: Request, res: Response, next: NextFunction): Promise <void> {
     const { originalKey, albumId, userId } = req.query as { [key: string]: string };
     try {
       const url = await appUserService.getOriginalPhoto(originalKey, albumId, userId);
       res.json(url);
       return;
     } catch (e) {
-      ApiError.internal(res, 'Internal error while getting original photo');
+      next(new ApiError(500, 'Internal error while getting original photo'));
       console.log(e);
     }
   }
 
-  async generatePayment(req: Request, res: Response): Promise<void> {
+  async generatePayment(req: Request, res: Response, next: NextFunction): Promise<void> {
     let host = req.headers.origin as string;
     // for testing from Postman
     if (!host) {
@@ -127,7 +99,7 @@ class PhotoController {
       }
       throw Error;
     } catch (e) {
-      ApiError.internal(res, 'Internal error while generating payment');
+      next(new ApiError(500, 'Internal error while generating payment'));
       console.log(e);
     }
   }
