@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import aws from 'aws-sdk';
 import { SelfieMini } from '../../../models/model';
 import appUserService from '../../../services/AppUserService/photoService/photoService';
-import ApiError from '../../../errors/APIErrors';
+import APIError from '../../../errors/APIError';
 
 // This is your test secret API key.
 aws.config.update({
@@ -20,8 +20,7 @@ class PhotoController {
       res.send(JSON.stringify({ url, fields }));
       return;
     } catch (e) {
-      next(new ApiError(500, 'Internal error while signing selfie'));
-      console.log(e);
+      next(APIError.internal('Internal error while signing selfie'));
     }
   }
 
@@ -33,11 +32,11 @@ class PhotoController {
         res.json(selfie);
         return;
       }
-      next(new ApiError(404, 'User doesn`t have active selfie'));
+      next(APIError.notFound('User doesn`t have active selfie'));
 
       return;
     } catch (e) {
-      next(new ApiError(500, 'Internal error while getting selfie'));
+      next(APIError.notFound('Internal error while getting selfie'));
       console.log(e);
     }
   }
@@ -49,8 +48,7 @@ class PhotoController {
       res.json(url);
       return;
     } catch (e) {
-      next(new ApiError(500, 'Internal error while creating signed url for selfie'));
-      console.log(e);
+      next(APIError.notFound('Internal error while creating signed url for selfie'));
     }
   }
 
@@ -62,11 +60,10 @@ class PhotoController {
         res.json({ albumsInfo });
         return;
       }
-      next(new ApiError(404, 'No albums found'));
+      next(APIError.notFound('No albums found'));
       return;
     } catch (e) {
-      next(new ApiError(500, 'Internal error while getting albums with person'));
-      console.log(e);
+      next(APIError.notFound('Internal error while getting albums with person'));
     }
   }
 
@@ -77,8 +74,7 @@ class PhotoController {
       res.json(url);
       return;
     } catch (e) {
-      next(new ApiError(500, 'Internal error while getting original photo'));
-      console.log(e);
+      next(APIError.internal('Internal error while getting original photo'));
     }
   }
 
@@ -99,8 +95,7 @@ class PhotoController {
       }
       throw Error;
     } catch (e) {
-      next(new ApiError(500, 'Internal error while generating payment'));
-      console.log(e);
+      next(APIError.internal('Internal error while generating payment'));
     }
   }
 }

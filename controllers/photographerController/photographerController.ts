@@ -6,7 +6,7 @@ import {
   Photographer, Album, Photo, AppUser,
 } from '../../models/model';
 import { PhotosArray } from './interfaces';
-import ApiError from '../../errors/APIErrors';
+import APIError from '../../errors/APIError';
 import photographerService from '../../services/photographerService/photographerService';
 
 const s3 = new aws.S3();
@@ -17,12 +17,12 @@ class PhotographerController {
       const { login, password } = req.body as {[key:string]:string};
       const user = await Photographer.findOne({ where: { login } });
       if (!user) {
-        next(new ApiError(401, 'User not found'));
+        next(APIError.unauthorized('User not found'));
         return;
       }
       const comparePassword = bcrypt.compareSync(password, user.password);
       if (!comparePassword) {
-        next(new ApiError(401, 'Wrong password'));
+        next(APIError.unauthorized('Wrong password'));
         return;
       }
       const token = jwt.sign({ id: user.id, login: user.login }, process.env.SECRET_KEY!, {
@@ -32,24 +32,24 @@ class PhotographerController {
       return;
     } catch (e) {
       console.log(e);
-      next(new ApiError(500, 'Internal error on login'));
+      next(APIError.internal('Internal error on login'));
     }
   }
 
   async getMe(req: Request, res: Response, next: NextFunction):Promise<void> {
     try {
       if (!req.headers.authorization) {
-        next(new ApiError(401, 'Missing authorization token'));
+        next(APIError.unauthorized('Missing authorization token'));
         return;
       }
       const token = req.headers.authorization.split(' ')[1]; // Bearer ddhcjhdsjcsdcs
       if (!token) {
-        next(new ApiError(401, 'Not authorized'));
+        next(APIError.unauthorized('Not authorized'));
       }
       jwt.verify(token, process.env.SECRET_KEY!);
       res.send();
     } catch (e) {
-      next(new ApiError(401, 'Not authorized'));
+      next(APIError.unauthorized('Not authorized'));
     }
   }
 
@@ -61,7 +61,7 @@ class PhotographerController {
     try {
       const photographerExist = await Photographer.findOne({ where: { id: photographerId } });
       if (!photographerExist) {
-        next(new ApiError(404, 'Photographer does not exist'));
+        next(APIError.notFound('Photographer does not exist'));
         return;
       }
       const albumExist = await Album.findOne({ where: { name, photographerId } });
@@ -72,11 +72,11 @@ class PhotographerController {
         res.json(album);
         return;
       }
-      next(new ApiError(409, 'The album with this name already exist'));
+      next(APIError.conflict('The album with this name already exist'));
       return;
     } catch (e) {
       console.log(e);
-      next(new ApiError(500, 'Internal error on album create'));
+      next(APIError.internal('Internal error on album create'));
     }
   }
 
@@ -87,7 +87,7 @@ class PhotographerController {
       const presignedPostsArray = photographerService.generatePresignedPost(photosArray, people);
       res.send(JSON.stringify(presignedPostsArray));
     } catch (e) {
-      next(new ApiError(500, 'Internal error on create presigned pos'));
+      next(APIError.internal('Internal error on create presigned post'));
     }
   }
 
@@ -97,7 +97,7 @@ class PhotographerController {
       res.json({ people });
     } catch (e) {
       console.log(e);
-      next(new ApiError(500, 'Internal error on getAllPeople'));
+      next(APIError.internal('Internal error on getAllPeople'));
     }
   }
 
@@ -106,13 +106,13 @@ class PhotographerController {
     try {
       const photographerExist = await Photographer.findOne({ where: { id: photographerId } });
       if (!photographerExist) {
-        next(new ApiError(404, 'Photographer with this id does not exist'));
+        next(APIError.notFound('Photographer with this id does not exist'));
         return;
       }
       const albums = await Album.findAll({ where: { photographerId } });
       const photos = await Photo.findAll({ where: { photographerId }, order: [['createdAt', 'DESC']] });
       if (albums.length < 1) {
-        next(new ApiError(404, 'No albums found'));
+        next(APIError.notFound('No albums found'));
         return;
       }
       const albumsInfo = albums.map(({
@@ -150,8 +150,7 @@ class PhotographerController {
       res.send({ photographerId, albumsInfo });
       return;
     } catch (e) {
-      console.log(e);
-      next(new ApiError(500, 'Internal error on getAlbums'));
+      next(APIError.internal('Internal error on getAlbums'));
     }
   }
 
@@ -163,7 +162,7 @@ class PhotographerController {
       res.json(albumThumbnails);
     } catch (e) {
       console.log(e);
-      next(new ApiError(500, 'Internal error on get album icon'));
+      next(APIError.internal('Internal error on get album icon'));
     }
   }
 
@@ -182,17 +181,17 @@ class PhotographerController {
     try {
       const photographerExist = await Photographer.findOne({ where: { id: photographerId } });
       if (!photographerExist) {
-        next(new ApiError(404, 'Photographer with this id does not exist'));
+        next(APIError.notFound('Photographer with this id does not exist'));
         return;
       }
       const albumExist = await Album.findOne({ where: { id: albumId } });
       if (!albumExist) {
-        next(new ApiError(404, 'This album does not exist'));
+        next(APIError.notFound('This album does not exist'));
         return;
       }
       const albumBelongsToUser = await Album.findOne({ where: { id: albumId, photographerId } });
       if (!albumBelongsToUser) {
-        next(new ApiError(409, 'This album does not belong to this user'));
+        next(APIError.conflict('This album does not belong to this user'));
         return;
       }
       const photos = await Photo.findAndCountAll({
@@ -215,7 +214,7 @@ class PhotographerController {
       res.json(photoUrls);
       return;
     } catch (e) {
-      next(new ApiError(500, 'Internal Error on get photos'));
+      next(APIError.internal('Internal Error on get photos'));
     }
   }
 
@@ -226,7 +225,7 @@ class PhotographerController {
       const photoUrls = photographerService.generatePresignedGet(photoKeyArr);
       res.json(photoUrls);
     } catch (e) {
-      next(new ApiError(500, 'Internal Error on create presigned get'));
+      next(APIError.internal('Internal Error on create presigned get'));
     }
   }
 }

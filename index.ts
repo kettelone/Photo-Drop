@@ -5,7 +5,7 @@ import express, {
 import cors from 'cors';
 import sequelize from './db';
 import router from './routes/index';
-import customErrorHandler from './middleware/errorrHandlingMiddleware';
+import apiErrorHandler from './middleware/errorrHandlingMiddleware';
 
 dotenv.config();
 
@@ -13,9 +13,8 @@ const app: Express = express();
 app.use(cors()); // чтобы можно было отправлять запросы с браузера
 app.use(express.json()); // чтобы приложение могло парсить json формат
 app.use('/api', router);
-
 // Error handler middleware. Shoud be the last middleware
-app.use(customErrorHandler);
+app.use(apiErrorHandler);
 
 const { PORT } = process.env;
 const start = async () => {

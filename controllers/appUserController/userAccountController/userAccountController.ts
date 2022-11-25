@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { AppUser, Person, SelfieMini } from '../../../models/model';
-import ApiError from '../../../errors/APIErrors';
+import APIError from '../../../errors/APIError';
 import userAccountService from '../../../services/AppUserService/userAccountService/userAccountService';
 
 const generateJwt = (
@@ -52,7 +52,7 @@ class UserAccountController {
       return;
     } catch (e) {
       console.log(e);
-      next(new ApiError(500, 'Internal error while creating user'));
+      next(APIError.internal('Internal error while creating user'));
     }
   }
 
@@ -60,14 +60,14 @@ class UserAccountController {
     try {
       const { userId } = req.query;
       if (!req.headers.authorization) {
-        next(new ApiError(401, 'Missing authorization token'));
+        next(APIError.unauthorized('Missing authorization token'));
         return;
       }
       const token = req.headers.authorization.split(' ')[1]; // Bearer ddhcjhdsjcsdcs
       jwt.verify(token, process.env.SECRET_KEY!);
       const user = await AppUser.findOne({ where: { id: userId } });
       if (!user) {
-        next(new ApiError(401, 'User was not found'));
+        next(APIError.unauthorized('User was not found'));
         return;
       }
       const selfie = await SelfieMini.findOne({ where: { appUserId: userId, active: true } });
@@ -88,7 +88,7 @@ class UserAccountController {
       res.json({ userObject });
       return;
     } catch (e) {
-      next(new ApiError(500, 'Internal error'));
+      next(APIError.internal('Internal error'));
     }
   }
 
@@ -97,7 +97,7 @@ class UserAccountController {
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (!user) {
-        next(new ApiError(404, 'User not found'));
+        next(APIError.notFound('User not found'));
         return;
       }
       user.name = name;
@@ -106,7 +106,7 @@ class UserAccountController {
       return;
     } catch (e) {
       console.log(e);
-      next(new ApiError(500, 'Internal error on edit name'));
+      next(APIError.internal('Internal error on edit name'));
     }
   }
 
@@ -115,7 +115,7 @@ class UserAccountController {
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (!user) {
-        next(new ApiError(404, 'User not found'));
+        next(APIError.notFound('User not found'));
         return;
       }
       const oldPhone = user.phone;
@@ -132,7 +132,7 @@ class UserAccountController {
       return;
     } catch (e) {
       console.log(e);
-      next(new ApiError(500, 'Internal error on edit phone'));
+      next(APIError.internal('Internal error on edit phone'));
     }
   }
 
@@ -141,8 +141,7 @@ class UserAccountController {
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (!user) {
-        next(new ApiError(404, 'User not found'));
-        // res.send({ message: 'User not found' });
+        next(APIError.notFound('User not found'));
         return;
       }
       user.email = email;
@@ -151,7 +150,7 @@ class UserAccountController {
       return;
     } catch (e) {
       console.log(e);
-      next(new ApiError(500, 'Internal error on edit email'));
+      next(APIError.internal('Internal error on edit email'));
     }
   }
 
@@ -161,8 +160,7 @@ class UserAccountController {
     try {
       const user = await AppUser.findOne({ where: { id } });
       if (!user) {
-        next(new ApiError(404, 'User not found'));
-        // res.send({ message: 'User not found' });
+        next(APIError.notFound('User not found'));
         return;
       }
       user.textMessagesNotification = textMessagesNotification;
@@ -173,7 +171,7 @@ class UserAccountController {
       return;
     } catch (e) {
       console.log(e);
-      next(new ApiError(500, 'Internal error on edit Notification'));
+      next(APIError.internal('Internal error on edit Notification'));
     }
   }
 }

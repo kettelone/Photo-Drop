@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import ApiError from '../errors/APIErrors';
+import APIError from '../errors/APIError';
 
 function checkAuth(req: Request, res: Response, next: NextFunction) {
   // if (req.method === 'OPTIONS') {
@@ -11,17 +11,19 @@ function checkAuth(req: Request, res: Response, next: NextFunction) {
       const token = req.headers.authorization.split(' ')[1]; // Bearer ddhcjhdsjcsdcs
 
       if (!token) {
-        next(new ApiError(401, 'Not authorized'));
+        next(APIError.unauthorized('Not authorized'));
+        return;
       }
 
       jwt.verify(token, process.env.SECRET_KEY!);
 
       next();
     } else {
-      next(new ApiError(401, 'Missing authorization token'));
+      next(APIError.unauthorized('Missing authorization token'));
+      return;
     }
   } catch (e) {
-    next(new ApiError(401, 'Not authorized'));
+    next(APIError.unauthorized('Not authorized'));
   }
 }
 

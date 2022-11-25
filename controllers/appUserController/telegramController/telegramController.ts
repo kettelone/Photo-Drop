@@ -1,21 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
-// import TelegramBot from 'node-telegram-bot-api';
+import TelegramBot from 'node-telegram-bot-api';
 import { UserOTP } from '../../../models/model';
-import ApiError from '../../../errors/APIErrors';
+import APIError from '../../../errors/APIError';
 
 // TO DO: Use stash to choose beetwen production and development bot
 
-// const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY!}`, { polling: true });
+const bot = new TelegramBot(`${process.env.TELEGRAM_BOT_KEY!}`, { polling: true });
 
 class TelegramController {
   async generateOTP(req: Request, res: Response, next:NextFunction): Promise<void> {
     const { phone } = req.body as { phone: string };
-    // const sendOTPToTelegram = (otp:string) => {
-    //   bot.sendMessage(
-    //     Number(process.env.TB_BOT_GROUP_CHAT_ID),
-    //     `Your phone is: ${phone}\nYour OTP is: ${otp}`,
-    //   );
-    // };
+    const sendOTPToTelegram = (otp:string) => {
+      bot.sendMessage(
+        Number(process.env.TB_BOT_GROUP_CHAT_ID),
+        `Your phone is: ${phone}\nYour OTP is: ${otp}`,
+      );
+    };
     const OTP = `${Math.floor(Math.random() * (999999 - 100000) + 100000)}`;
     try {
       const phoneExist = await UserOTP.findOne({ where: { phone } });
@@ -23,19 +23,19 @@ class TelegramController {
         const otpCreated = Date.now();
         const newUser = await UserOTP.create({ phone, otp: OTP, otpCreated });
         newUser.save();
-        // sendOTPToTelegram(OTP);
+        sendOTPToTelegram(OTP);
         res.send();
         return;
       }
       phoneExist.otp = OTP;
       phoneExist.otpCreated = Date.now();
       phoneExist.save();
-      // sendOTPToTelegram(OTP);
+      sendOTPToTelegram(OTP);
       res.send();
       return;
     } catch (e) {
       console.log(e);
-      next(new ApiError(500, 'Internal error while generating OTP'));
+      next(APIError.internal('Internal error while generating OTP'));
     }
   }
 
@@ -48,9 +48,9 @@ class TelegramController {
         res.send();
         return;
       }
-      next(new ApiError(401, 'Incorrect verification code, please check again'));
+      next(APIError.unauthorized('Incorrect verification code, please check again'));
     } catch (e) {
-      next(new ApiError(500, 'Internal error while checking OTP'));
+      next(APIError.internal('Internal error while checking OTP'));
     }
   }
 }
