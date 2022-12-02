@@ -210,6 +210,7 @@ class PhotographerController {
         const keyObj = { photoKey: name };
         return keyObj;
       });
+      // TO DO: make array with key(original photo key) and value(url to original photo)
       const photoUrls = photographerService.generatePresignedGet(photoKeys);
       res.json(photoUrls);
       return;

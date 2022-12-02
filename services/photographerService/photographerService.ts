@@ -39,14 +39,15 @@ class PhotographerService {
     return presignedPostsArray;
   }
 
-  generatePresignedGet(PhotoKeys :{ photoKey: string }[]) {
-    const photoUrls = PhotoKeys.map((el) => {
+  generatePresignedGet(photoKeys: { photoKey: string }[]) {
+    const photoUrls : { [key: string]: string } = {};
+    photoKeys.forEach((el) => {
       const url = s3.getSignedUrl('getObject', {
         Bucket: process.env.S3_BUCKET_ORIGINAL,
         Key: el.photoKey,
         Expires: 60 * 60,
       });
-      return url;
+      photoUrls[el.photoKey] = url;
     });
     return photoUrls;
   }
