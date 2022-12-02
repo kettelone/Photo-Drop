@@ -135,7 +135,7 @@ class PhotographerController {
         });
 
         // album icon url
-        const icon = signedThumbnails.length ? signedThumbnails[0] : null;
+        const icon = signedThumbnails.length ? signedThumbnails[0].url : null;
 
         return {
           id,
