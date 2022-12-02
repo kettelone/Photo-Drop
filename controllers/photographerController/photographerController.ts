@@ -119,7 +119,6 @@ class PhotographerController {
         id, name, location, date,
       }) => {
         const currentPhotos = photos.filter(({ albumId }) => albumId === id);
-
         // sign photo thumbnails
         const signedThumbnails = currentPhotos.map((photo) => {
           const url = s3.getSignedUrl('getObject', {

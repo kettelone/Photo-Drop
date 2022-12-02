@@ -32,7 +32,7 @@ class PhotographerService {
         },
         Conditions: [['content-length-range', 0, 15000000], ['starts-with', '$Content-Type', 'image/']],
         Expires: 60 * 60, // seconds
-        Bucket: process.env.S3_BUCKET_ORIGINAL,
+        Bucket: process.env.S3_BUCKET,
       });
       return { url, fields };
     });
