@@ -78,6 +78,7 @@ class AppUserService {
           const thumbnail = {
             url,
             originalKey: photo.name,
+            isPaid: albumPaidStatus[photo.albumId],
           };
           return thumbnail;
         });

@@ -1,25 +1,21 @@
 import AWS from 'aws-sdk';
 import axios from 'axios';
-import Jimp from 'jimp';
 import sharp from 'sharp';
 import convert from 'heic-convert';
 
 const S3 = new AWS.S3();
 
 const resizeImage = async (origimage :Buffer) => {
-  if (!origimage) {
-    return;
-  }
-  let imageResized = await Jimp.read(origimage);
-  const originalHeight = imageResized.bitmap.height;
-  const originalWidth = imageResized.bitmap.width;
-  const minValue = originalWidth < originalHeight ? 'width' : 'heigth';
-  const newWidth = minValue === 'width' ? 400 : Jimp.AUTO;
-  const newHeight = minValue === 'heigth' ? 400 : Jimp.AUTO;
+  const imageOriginal = sharp(origimage);
+  const { width, height } = await sharp(origimage).metadata();
+  if (!width || !height) return;
 
-  imageResized = imageResized.resize(newWidth, newHeight);
-  const img = await Jimp.read(imageResized);
-  return img.getBufferAsync(Jimp.MIME_JPEG);
+  const minValue = width < height ? 'width' : 'heigth';
+  const newWidth = minValue === 'width' ? 400 : null;
+  const newHeight = minValue === 'heigth' ? 400 : null;
+  const resizeArgument = newWidth === null ? { height: newHeight! } : { width: newWidth };
+  const imageResized = await imageOriginal.resize(resizeArgument).toBuffer();
+  return imageResized;
 };
 
 const baseHandler = async (event:any) => {
@@ -28,12 +24,9 @@ const baseHandler = async (event:any) => {
     /* inputS3Url is a presigned URL that the function can use to download
     the original object from the supporting Access Point */
 
-    console.log('Start Event', event);
     const { outputRoute, outputToken, inputS3Url } = event.getObjectContext || {};
     let { data: originalImage } = await axios.get(inputS3Url, { responseType: 'arraybuffer' });
-    if (inputS3Url.includes('.webp?')) {
-      originalImage = await sharp(originalImage).jpeg().toBuffer();
-    }
+
     if (inputS3Url.includes('.heic?')) {
       const outputBuffer = await convert({
         buffer: originalImage, // the HEIC file buffer
@@ -53,7 +46,6 @@ const baseHandler = async (event:any) => {
       statusCode: 200,
     };
   } catch (e) {
-    console.error('Error', e);
     return {
       statusCode: 500,
     };

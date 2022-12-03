@@ -45,7 +45,6 @@ const baseHandler = async (event:any) => {
       statusCode: 200,
     };
   } catch (e) {
-    console.error('Error', e);
     return {
       statusCode: 500,
     };
