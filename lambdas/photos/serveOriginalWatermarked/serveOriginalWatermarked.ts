@@ -6,8 +6,9 @@ import * as photoDropLogo from './PhotoDropLogoBig.png';
 
 const S3 = new AWS.S3();
 
-const addWatermark = async (image :Buffer) => {
-  const imageOriginal = sharp(image);
+const addWatermark = async (image: Buffer) => {
+  // change quality if image too poor
+  const imageOriginal = sharp(image).webp({ quality: 25 });
   const { width, height } = await sharp(image).metadata();
   if (!width || !height) return;
 

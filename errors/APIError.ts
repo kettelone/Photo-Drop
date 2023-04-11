@@ -1,32 +1,31 @@
 class APIError {
-  code: number;
+	public code: number
+	public message: string
 
-  message: string;
+	constructor(code: number, message: string) {
+		this.code = code
+		this.message = message
+	}
 
-  constructor(code:number, message:string) {
-    this.code = code;
-    this.message = message;
-  }
+	static badRequest(msg: string) {
+		return new APIError(400, msg)
+	}
 
-  static badRequest(msg: string) {
-    return new APIError(400, msg);
-  }
+	static unauthorized(msg: string) {
+		return new APIError(401, msg)
+	}
 
-  static unauthorized(msg: string) {
-    return new APIError(401, msg);
-  }
+	static notFound(msg: string) {
+		return new APIError(204, msg)
+	}
 
-  static notFound(msg: string) {
-    return new APIError(404, msg);
-  }
+	static conflict(msg: string) {
+		return new APIError(409, msg)
+	}
 
-  static conflict(msg: string) {
-    return new APIError(409, msg);
-  }
-
-  static internal(msg: string) {
-    return new APIError(500, msg);
-  }
+	static internal(msg: string) {
+		return new APIError(500, msg)
+	}
 }
 
-export default APIError;
+export default APIError

@@ -27,6 +27,10 @@
         ],
         "max-len": "off",
         "camelcase": "off",
-        "no-console": "off"
+        "no-console": "off",
+        "semi": "off",
+        "no-tabs":"off",
+        "indent":"off",
+        "trailingComma": "none"
     }
 }
